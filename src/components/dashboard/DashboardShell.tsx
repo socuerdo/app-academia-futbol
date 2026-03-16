@@ -13,7 +13,7 @@ interface DashboardUser {
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  club: Club;
+  club: Pick<Club, "id" | "nombre" | "logo_url" | "color_primario" | "color_sidebar" | "iniciales" | "activo">;
   user: DashboardUser;
   userName: string;
   rol: "admin" | "profesor";

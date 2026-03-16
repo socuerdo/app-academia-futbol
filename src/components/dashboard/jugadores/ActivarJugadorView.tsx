@@ -1,12 +1,19 @@
 "use client";
 
 import { toggleActivoJugador } from "@/app/dashboard/jugadores/actions";
-import type { Jugador } from "@/types/database";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-type JugadorRow = Jugador & { sede?: { id: string; nombre: string } | null };
+type JugadorRow = {
+  id: string;
+  dni: string;
+  apellido: string;
+  nombre: string;
+  categoria: string;
+  activo: boolean;
+  sede?: { id: string; nombre: string } | null;
+};
 
 interface ActivarJugadorViewProps {
   initialJugadores: JugadorRow[];

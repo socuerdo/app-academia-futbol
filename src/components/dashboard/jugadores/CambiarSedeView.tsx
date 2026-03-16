@@ -2,12 +2,19 @@
 
 import { cambiarSedeCategoria } from "@/app/dashboard/jugadores/actions";
 import { createClient } from "@/lib/supabase/client";
-import type { Jugador } from "@/types/database";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type JugadorConSede = Jugador & { sede?: { nombre: string } | null };
+type JugadorConSede = {
+  id: string;
+  dni: string;
+  apellido: string;
+  nombre: string;
+  categoria: string;
+  sede_id: string;
+  sede?: { nombre: string } | null;
+};
 
 interface CambiarSedeViewProps {
   clubId: string;

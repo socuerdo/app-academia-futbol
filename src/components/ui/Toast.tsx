@@ -1,6 +1,7 @@
 "use client";
 
-import { createPortal, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ToastProps {
   message: string;

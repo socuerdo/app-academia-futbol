@@ -1,5 +1,5 @@
 import type { Rol } from "@/types/database";
-import type { MenuItem } from "@/types/dashboard";
+import type { MenuItem, MenuItemLink } from "@/types/dashboard";
 
 const PERMISO_CARGAR_JUGADOR = "jugadores.crear";
 const PERMISO_VER_REPORTES = "reportes.ver";
@@ -22,7 +22,7 @@ export function getDashboardMenuItems(
   items.push({ type: "link", label: "Dashboard", href: "/dashboard" });
 
   if (canCargarJugador || isAdmin) {
-    const jugadoresItems: MenuItem[] = [];
+    const jugadoresItems: MenuItemLink[] = [];
     if (isAdmin) {
       jugadoresItems.push(
         { type: "link", label: "Cargar jugador", href: "/dashboard/jugadores/cargar" },
@@ -39,7 +39,7 @@ export function getDashboardMenuItems(
     items.push({ type: "group", label: "Jugadores", items: jugadoresItems });
   }
 
-  const asistenciasItems: MenuItem[] = [
+  const asistenciasItems: MenuItemLink[] = [
     { type: "link", label: "Cargar asistencias", href: "/dashboard/asistencias/cargar" },
   ];
   if (canVerReportes) {
