@@ -4,7 +4,7 @@ import { Toast } from "@/components/ui/Toast";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { crearJugador } from "../../jugadores/actions";
+import { crearJugador } from "@/app/dashboard/jugadores/actions";
 
 const CATEGORIAS = [
   "Sub-6",
