@@ -61,3 +61,12 @@ export interface Asistencia {
   registrado_por: string;
   created_at: string;
 }
+
+export type Categoria = {
+  id: string;
+  club_id: string;
+  nombre: string;
+  orden: number;
+  activo: boolean;
+  created_at: string;
+};

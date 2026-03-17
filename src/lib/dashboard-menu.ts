@@ -59,6 +59,7 @@ export function getDashboardMenuItems(
         { type: "link", label: "Sedes", href: "/dashboard/sedes" },
         { type: "link", label: "Usuarios", href: "/dashboard/usuarios" },
         { type: "link", label: "Configuración", href: "/dashboard/configuracion" },
+        { type: "link", label: "Categorías", href: "/dashboard/configuracion/categorias" },
       ],
     });
   }

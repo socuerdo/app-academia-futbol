@@ -2,29 +2,10 @@
 
 import { Toast } from "@/components/ui/Toast";
 import type { Sede } from "@/types/database";
+import { useCategorias } from "@/hooks/useCategorias";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { crearJugador } from "@/app/dashboard/jugadores/actions";
-
-const CATEGORIAS = [
-  "Sub-6",
-  "Sub-7",
-  "Sub-8",
-  "Sub-9",
-  "Sub-10",
-  "Sub-11",
-  "Sub-12",
-  "Sub-13",
-  "Sub-14",
-  "Sub-15",
-  "Sub-16",
-  "Sub-17",
-  "Sub-18",
-  "Sub-19",
-  "Primera",
-  "Reserva",
-  "Otro",
-];
 
 interface CargarJugadorFormProps {
   clubId: string;
@@ -33,6 +14,7 @@ interface CargarJugadorFormProps {
 
 export function CargarJugadorForm({ clubId, sedes }: CargarJugadorFormProps) {
   const router = useRouter();
+  const { categorias, isLoading } = useCategorias(clubId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState(false);
@@ -150,12 +132,15 @@ export function CargarJugadorForm({ clubId, sedes }: CargarJugadorFormProps) {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
               >
                 <option value="">Seleccionar</option>
-                {CATEGORIAS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.nombre}>
+                    {c.nombre}
                   </option>
                 ))}
               </select>
+              {isLoading && (
+                <p className="text-xs text-slate-400 mt-1">Cargando categorías...</p>
+              )}
             </div>
             <div>
               <label htmlFor="sede_id" className="block text-sm font-medium text-slate-700 mb-1">
