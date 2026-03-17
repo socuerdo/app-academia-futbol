@@ -15,6 +15,7 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
   const { categorias, isLoading, refetch } = useCategorias(clubId);
   const [localCategorias, setLocalCategorias] = useState<Categoria[]>(categorias);
   const [newName, setNewName] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
@@ -70,6 +71,11 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
       setLocalCategorias((prev) => prev.filter((c) => c.id !== optimistic.id));
       return;
     }
+
+    // Reemplazar la fila temporal por la real (con uuid) para evitar errores al eliminar/actualizar
+    setLocalCategorias((prev) =>
+      prev.map((c) => (c.id === optimistic.id ? (data as Categoria) : c))
+    );
 
     showToast("Categoría creada.");
     await refetch();
@@ -194,29 +200,61 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg font-semibold text-slate-800">Categorías</h2>
+        {!editingId && (
+          <button
+            type="button"
+            onClick={() => setShowForm((prev) => !prev)}
+            className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            {showForm ? "Cancelar" : "Nueva categoría"}
+          </button>
+        )}
       </div>
 
       {error && (
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
       )}
 
-      <form onSubmit={handleCreate} className="flex flex-wrap gap-2 items-center">
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder="Nombre de la nueva categoría"
-          className="flex-1 min-w-[200px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-          style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-lg text-white font-medium"
-          style={{ backgroundColor: "var(--color-primary)" }}
-        >
-          Nueva categoría
-        </button>
-      </form>
+      {showForm && (
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-200 bg-white p-4 space-y-4 max-w-xl">
+          <h3 className="font-medium text-slate-800">Nueva categoría</h3>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Nombre *
+            </label>
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Ej. Sub-13"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
+              required
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                setNewName("");
+              }}
+              className="px-4 py-2 rounded-lg text-sm border border-slate-300 text-slate-700"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )
+      }
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {isLoading && (

@@ -62,13 +62,13 @@ export function ActivarJugadorView({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+        <div className="w-full">
           <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
           <select
             value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
           >
             <option value="">Todas</option>
@@ -77,12 +77,12 @@ export function ActivarJugadorView({
             ))}
           </select>
         </div>
-        <div>
+        <div className="w-full">
           <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
           <select
             value={filtroSede}
             onChange={(e) => setFiltroSede(e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
           >
             <option value="">Todas</option>

@@ -75,14 +75,16 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
 
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold text-slate-800">Lista de sedes</h2>
-        <button
-          type="button"
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg text-white font-medium text-sm"
-          style={{ backgroundColor: "var(--color-primary)" }}
-        >
-          {showForm ? "Cancelar" : "Agregar sede"}
-        </button>
+        {!editingId && (
+          <button
+            type="button"
+            onClick={() => setShowForm((prev) => !prev)}
+            className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            {showForm ? "Cancelar" : "Agregar sede"}
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -106,87 +108,102 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
               <input name="telefono" type="tel" className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
             </div>
           </div>
-          <button type="submit" className="px-4 py-2 rounded-lg text-white font-medium text-sm" style={{ backgroundColor: "var(--color-primary)" }}>
-            Guardar
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Guardar
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 rounded-lg text-sm border border-slate-300 text-slate-700"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <ul className="divide-y divide-slate-100">
-          {sedes.map((sede) => (
-            <li key={sede.id} className="p-4">
-              {editingId === sede.id ? (
-                <form
-                  onSubmit={(e) => handleUpdate(sede.id, e)}
-                  className="space-y-3"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Nombre *</label>
-                      <input name="nombre" defaultValue={sede.nombre} required className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+      {!showForm && (
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+          <ul className="divide-y divide-slate-100">
+            {sedes.map((sede) => (
+              <li key={sede.id} className="p-4">
+                {editingId === sede.id ? (
+                  <form
+                    onSubmit={(e) => handleUpdate(sede.id, e)}
+                    className="space-y-3"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Nombre *</label>
+                        <input name="nombre" defaultValue={sede.nombre} required className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Dirección</label>
+                        <input name="direccion" defaultValue={sede.direccion ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Ciudad</label>
+                        <input name="ciudad" defaultValue={sede.ciudad ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Teléfono</label>
+                        <input name="telefono" defaultValue={sede.telefono ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Dirección</label>
-                      <input name="direccion" defaultValue={sede.direccion ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                    <div className="flex gap-2">
+                      <button type="submit" className="px-3 py-1.5 rounded text-sm text-white font-medium" style={{ backgroundColor: "var(--color-primary)" }}>
+                        Guardar
+                      </button>
+                      <button type="button" onClick={() => setEditingId(null)} className="px-3 py-1.5 rounded text-sm border border-slate-300 text-slate-700">
+                        Cancelar
+                      </button>
                     </div>
+                  </form>
+                ) : (
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Ciudad</label>
-                      <input name="ciudad" defaultValue={sede.ciudad ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                      <p className="font-medium text-slate-800">{sede.nombre}</p>
+                      <p className="text-sm text-slate-500">
+                        {[sede.direccion, sede.ciudad].filter(Boolean).join(" · ") || "Sin dirección"}
+                        {sede.telefono && ` · ${sede.telefono}`}
+                      </p>
+                      {jugadoresPorSede[sede.id] != null && (
+                        <p className="text-xs text-slate-400 mt-1">{jugadoresPorSede[sede.id]} jugador(es)</p>
+                      )}
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 mb-1">Teléfono</label>
-                      <input name="telefono" defaultValue={sede.telefono ?? ""} className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm" />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(sede.id)}
+                        className="text-sm font-medium hover:underline"
+                        style={{ color: "var(--color-primary)" }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(sede.id)}
+                        disabled={deletingId === sede.id || (jugadoresPorSede[sede.id] ?? 0) > 0}
+                        className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {deletingId === sede.id ? "..." : "Eliminar"}
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button type="submit" className="px-3 py-1.5 rounded text-sm text-white font-medium" style={{ backgroundColor: "var(--color-primary)" }}>
-                      Guardar
-                    </button>
-                    <button type="button" onClick={() => setEditingId(null)} className="px-3 py-1.5 rounded text-sm border border-slate-300 text-slate-700">
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-slate-800">{sede.nombre}</p>
-                    <p className="text-sm text-slate-500">
-                      {[sede.direccion, sede.ciudad].filter(Boolean).join(" · ") || "Sin dirección"}
-                      {sede.telefono && ` · ${sede.telefono}`}
-                    </p>
-                    {jugadoresPorSede[sede.id] != null && (
-                      <p className="text-xs text-slate-400 mt-1">{jugadoresPorSede[sede.id]} jugador(es)</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(sede.id)}
-                      className="text-sm font-medium hover:underline"
-                      style={{ color: "var(--color-primary)" }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(sede.id)}
-                      disabled={deletingId === sede.id || (jugadoresPorSede[sede.id] ?? 0) > 0}
-                      className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {deletingId === sede.id ? "..." : "Eliminar"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-        {sedes.length === 0 && !showForm && (
-          <p className="p-6 text-slate-500 text-center">No hay sedes. Agregá una para comenzar.</p>
-        )}
-      </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          {sedes.length === 0 && !showForm && (
+            <p className="p-6 text-slate-500 text-center">No hay sedes. Agregá una para comenzar.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

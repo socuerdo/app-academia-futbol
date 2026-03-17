@@ -42,47 +42,51 @@ export function ReporteTodosView({
 
   return (
     <div className="space-y-4">
-      <form
-        className="flex flex-wrap gap-4 items-end"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const form = e.currentTarget;
-          const sede = (form.querySelector('[name="sede"]') as HTMLSelectElement)?.value ?? "";
-          const cat = (form.querySelector('[name="categoria"]') as HTMLSelectElement)?.value ?? "";
-          const estado = (form.querySelector('[name="estado"]') as HTMLSelectElement)?.value ?? "";
-          updateFilters(sede, cat, estado);
-        }}
-      >
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
-          <select name="sede" defaultValue={initialSedeId} className="px-3 py-2 border border-slate-300 rounded-lg min-w-[140px]">
-            <option value="">Todas</option>
-            {sedes.map((s) => (
-              <option key={s.id} value={s.id}>{s.nombre}</option>
-            ))}
-          </select>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
+            <select
+              name="sede"
+              defaultValue={initialSedeId}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              onChange={(e) => updateFilters(e.target.value, initialCategoria, initialEstado)}
+            >
+              <option value="">Todas</option>
+              {sedes.map((s) => (
+                <option key={s.id} value={s.id}>{s.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-full">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+            <select
+              name="categoria"
+              defaultValue={initialCategoria}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              onChange={(e) => updateFilters(initialSedeId, e.target.value, initialEstado)}
+            >
+              <option value="">Todas</option>
+              {categorias.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-full">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+            <select
+              name="estado"
+              defaultValue={initialEstado}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              onChange={(e) => updateFilters(initialSedeId, initialCategoria, e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
-          <select name="categoria" defaultValue={initialCategoria} className="px-3 py-2 border border-slate-300 rounded-lg min-w-[120px]">
-            <option value="">Todas</option>
-            {categorias.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
-          <select name="estado" defaultValue={initialEstado} className="px-3 py-2 border border-slate-300 rounded-lg min-w-[120px]">
-            <option value="">Todos</option>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <button type="submit" className="px-4 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: "var(--color-primary)" }}>
-          Filtrar
-        </button>
-      </form>
+      </div>
 
       {filas.length > 0 && (
         <div className="flex gap-2">

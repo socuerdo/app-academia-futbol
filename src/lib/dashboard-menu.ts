@@ -54,12 +54,12 @@ export function getDashboardMenuItems(
   if (isAdmin) {
     items.push({
       type: "group",
-      label: "Administración",
+      label: "Configuración",
       items: [
         { type: "link", label: "Sedes", href: "/dashboard/sedes" },
-        { type: "link", label: "Usuarios", href: "/dashboard/usuarios" },
-        { type: "link", label: "Configuración", href: "/dashboard/configuracion" },
         { type: "link", label: "Categorías", href: "/dashboard/configuracion/categorias" },
+        { type: "link", label: "Usuarios", href: "/dashboard/usuarios" },
+        { type: "link", label: "Personalización", href: "/dashboard/configuracion" },
       ],
     });
   }
