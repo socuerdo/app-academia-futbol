@@ -1,6 +1,6 @@
 "use client";
 
-import type { Club } from "@/types/database";
+import type { Club, Rol } from "@/types/database";
 import type { MenuItem } from "@/types/dashboard";
 import { useCallback, useState } from "react";
 import { Sidebar } from "./Sidebar";
@@ -16,7 +16,7 @@ interface DashboardShellProps {
   club: Pick<Club, "id" | "nombre" | "logo_url" | "color_primario" | "color_sidebar" | "iniciales" | "activo">;
   user: DashboardUser;
   userName: string;
-  rol: "admin" | "profesor";
+  rol: Rol;
   menuItems: MenuItem[];
 }
 
@@ -40,7 +40,7 @@ export function DashboardShell({
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-slate-50"
+      className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100/80"
       style={
         {
           "--color-primary": club.color_primario,
@@ -49,7 +49,7 @@ export function DashboardShell({
       }
     >
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-col shrink-0">
+      <div className="hidden md:flex flex-col shrink-0 shadow-xl">
         <Sidebar
           menuItems={menuItems}
           clubNombre={club.nombre}
@@ -74,7 +74,7 @@ export function DashboardShell({
       {/* Mobile drawer */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-out md:hidden
+          fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-out md:hidden
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >

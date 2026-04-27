@@ -5,6 +5,7 @@ import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Toast } from "@/components/ui/Toast";
+import { Loader2, Save, Upload } from "lucide-react";
 
 type JugadorRow = {
   id: string;
@@ -119,46 +120,48 @@ export function CargarAsistenciasView({
   return (
     <>
       <div className="space-y-4 max-w-4xl">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
-            <select
-              value={sedeId}
-              onChange={(e) => setSedeId(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 outline-none min-w-[180px]"
-              style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
-            >
-              <option value="">Seleccionar</option>
-              {sedes.map((s) => (
-                <option key={s.id} value={s.id}>{s.nombre}</option>
-              ))}
-            </select>
+        <section className="rounded-xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+          <div className="mb-4 pb-3 border-b border-slate-100">
+            <h2 className="text-sm font-semibold text-slate-700">Filtros de carga</h2>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
-            <select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 outline-none min-w-[140px]"
-              style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
-            >
-              <option value="">Seleccionar</option>
-              {categorias.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-offset-1" style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
+              <select
+                value={sedeId}
+                onChange={(e) => setSedeId(e.target.value)}
+                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none min-w-[180px]"
+              >
+                <option value="">Seleccionar</option>
+                {sedes.map((s) => (
+                  <option key={s.id} value={s.id}>{s.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-offset-1" style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+              <select
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none min-w-[140px]"
+              >
+                <option value="">Seleccionar</option>
+                {categorias.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-offset-1" style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+              <input
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 outline-none"
-              style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
-            />
-          </div>
-        </div>
+        </section>
 
         {error && (
           <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
@@ -170,15 +173,18 @@ export function CargarAsistenciasView({
               <button
                 type="button"
                 onClick={() => marcarTodos(true)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                 style={{ backgroundColor: "var(--color-primary)" }}
+                aria-label="Marcar todos presentes"
               >
+                <Upload className="h-4 w-4" aria-hidden />
                 Marcar todos presentes
               </button>
               <button
                 type="button"
                 onClick={() => marcarTodos(false)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                aria-label="Marcar todos ausentes"
               >
                 Marcar todos ausentes
               </button>
@@ -218,10 +224,11 @@ export function CargarAsistenciasView({
                             type="button"
                             role="switch"
                             aria-checked={asistencias[j.id]?.presente ?? true}
-                            onClick={() => setPresente(j.id, !(asistencias[j.id]?.presente ?? true))}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                              asistencias[j.id]?.presente !== false ? "" : ""
+                            aria-label={`Marcar ${j.apellido}, ${j.nombre} como ${
+                              asistencias[j.id]?.presente ?? true ? "ausente" : "presente"
                             }`}
+                            onClick={() => setPresente(j.id, !(asistencias[j.id]?.presente ?? true))}
+                            className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
                             style={{
                               backgroundColor: asistencias[j.id]?.presente !== false ? "var(--color-primary)" : "#cbd5e1",
                               ["--tw-ring-color" as string]: "var(--color-primary)",
@@ -241,7 +248,7 @@ export function CargarAsistenciasView({
                             value={asistencias[j.id]?.observacion ?? ""}
                             onChange={(e) => setObservacion(j.id, e.target.value)}
                             placeholder="Opcional"
-                            className="w-full max-w-xs px-2 py-1.5 border border-slate-200 rounded text-slate-700 text-sm"
+                            className="w-full max-w-xs px-2 py-1.5 border border-slate-200 rounded text-slate-700 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                           />
                         </td>
                       </tr>
@@ -255,10 +262,21 @@ export function CargarAsistenciasView({
               type="button"
               onClick={handleGuardar}
               disabled={saving}
-              className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
               style={{ backgroundColor: "var(--color-primary)" }}
+              aria-label={saving ? "Guardando asistencias" : "Guardar asistencias"}
             >
-              {saving ? "Guardando..." : "Guardar asistencias"}
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" aria-hidden />
+                  Guardar asistencias
+                </>
+              )}
             </button>
           </>
         )}

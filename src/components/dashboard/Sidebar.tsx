@@ -1,6 +1,23 @@
 "use client";
 
 import type { MenuItem } from "@/types/dashboard";
+import {
+  AlertTriangle,
+  BarChart2,
+  Building2,
+  ChevronDown,
+  ChevronLeft,
+  ClipboardList,
+  LayoutDashboard,
+  MapPin,
+  Settings,
+  Shield,
+  Upload,
+  UserCog,
+  UserPlus,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +31,7 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
   onClose?: () => void;
   isMobile?: boolean;
+  hasAlertas?: boolean;
 }
 
 export function Sidebar({
@@ -25,6 +43,7 @@ export function Sidebar({
   onToggleCollapse,
   onClose,
   isMobile = false,
+  hasAlertas = false,
 }: SidebarProps) {
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -35,11 +54,34 @@ export function Sidebar({
 
   const linkClass = (href: string) => {
     const active = pathname === href;
-    return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+    return `group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium border-l-2 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
       active
-        ? "bg-white/20 text-white"
-        : "text-white/85 hover:bg-white/10 hover:text-white"
+        ? "border-white text-white"
+        : "border-transparent text-white/85 hover:bg-white/10 hover:text-white"
     }`;
+  };
+
+  const linkIcon = (label: string, href?: string): LucideIcon => {
+    const text = `${label} ${href ?? ""}`.toLowerCase();
+    if (text.includes("dashboard")) return LayoutDashboard;
+    if (text.includes("jugador")) return Users;
+    if (text.includes("cargar asist")) return ClipboardList;
+    if (text.includes("asistencia")) return BarChart2;
+    if (text.includes("evaluacion")) return ClipboardList;
+    if (text.includes("sede")) return MapPin;
+    if (text.includes("categoria")) return Building2;
+    if (text.includes("usuario")) return UserCog;
+    if (text.includes("personaliz")) return Settings;
+    if (text.includes("importar")) return Upload;
+    if (text.includes("activar")) return Shield;
+    if (text.includes("cargar jugador")) return UserPlus;
+    if (text.includes("alerta")) return AlertTriangle;
+    return LayoutDashboard;
+  };
+
+  const isAlertItem = (label: string, href?: string) => {
+    const text = `${label} ${href ?? ""}`.toLowerCase();
+    return text.includes("alerta");
   };
 
   const handleLinkClick = () => {
@@ -51,7 +93,7 @@ export function Sidebar({
       className={`
         flex flex-col h-full
         ${isMobile ? "w-72" : collapsed ? "w-16" : "w-64"}
-        transition-all duration-200 ease-in-out
+        transition-all duration-300 ease-in-out
       `}
       style={{ backgroundColor: "var(--color-sidebar, #2c3e50)" }}
     >
@@ -86,6 +128,8 @@ export function Sidebar({
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         {menuItems.map((item) => {
           if (item.type === "link") {
+            const Icon = linkIcon(item.label, item.href);
+            const showAlertBadge = hasAlertas && isAlertItem(item.label, item.href);
             return (
               <Link
                 key={item.href}
@@ -94,45 +138,55 @@ export function Sidebar({
                 className={linkClass(item.href)}
                 title={collapsed && !isMobile ? item.label : undefined}
               >
-                <span className="truncate">{item.label}</span>
+                <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                {(!collapsed || isMobile) && <span className="truncate">{item.label}</span>}
+                {showAlertBadge && (
+                  <span className="ml-auto inline-flex h-2.5 w-2.5 rounded-full bg-rose-300 animate-pulse" />
+                )}
               </Link>
             );
           }
           if (item.type === "group") {
             const isOpen = openGroups[item.label] ?? true;
             const groupId = `group-${item.label}`;
+            const GroupIcon = linkIcon(item.label);
             return (
               <div key={groupId} className="space-y-0.5">
                 <button
                   type="button"
                   onClick={() => toggleGroup(item.label)}
-                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors"
+                  className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   title={collapsed && !isMobile ? item.label : undefined}
+                  aria-label={`Alternar grupo ${item.label}`}
                 >
-                  <span className="truncate">{item.label}</span>
+                  <span className="flex items-center gap-3 min-w-0">
+                    <GroupIcon className="h-4 w-4 shrink-0" aria-hidden />
+                    {(!collapsed || isMobile) && <span className="truncate">{item.label}</span>}
+                  </span>
                   {(!collapsed || isMobile) && (
-                    <svg
-                      className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                   )}
                 </button>
                 {(!collapsed || isMobile) && isOpen && (
                   <div className="pl-3 space-y-0.5 border-l border-white/20 ml-2">
-                    {item.items.map((sub) => (
-                      <Link
-                        key={sub.href}
-                        href={sub.href}
-                        onClick={handleLinkClick}
-                        className={`block py-1.5 px-2 rounded text-sm ${linkClass(sub.href)}`}
-                      >
-                        {sub.label}
-                      </Link>
-                    ))}
+                    {item.items.map((sub) => {
+                      const SubIcon = linkIcon(sub.label, sub.href);
+                      const showAlertBadge = hasAlertas && isAlertItem(sub.label, sub.href);
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={handleLinkClick}
+                          className={`py-1.5 px-2 rounded text-sm ${linkClass(sub.href)}`}
+                        >
+                          <SubIcon className="h-4 w-4 shrink-0" aria-hidden />
+                          <span className="truncate">{sub.label}</span>
+                          {showAlertBadge && (
+                            <span className="ml-auto inline-flex h-2.5 w-2.5 rounded-full bg-rose-300 animate-pulse" />
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -148,17 +202,10 @@ export function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-white/80 hover:bg-white/10 text-sm"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-white/80 hover:bg-white/10 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
           >
-            <svg
-              className={`w-4 h-4 shrink-0 ${collapsed ? "rotate-180" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className={`w-4 h-4 shrink-0 ${collapsed ? "rotate-180" : ""}`} />
             {!collapsed && <span>Colapsar</span>}
           </button>
         </div>
