@@ -176,6 +176,36 @@ export async function toggleActivoJugador(jugadorId: string, activo: boolean): P
   return {};
 }
 
+export async function eliminarJugador(jugadorId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "No autorizado" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("club_id, rol")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.club_id) return { error: "Sin club asignado" };
+  if (profile.rol !== "admin" && profile.rol !== "superadmin") {
+    return { error: "Solo administradores pueden eliminar jugadores" };
+  }
+
+  const { error } = await supabase
+    .from("jugadores")
+    .delete()
+    .eq("id", jugadorId)
+    .eq("club_id", profile.club_id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/jugadores/buscar");
+  return {};
+}
+
 export async function cambiarSedeCategoria(
   jugadorId: string,
   sedeId: string,

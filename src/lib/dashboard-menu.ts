@@ -12,7 +12,7 @@ export function getDashboardMenuItems(
   rol: Rol,
   permisos: string[] = []
 ): MenuItem[] {
-  const isAdmin = rol === "admin";
+  const isAdmin = rol === "admin" || rol === "superadmin";
   const isProfesor = rol === "profesor";
   const canCargarJugador = isAdmin || hasPermiso(permisos, PERMISO_CARGAR_JUGADOR);
   const canVerReportes = isAdmin || hasPermiso(permisos, PERMISO_VER_REPORTES);
@@ -50,6 +50,17 @@ export function getDashboardMenuItems(
     );
   }
   items.push({ type: "group", label: "Asistencias", items: asistenciasItems });
+
+  if (isAdmin || isProfesor) {
+    items.push({
+      type: "group",
+      label: "Evaluaciones",
+      items: [
+        { type: "link", label: "Cargar evaluación", href: "/dashboard/evaluaciones/nueva" },
+        { type: "link", label: "Ver evaluaciones", href: "/dashboard/evaluaciones" },
+      ],
+    });
+  }
 
   if (isAdmin) {
     items.push({

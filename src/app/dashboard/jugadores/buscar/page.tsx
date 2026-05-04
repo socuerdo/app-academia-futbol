@@ -15,7 +15,7 @@ export default async function BuscarJugadorPage({ searchParams }: PageProps) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, rol")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) redirect("/login");
@@ -44,6 +44,7 @@ export default async function BuscarJugadorPage({ searchParams }: PageProps) {
         initialJugadores={inicial.jugadores}
         initialQuery={dniParam}
         sedes={inicial.sedes}
+        rol={profile.rol}
       />
     </div>
   );

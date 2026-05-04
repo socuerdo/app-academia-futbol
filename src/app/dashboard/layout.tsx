@@ -23,7 +23,12 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (!profile || (profile.rol !== "admin" && profile.rol !== "profesor")) {
+  if (
+    !profile ||
+    (profile.rol !== "admin" &&
+      profile.rol !== "profesor" &&
+      profile.rol !== "superadmin")
+  ) {
     redirect("/login");
   }
 
@@ -57,7 +62,7 @@ export default async function DashboardLayout({
       club={club}
       user={{ id: user.id, email: user.email ?? undefined }}
       userName={userName}
-      rol={profile.rol as "admin" | "profesor"}
+      rol={profile.rol}
       menuItems={menuItems}
     >
       {children}

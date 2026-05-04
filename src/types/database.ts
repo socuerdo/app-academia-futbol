@@ -70,3 +70,37 @@ export type Categoria = {
   activo: boolean;
   created_at: string;
 };
+
+export type Evaluacion = {
+  id: string;
+  club_id: string;
+  jugador_id: string;
+  tipo_evaluacion_id: string;
+  evaluador_id: string | null;
+  fecha: string;
+  temporada: string | null;
+  puntaje_fisico: number | null;
+  puntaje_tecnico: number | null;
+  puntaje_tactico: number | null;
+  puntaje_social: number | null;
+  puntaje_emocional: number | null;
+  comentario_fisico: string | null;
+  comentario_tecnico: string | null;
+  comentario_tactico: string | null;
+  comentario_social: string | null;
+  comentario_emocional: string | null;
+  observaciones_generales: string | null;
+  puntaje_promedio: number | null;
+  token_publico: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TipoEvaluacion = {
+  id: string;
+  club_id: string;
+  nombre: string;
+  descripcion: string | null;
+  orden: number;
+  activo: boolean;
+};

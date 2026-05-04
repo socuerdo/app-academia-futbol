@@ -1,6 +1,6 @@
 "use client";
 
-import { actualizarJugador } from "@/app/dashboard/jugadores/actions";
+import { actualizarJugador, eliminarJugador } from "@/app/dashboard/jugadores/actions";
 import { createClient } from "@/lib/supabase/client";
 import type { Jugador } from "@/types/database";
 import type { Sede } from "@/types/database";
@@ -16,6 +16,7 @@ interface BuscarJugadorViewProps {
   initialJugadores: JugadorConSede[];
   initialQuery: string;
   sedes: Pick<Sede, "id" | "nombre">[];
+  rol: string;
 }
 
 export function BuscarJugadorView({
@@ -23,6 +24,7 @@ export function BuscarJugadorView({
   initialJugadores,
   initialQuery,
   sedes,
+  rol,
 }: BuscarJugadorViewProps) {
   const router = useRouter();
   const { categorias } = useCategorias(clubId);
@@ -32,6 +34,10 @@ export function BuscarJugadorView({
   const [editing, setEditing] = useState<JugadorConSede | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const esAdmin = rol === "admin" || rol === "superadmin";
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) {
@@ -62,6 +68,28 @@ export function BuscarJugadorView({
     router.replace(`/dashboard/jugadores/buscar?q=${encodeURIComponent(query.trim())}`, { scroll: false });
     search(query.trim());
   };
+
+  function openEditing(j: JugadorConSede) {
+    setEditing(j);
+    setConfirmDelete(false);
+    setError(null);
+  }
+
+  async function handleEliminar() {
+    if (!editing) return;
+    setDeleting(true);
+    const result = await eliminarJugador(editing.id);
+    setDeleting(false);
+    if (result.error) {
+      setError(result.error);
+      setConfirmDelete(false);
+      return;
+    }
+    setEditing(null);
+    setConfirmDelete(false);
+    setJugadores((prev) => prev.filter((j) => j.id !== editing.id));
+    router.refresh();
+  }
 
   async function handleSaveEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -147,7 +175,7 @@ export function BuscarJugadorView({
                   <td className="py-2 px-4 text-right">
                     <button
                       type="button"
-                      onClick={() => setEditing(j)}
+                      onClick={() => openEditing(j)}
                       className="font-medium hover:underline"
                       style={{ color: "var(--color-primary)" }}
                     >
@@ -235,23 +263,62 @@ export function BuscarJugadorView({
                   <input name="fecha_vencimiento_carnet" type="date" defaultValue={editing.fecha_vencimiento_carnet ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditing(null)}
-                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
-                  style={{ backgroundColor: "var(--color-primary)" }}
-                >
-                  {saving ? "Guardando..." : "Guardar"}
-                </button>
-              </div>
+              {confirmDelete ? (
+                <div className="pt-2 rounded-lg bg-red-50 border border-red-200 p-3 space-y-2">
+                  <p className="text-sm text-red-700 font-medium">
+                    ¿Eliminar a {editing.apellido}, {editing.nombre}? Esta acción no se puede deshacer y eliminará también sus asistencias y evaluaciones.
+                  </p>
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={deleting}
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-sm"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEliminar}
+                      disabled={deleting}
+                      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm font-medium disabled:opacity-50"
+                    >
+                      {deleting ? "Eliminando..." : "Confirmar eliminación"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center pt-2">
+                  {esAdmin ? (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(true)}
+                      className="px-3 py-2 rounded-lg text-red-600 text-sm hover:bg-red-50"
+                    >
+                      Eliminar jugador
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(null)}
+                      className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+                      style={{ backgroundColor: "var(--color-primary)" }}
+                    >
+                      {saving ? "Guardando..." : "Guardar"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>
