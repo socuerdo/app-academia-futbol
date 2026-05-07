@@ -18,6 +18,7 @@ const rolLabels: Record<Rol, string> = {
   superadmin: "Superadmin",
   admin: "Admin",
   profesor: "Profesor",
+  secretaria: "Secretaría",
 };
 
 function formatSegment(segment: string): string {
