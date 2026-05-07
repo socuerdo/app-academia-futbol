@@ -16,6 +16,7 @@ interface DashboardShellProps {
   club: Pick<Club, "id" | "nombre" | "logo_url" | "color_primario" | "color_sidebar" | "iniciales" | "activo">;
   user: DashboardUser;
   userName: string;
+  userPhotoUrl?: string | null;
   rol: Rol;
   menuItems: MenuItem[];
 }
@@ -25,6 +26,7 @@ export function DashboardShell({
   club,
   user,
   userName,
+  userPhotoUrl,
   rol,
   menuItems,
 }: DashboardShellProps) {
@@ -94,6 +96,7 @@ export function DashboardShell({
         <Topbar
           userName={userName}
           userEmail={user.email}
+          userPhotoUrl={userPhotoUrl ?? null}
           rol={rol}
           onMenuClick={openMobile}
         />

@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, rol, club_id, nombre_completo, permisos")
+    .select("id, rol, club_id, nombre_completo, permisos, foto_url")
     .eq("id", user.id)
     .single();
 
@@ -27,7 +27,8 @@ export default async function DashboardLayout({
     !profile ||
     (profile.rol !== "admin" &&
       profile.rol !== "profesor" &&
-      profile.rol !== "superadmin")
+      profile.rol !== "superadmin" &&
+      profile.rol !== "secretaria")
   ) {
     redirect("/login");
   }
@@ -62,6 +63,7 @@ export default async function DashboardLayout({
       club={club}
       user={{ id: user.id, email: user.email ?? undefined }}
       userName={userName}
+      userPhotoUrl={profile.foto_url ?? null}
       rol={profile.rol}
       menuItems={menuItems}
     >

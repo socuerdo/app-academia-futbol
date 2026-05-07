@@ -1,8 +1,10 @@
 "use client";
 
 import type { Rol } from "@/types/database";
-import { Bell, LogOut, Menu, Slash } from "lucide-react";
+import { Bell, LogOut, Menu, Slash, User } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 interface TopbarProps {
   userName: string;
@@ -45,6 +47,25 @@ export function Topbar({
   const breadcrumbItems = segments.slice(1).map(formatSegment);
   const initials = getInitials(userName || userEmail);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
+
+  // Cerrar menú al cambiar de ruta
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   return (
     <header className="h-14 shrink-0 flex items-center justify-between px-4 gap-4 bg-white/90 backdrop-blur border-b border-slate-200/70 shadow-sm">
       <button
@@ -86,24 +107,56 @@ export function Topbar({
         >
           {rolLabels[rol]}
         </span>
-        <div className="h-9 w-9 rounded-full overflow-hidden bg-slate-200 shrink-0 flex items-center justify-center text-xs font-semibold text-slate-700 border border-slate-300">
-          {userPhotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={userPhotoUrl} alt="Avatar del usuario" className="h-full w-full object-cover" />
-          ) : (
-            initials
+
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Abrir menú de usuario"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            className="h-9 w-9 rounded-full overflow-hidden bg-slate-200 shrink-0 flex items-center justify-center text-xs font-semibold text-slate-700 border border-slate-300 hover:ring-2 hover:ring-offset-1 transition-shadow"
+            style={{ ["--tw-ring-color" as string]: "var(--color-primary, #c0392b)" }}
+          >
+            {userPhotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={userPhotoUrl} alt="Avatar del usuario" className="h-full w-full object-cover" />
+            ) : (
+              initials
+            )}
+          </button>
+          {menuOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-lg z-50 overflow-hidden"
+            >
+              <div className="px-3 py-2 border-b border-slate-100">
+                <p className="text-sm font-medium text-slate-800 truncate">
+                  {userName || userEmail}
+                </p>
+                <p className="text-xs text-slate-500 truncate">{userEmail}</p>
+              </div>
+              <Link
+                href="/dashboard/perfil"
+                role="menuitem"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <User className="w-4 h-4 text-slate-500" />
+                Mi perfil
+              </Link>
+              <form action="/api/auth/signout" method="post" className="border-t border-slate-100">
+                <button
+                  type="submit"
+                  role="menuitem"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left"
+                >
+                  <LogOut className="w-4 h-4 text-slate-500" />
+                  Cerrar sesión
+                </button>
+              </form>
+            </div>
           )}
         </div>
-        <form action="/api/auth/signout" method="post">
-          <button
-            type="submit"
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </form>
       </div>
     </header>
   );
