@@ -1,4 +1,5 @@
 import { DashboardPrincipal } from "@/components/dashboard/DashboardPrincipal";
+import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -80,11 +81,13 @@ export default async function DashboardPage() {
     jugadoresConBajaAsistencia.sort((a, b) => a.pct - b.pct);
   }
 
+  const cuotasImpagasSet = await getJugadoresConCuotaImpaga(supabase, clubId);
   const stats = {
     jugadoresActivos: jugadoresNum,
     presentesHoy: presentesHoy ?? 0,
     pctAsistenciaMes: Math.min(100, pctAsistenciaMes),
     alertasBajaAsistencia: jugadoresConBajaAsistencia.length,
+    cuotasImpagas: cuotasImpagasSet.size,
   };
 
   return (

@@ -8,6 +8,7 @@ export function getDashboardMenuItems(
 ): MenuItem[] {
   const isAdmin = rol === "admin" || rol === "superadmin";
   const isProfesor = rol === "profesor";
+  const isSecretaria = rol === "secretaria";
   const canCrearEvaluaciones =
     isAdmin || tienePermiso(permisos, PERMISO.EVALUACIONES_CREAR);
   const canEditarEvaluaciones =
@@ -18,6 +19,8 @@ export function getDashboardMenuItems(
     canCrearEvaluaciones || canEditarEvaluaciones || canDescargarEvaluaciones;
   const canDescargarAsistencias =
     isAdmin || tienePermiso(permisos, PERMISO.ASISTENCIAS_DESCARGAR);
+  const canVerCuotas = isAdmin || isSecretaria || isProfesor;
+  const canCobrarCuotas = isAdmin || isSecretaria;
 
   const items: MenuItem[] = [];
 
@@ -35,19 +38,29 @@ export function getDashboardMenuItems(
         { type: "link", label: "Importar jugadores", href: "/dashboard/jugadores/importar" },
       ],
     });
+  } else if (isSecretaria) {
+    items.push({
+      type: "group",
+      label: "Jugadores",
+      items: [
+        { type: "link", label: "Buscar", href: "/dashboard/jugadores/buscar" },
+      ],
+    });
   }
 
-  const asistenciasItems: MenuItemLink[] = [
-    { type: "link", label: "Cargar asistencias", href: "/dashboard/asistencias/cargar" },
-  ];
-  if (canDescargarAsistencias) {
-    asistenciasItems.push(
-      { type: "link", label: "Reportes de asistencias", href: "/dashboard/asistencias/reportes" },
-      { type: "link", label: "Reporte por jugador", href: "/dashboard/asistencias/reporte-jugador" },
-      { type: "link", label: "Reporte todos los jugadores", href: "/dashboard/asistencias/reporte-todos" }
-    );
+  if (!isSecretaria) {
+    const asistenciasItems: MenuItemLink[] = [
+      { type: "link", label: "Cargar asistencias", href: "/dashboard/asistencias/cargar" },
+    ];
+    if (canDescargarAsistencias) {
+      asistenciasItems.push(
+        { type: "link", label: "Reportes de asistencias", href: "/dashboard/asistencias/reportes" },
+        { type: "link", label: "Reporte por jugador", href: "/dashboard/asistencias/reporte-jugador" },
+        { type: "link", label: "Reporte todos los jugadores", href: "/dashboard/asistencias/reporte-todos" }
+      );
+    }
+    items.push({ type: "group", label: "Asistencias", items: asistenciasItems });
   }
-  items.push({ type: "group", label: "Asistencias", items: asistenciasItems });
 
   if (isAdmin || (isProfesor && canVerEvaluaciones)) {
     const evaluacionesItems: MenuItemLink[] = [];
@@ -68,6 +81,23 @@ export function getDashboardMenuItems(
       label: "Evaluaciones",
       items: evaluacionesItems,
     });
+  }
+
+  if (canVerCuotas) {
+    const cuotasItems: MenuItemLink[] = [];
+    if (canCobrarCuotas) {
+      cuotasItems.push({
+        type: "link",
+        label: "Cobrar cuotas",
+        href: "/dashboard/cuotas",
+      });
+    }
+    cuotasItems.push({
+      type: "link",
+      label: "Morosidad",
+      href: "/dashboard/cuotas/morosidad",
+    });
+    items.push({ type: "group", label: "Cuotas", items: cuotasItems });
   }
 
   if (isAdmin) {

@@ -1,4 +1,20 @@
-export type Rol = "superadmin" | "admin" | "profesor";
+export type Rol = "superadmin" | "admin" | "profesor" | "secretaria";
+
+export type EstadoCuota = "pagado" | "pendiente";
+
+export interface Cuota {
+  id: string;
+  club_id: string;
+  jugador_id: string;
+  periodo: string; // formato YYYY-MM
+  estado: EstadoCuota;
+  fecha_pago: string | null;
+  monto: number | null;
+  observacion: string | null;
+  registrado_por: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface Profile {
   id: string;
@@ -8,6 +24,8 @@ export interface Profile {
   categorias_asignadas: string[];
   permisos: string[];
   activo: boolean;
+  foto_url: string | null;
+  telefono: string | null;
   created_at: string;
 }
 

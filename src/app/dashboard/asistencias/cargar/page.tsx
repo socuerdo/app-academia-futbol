@@ -1,4 +1,5 @@
 import { CargarAsistenciasView } from "@/components/dashboard/asistencias/CargarAsistenciasView";
+import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -77,8 +78,10 @@ export default async function CargarAsistenciasPage({ searchParams }: PageProps)
     .eq("activo", true)
     .then(({ data }) => [...new Set((data ?? []).map((r) => r.categoria).filter(Boolean))].sort());
 
+  const deudaSet = await getJugadoresConCuotaImpaga(supabase, profile.club_id);
+
   return (
-    <div>
+    <div className="max-w-4xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Cargar asistencias</h1>
       <CargarAsistenciasView
         clubId={profile.club_id}
@@ -89,6 +92,7 @@ export default async function CargarAsistenciasPage({ searchParams }: PageProps)
         initialFecha={fecha}
         initialJugadores={jugadores}
         asistenciasExistentes={asistenciasExistentes}
+        jugadoresConDeuda={Array.from(deudaSet)}
       />
     </div>
   );

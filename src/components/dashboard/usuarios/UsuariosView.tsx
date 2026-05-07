@@ -37,6 +37,7 @@ export function UsuariosView({
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [nuevoRol, setNuevoRol] = useState<"profesor" | "secretaria">("profesor");
 
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
 
@@ -67,6 +68,7 @@ export function UsuariosView({
     setShowModal(false);
     setSelectedCategorias([]);
     setCatDropdownOpen(false);
+    setNuevoRol("profesor");
   }
 
   async function handleToggleActivo(p: ProfileRow) {
@@ -98,8 +100,9 @@ export function UsuariosView({
     const email = (formData.get("email") as string | null) ?? "";
     const password = (formData.get("password") as string | null) ?? "";
     const nombre_completo = (formData.get("nombre_completo") as string | null) ?? "";
-    const categoriasAsignadas = selectedCategorias;
-    const permisos = formData.getAll("permiso") as string[];
+    const isSecretaria = nuevoRol === "secretaria";
+    const categoriasAsignadas = isSecretaria ? [] : selectedCategorias;
+    const permisos = isSecretaria ? [] : (formData.getAll("permiso") as string[]);
 
     try {
       const res = await fetch("/api/users/create", {
@@ -109,6 +112,7 @@ export function UsuariosView({
           email: email.trim(),
           password: password || undefined,
           nombre_completo: nombre_completo.trim(),
+          rol: nuevoRol,
           categorias_asignadas: categoriasAsignadas,
           permisos,
           club_id: clubId,
@@ -216,13 +220,24 @@ export function UsuariosView({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-slate-800">Nuevo usuario (profesor)</h2>
+              <h2 className="text-lg font-semibold text-slate-800">Nuevo usuario</h2>
               <button type="button" onClick={closeModal} className="p-1 rounded text-slate-500 hover:bg-slate-100">✕</button>
             </div>
             <form onSubmit={handleCreateUser} className="p-4 space-y-4">
               <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de usuario *</label>
+                <select
+                  value={nuevoRol}
+                  onChange={(e) => setNuevoRol(e.target.value as "profesor" | "secretaria")}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                >
+                  <option value="profesor">Profesor</option>
+                  <option value="secretaria">Secretaría</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Email *</label>
-                <input name="email" type="email" required className="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="profesor@club.com" />
+                <input name="email" type="email" required className="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="usuario@club.com" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña *</label>
@@ -232,6 +247,7 @@ export function UsuariosView({
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nombre completo *</label>
                 <input name="nombre_completo" required className="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Juan Pérez" />
               </div>
+              {nuevoRol === "profesor" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Categorías asignadas</label>
                 {categorias.length === 0 ? (
@@ -310,6 +326,8 @@ export function UsuariosView({
                   </div>
                 )}
               </div>
+              )}
+              {nuevoRol === "profesor" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Permisos</label>
                 <div className="flex flex-col gap-2">
@@ -326,6 +344,7 @@ export function UsuariosView({
                   ))}
                 </div>
               </div>
+              )}
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={closeModal} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Cancelar</button>
                 <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ backgroundColor: "var(--color-primary)" }}>

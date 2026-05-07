@@ -5,6 +5,7 @@ import {
   BarChart2,
   CheckCircle,
   ClipboardList,
+  DollarSign,
   UserCog,
   UserPlus,
   Users,
@@ -16,6 +17,7 @@ interface Stats {
   presentesHoy: number;
   pctAsistenciaMes: number;
   alertasBajaAsistencia: number;
+  cuotasImpagas: number;
 }
 
 interface JugadorBaja {
@@ -92,7 +94,7 @@ export function DashboardPrincipal({
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="relative rounded-xl border border-slate-200 bg-blue-50 p-4 shadow-sm border-l-4 border-l-blue-500 hover:shadow-md transition-shadow duration-200">
           <Users className="h-9 w-9 text-blue-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">Jugadores activos</p>
@@ -117,6 +119,15 @@ export function DashboardPrincipal({
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.alertasBajaAsistencia}</p>
           <p className="text-xs text-slate-500 mt-1">Jugadores para seguimiento</p>
         </div>
+        <Link
+          href="/dashboard/cuotas/morosidad"
+          className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow duration-200"
+        >
+          <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
+          <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
+          <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
+          <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
+        </Link>
       </div>
 
       {jugadoresBajaAsistencia.length > 0 && (

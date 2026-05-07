@@ -28,6 +28,7 @@ interface CargarAsistenciasViewProps {
   initialFecha: string;
   initialJugadores: JugadorRow[];
   asistenciasExistentes: Record<string, { presente: boolean; observacion: string | null }>;
+  jugadoresConDeuda?: string[];
 }
 
 export function CargarAsistenciasView({
@@ -38,7 +39,9 @@ export function CargarAsistenciasView({
   initialFecha,
   initialJugadores,
   asistenciasExistentes,
+  jugadoresConDeuda = [],
 }: CargarAsistenciasViewProps) {
+  const deudaSet = new Set(jugadoresConDeuda);
   const router = useRouter();
   const [sedeId, setSedeId] = useState(initialSedeId);
   const [categoria, setCategoria] = useState(initialCategoria);
@@ -119,7 +122,7 @@ export function CargarAsistenciasView({
 
   return (
     <>
-      <div className="space-y-4 max-w-4xl">
+      <div className="space-y-4">
         <section className="rounded-xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
           <div className="mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-700">Filtros de carga</h2>
@@ -218,6 +221,14 @@ export function CargarAsistenciasView({
                         </td>
                         <td className="py-2 px-4">
                           <span className="font-medium">{j.apellido}, {j.nombre}</span>
+                          {deudaSet.has(j.id) && (
+                            <span
+                              title="Cuota del mes pendiente"
+                              className="ml-2 inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 align-middle"
+                            >
+                              Cuota
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 px-4 text-center">
                           <button

@@ -1,6 +1,8 @@
 "use client";
 
 import { actualizarJugador, eliminarJugador } from "@/app/dashboard/jugadores/actions";
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import { createClient } from "@/lib/supabase/client";
 import type { Jugador } from "@/types/database";
 import type { Sede } from "@/types/database";
@@ -17,6 +19,7 @@ interface BuscarJugadorViewProps {
   initialQuery: string;
   sedes: Pick<Sede, "id" | "nombre">[];
   rol: string;
+  jugadoresConDeuda?: string[];
 }
 
 export function BuscarJugadorView({
@@ -25,7 +28,9 @@ export function BuscarJugadorView({
   initialQuery,
   sedes,
   rol,
+  jugadoresConDeuda = [],
 }: BuscarJugadorViewProps) {
+  const deudaSet = new Set(jugadoresConDeuda);
   const router = useRouter();
   const { categorias } = useCategorias(clubId);
   const [query, setQuery] = useState(initialQuery);
@@ -38,6 +43,9 @@ export function BuscarJugadorView({
   const [deleting, setDeleting] = useState(false);
 
   const esAdmin = rol === "admin" || rol === "superadmin";
+
+  const { paged, page, pageSize, setPage, setPageSize, total } =
+    usePagination(jugadores);
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) {
@@ -53,7 +61,7 @@ export function BuscarJugadorView({
       .eq("club_id", clubId)
       .or(`dni.ilike.${q.trim()},apellido.ilike.${term},nombre.ilike.${term}`)
       .order("apellido")
-      .limit(50);
+      .limit(200);
     const list = (data ?? []).map((j: any) => ({
       ...j,
       sede: Array.isArray(j.sede) ? j.sede[0] : j.sede,
@@ -149,7 +157,7 @@ export function BuscarJugadorView({
               </tr>
             </thead>
             <tbody>
-              {jugadores.map((j) => (
+              {paged.map((j) => (
                 <tr key={j.id} className="border-t border-slate-100 hover:bg-slate-50">
                   <td className="py-2 px-4">
                     {j.foto_url ? (
@@ -167,7 +175,19 @@ export function BuscarJugadorView({
                       </div>
                     )}
                   </td>
-                  <td className="py-2 px-4">{j.apellido}</td>
+                  <td className="py-2 px-4">
+                    <span className="inline-flex items-center gap-1.5">
+                      {j.apellido}
+                      {deudaSet.has(j.id) && (
+                        <span
+                          title="Cuota del mes pendiente"
+                          className="inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700"
+                        >
+                          Cuota
+                        </span>
+                      )}
+                    </span>
+                  </td>
                   <td className="py-2 px-4">{j.nombre}</td>
                   <td className="py-2 px-4">{j.dni}</td>
                   <td className="py-2 px-4">{j.categoria}</td>
@@ -186,6 +206,16 @@ export function BuscarJugadorView({
               ))}
             </tbody>
           </table>
+          {total > 0 && (
+            <Pagination
+              total={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="jugadores"
+            />
+          )}
         </div>
       )}
 

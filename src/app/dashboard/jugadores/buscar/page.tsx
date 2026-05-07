@@ -1,4 +1,5 @@
 import { BuscarJugadorView } from "@/components/dashboard/jugadores/BuscarJugadorView";
+import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -36,6 +37,11 @@ export default async function BuscarJugadorPage({ searchParams }: PageProps) {
     inicial = { jugadores: [], sedes: sedes ?? [] };
   }
 
+  const jugadoresConDeudaSet = await getJugadoresConCuotaImpaga(
+    supabase,
+    profile.club_id
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Buscar / Editar jugador</h1>
@@ -45,6 +51,7 @@ export default async function BuscarJugadorPage({ searchParams }: PageProps) {
         initialQuery={dniParam}
         sedes={inicial.sedes}
         rol={profile.rol}
+        jugadoresConDeuda={Array.from(jugadoresConDeudaSet)}
       />
     </div>
   );

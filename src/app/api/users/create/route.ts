@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     if (rol !== "admin" && rol !== "superadmin") {
       return NextResponse.json(
-        { error: "Solo administradores pueden crear profesores." },
+        { error: "Solo administradores pueden crear usuarios." },
         { status: 403 }
       );
     }
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       email,
       password,
       nombre_completo,
+      rol: rolNuevo,
       categorias_asignadas,
       permisos,
       club_id,
@@ -44,10 +45,14 @@ export async function POST(request: Request) {
       email?: string;
       password?: string;
       nombre_completo?: string;
+      rol?: string;
       categorias_asignadas?: string[];
       permisos?: string[];
       club_id?: string;
     } = body;
+
+    const rolFinal: "profesor" | "secretaria" =
+      rolNuevo === "secretaria" ? "secretaria" : "profesor";
 
     if (!email?.trim() || !password) {
       return NextResponse.json(
@@ -73,7 +78,7 @@ export async function POST(request: Request) {
 
     if (rol === "admin" && userClubId !== targetClubId) {
       return NextResponse.json(
-        { error: "Solo podés crear profesores de tu club." },
+        { error: "Solo podés crear usuarios de tu club." },
         { status: 403 }
       );
     }
@@ -104,14 +109,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const isSecretaria = rolFinal === "secretaria";
     const { error: profileError } = await supabaseAdmin.from("profiles").update({
       club_id: targetClubId,
-      rol: "profesor",
+      rol: rolFinal,
       nombre_completo: (nombre_completo?.trim() || email.trim()) as string,
-      categorias_asignadas: Array.isArray(categorias_asignadas)
-        ? categorias_asignadas
-        : [],
-      permisos: Array.isArray(permisos) ? permisos : [],
+      categorias_asignadas: isSecretaria
+        ? []
+        : Array.isArray(categorias_asignadas)
+          ? categorias_asignadas
+          : [],
+      permisos: isSecretaria
+        ? []
+        : Array.isArray(permisos)
+          ? permisos
+          : [],
     }).eq("id", userData.user.id);
 
     if (profileError) {
@@ -128,14 +140,14 @@ export async function POST(request: Request) {
         id: userData.user.id,
         email: userData.user.email,
         nombre_completo: nombre_completo?.trim() || userData.user.email,
-        rol: "profesor",
+        rol: rolFinal,
         club_id: targetClubId,
-        categorias_asignadas: categorias_asignadas ?? [],
-        permisos: permisos ?? [],
+        categorias_asignadas: isSecretaria ? [] : (categorias_asignadas ?? []),
+        permisos: isSecretaria ? [] : (permisos ?? []),
       },
     });
   } catch (e) {
-    console.error("Error en creación de profesor:", e);
+    console.error("Error en creación de usuario:", e);
     return NextResponse.json(
       { error: "Error interno. Intentá de nuevo." },
       { status: 500 }

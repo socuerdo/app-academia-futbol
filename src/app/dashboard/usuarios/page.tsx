@@ -22,7 +22,7 @@ export default async function UsuariosPage() {
   let query = supabase
     .from("profiles")
     .select("id, rol, nombre_completo, categorias_asignadas, permisos, activo")
-    .in("rol", ["admin", "profesor"]);
+    .in("rol", ["admin", "profesor", "secretaria"]);
 
   if (profile?.rol === "admin") {
     query = query.eq("club_id", clubId);
