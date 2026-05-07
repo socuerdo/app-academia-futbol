@@ -50,6 +50,7 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
   const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
   const puedeDescargarPDF =
     isAdmin || tienePermiso(profile.permisos, PERMISO.EVALUACIONES_DESCARGAR);
+  const tienePermisoEditar = tienePermiso(profile.permisos, PERMISO.EVALUACIONES_EDITAR);
 
   const { data: row } = await supabase
     .from("evaluaciones")
@@ -80,6 +81,9 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
     .single();
 
   if (!row) notFound();
+
+  const puedeEditar =
+    isAdmin || (row.evaluador_id === user.id && tienePermisoEditar);
 
   const jRaw = row.jugadores as
     | { id: string; nombre: string; apellido: string; categoria: string; foto_url: string | null }
@@ -151,6 +155,14 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
           <p className="text-sm text-slate-500">Detalle completo de la evaluación seleccionada.</p>
         </div>
         <div className="flex items-center gap-3">
+          {puedeEditar && (
+            <Link
+              href={`/dashboard/evaluaciones/${row.id}/editar`}
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              Editar
+            </Link>
+          )}
           {puedeDescargarPDF && <DownloadEvaluacionPDFButton data={pdfData} />}
           <Link href="/dashboard/evaluaciones" className="text-sm text-slate-600 hover:underline">
             ← Volver al listado
