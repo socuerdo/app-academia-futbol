@@ -68,7 +68,7 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       {error && (
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
       )}

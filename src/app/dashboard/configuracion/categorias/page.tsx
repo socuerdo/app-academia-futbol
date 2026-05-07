@@ -30,7 +30,7 @@ export default async function CategoriasPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-2xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-2">Categorías</h1>
       <p className="text-slate-600 text-sm mb-4">
         Gestioná las categorías del club, su orden y su estado activo/inactivo.

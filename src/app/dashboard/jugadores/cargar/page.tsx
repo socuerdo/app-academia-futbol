@@ -24,7 +24,7 @@ export default async function CargarJugadorPage() {
     .order("nombre");
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Cargar jugador</h1>
       <CargarJugadorForm clubId={profile.club_id} sedes={sedes ?? []} />
     </div>

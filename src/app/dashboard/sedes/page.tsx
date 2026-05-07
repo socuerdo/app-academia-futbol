@@ -33,7 +33,7 @@ export default async function SedesPage() {
   });
 
   return (
-    <div>
+    <div className="max-w-3xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Sedes</h1>
       <SedesView
         sedes={sedes ?? []}

@@ -86,7 +86,7 @@ export function ReporteJugadorView({
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <form onSubmit={handleSearch} className="flex gap-2">
         <input
           type="text"

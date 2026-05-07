@@ -84,7 +84,7 @@ export function ConfiguracionView({ club }: ConfiguracionViewProps) {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
       {error && <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>}
       {message && <div className="p-3 rounded-lg text-sm bg-emerald-50 text-emerald-800">{message}</div>}
 

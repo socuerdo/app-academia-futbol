@@ -33,7 +33,7 @@ export default async function CambiarSedePage() {
   const categorias = [...new Set((jugadores ?? []).map((j) => j.categoria).filter(Boolean))].sort();
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Cambiar sede / categoría</h1>
       <CambiarSedeView
         clubId={profile.club_id}

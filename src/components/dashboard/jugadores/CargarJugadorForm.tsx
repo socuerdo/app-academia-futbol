@@ -39,7 +39,7 @@ export function CargarJugadorForm({ clubId, sedes }: CargarJugadorFormProps) {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div
             className="p-3 rounded-lg text-sm"

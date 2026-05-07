@@ -81,7 +81,7 @@ export default async function ReporteJugadorPage({ searchParams }: PageProps) {
   const porcentaje = detalle.length > 0 ? Math.round((presencias / detalle.length) * 100) : 0;
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto pb-12">
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Reporte por jugador</h1>
       <ReporteJugadorView
         jugador={jugador}

@@ -100,7 +100,7 @@ export function CambiarSedeView({
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-2">Buscar jugador</label>
         <div className="flex gap-2">
