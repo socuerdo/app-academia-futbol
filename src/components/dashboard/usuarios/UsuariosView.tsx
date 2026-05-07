@@ -95,33 +95,39 @@ export function UsuariosView({
     setSaving(true);
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const nombre_completo = formData.get("nombre_completo") as string;
+    const email = (formData.get("email") as string | null) ?? "";
+    const password = (formData.get("password") as string | null) ?? "";
+    const nombre_completo = (formData.get("nombre_completo") as string | null) ?? "";
     const categoriasAsignadas = selectedCategorias;
-    const permisos = form.getAll("permiso") as string[];
+    const permisos = formData.getAll("permiso") as string[];
 
-    const res = await fetch("/api/users/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim(),
-        password: password || undefined,
-        nombre_completo: nombre_completo.trim(),
-        categorias_asignadas: categoriasAsignadas,
-        permisos,
-        club_id: clubId,
-      }),
-    });
-    setSaving(false);
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error ?? "Error al crear usuario");
-      return;
+    try {
+      const res = await fetch("/api/users/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password || undefined,
+          nombre_completo: nombre_completo.trim(),
+          categorias_asignadas: categoriasAsignadas,
+          permisos,
+          club_id: clubId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? `Error ${res.status} al crear usuario`);
+        return;
+      }
+      form.reset();
+      closeModal();
+      router.refresh();
+    } catch (err) {
+      console.error("Error creando usuario:", err);
+      setError(err instanceof Error ? err.message : "Error de red al crear usuario");
+    } finally {
+      setSaving(false);
     }
-    form.reset();
-    closeModal();
-    router.refresh();
   }
 
   return (
@@ -234,10 +240,17 @@ export function UsuariosView({
                   </p>
                 ) : (
                   <div className="relative" ref={catDropdownRef}>
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setCatDropdownOpen((o) => !o)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left flex items-center justify-between gap-2 bg-white hover:border-slate-400"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setCatDropdownOpen((o) => !o);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left flex items-center justify-between gap-2 bg-white hover:border-slate-400 cursor-pointer"
                     >
                       <div className="flex flex-wrap gap-1 min-h-[1.25rem]">
                         {selectedCategorias.length === 0 ? (
@@ -251,18 +264,9 @@ export function UsuariosView({
                             >
                               {c}
                               <span
-                                role="button"
-                                tabIndex={0}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleCategoria(c);
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" || e.key === " ") {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    toggleCategoria(c);
-                                  }
                                 }}
                                 className="hover:opacity-80 cursor-pointer"
                                 aria-label={`Quitar ${c}`}
@@ -281,7 +285,7 @@ export function UsuariosView({
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                    </button>
+                    </div>
                     {catDropdownOpen && (
                       <div className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
                         {categorias.map((c) => {
