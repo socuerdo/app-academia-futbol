@@ -1,5 +1,7 @@
+import { DownloadEvaluacionPDFButton } from "@/components/dashboard/evaluaciones/DownloadEvaluacionPDFButton";
 import { RadarEvaluacionChart } from "@/components/dashboard/evaluaciones/RadarEvaluacionChart";
 import { badgePromedioClass, ESCALA_EVALUACION } from "@/lib/evaluaciones/escala";
+import type { EvaluacionPDFData } from "@/lib/export-evaluacion-pdf";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -116,16 +118,39 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
     { key: "emocional", value: emocional, comment: row.comentario_emocional },
   ];
 
+  const pdfData: EvaluacionPDFData = {
+    jugadorApellido: jugador?.apellido ?? "—",
+    jugadorNombre: jugador?.nombre ?? "—",
+    jugadorCategoria: jugador?.categoria ?? "—",
+    fecha: row.fecha,
+    temporada: row.temporada ?? null,
+    tipoNombre: tipo?.nombre ?? null,
+    evaluadorNombre,
+    promedio,
+    niveles: { fisico, tecnico, tactico, social, emocional },
+    comentarios: {
+      fisico: row.comentario_fisico,
+      tecnico: row.comentario_tecnico,
+      tactico: row.comentario_tactico,
+      social: row.comentario_social,
+      emocional: row.comentario_emocional,
+    },
+    observacionesGenerales: row.observaciones_generales,
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Resumen de evaluación</h1>
           <p className="text-sm text-slate-500">Detalle completo de la evaluación seleccionada.</p>
         </div>
-        <Link href="/dashboard/evaluaciones" className="text-sm text-slate-600 hover:underline">
-          ← Volver al listado
-        </Link>
+        <div className="flex items-center gap-3">
+          <DownloadEvaluacionPDFButton data={pdfData} />
+          <Link href="/dashboard/evaluaciones" className="text-sm text-slate-600 hover:underline">
+            ← Volver al listado
+          </Link>
+        </div>
       </div>
 
       <section className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm">
