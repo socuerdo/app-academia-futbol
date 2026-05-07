@@ -1,6 +1,8 @@
 "use client";
 
 import { importarJugadoresBatch, type FilaImportacion } from "@/app/dashboard/jugadores/importar/actions";
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import type { Sede } from "@/types/database";
 import Papa from "papaparse";
 import { useRouter } from "next/navigation";
@@ -42,6 +44,8 @@ export function ImportarJugadoresView({
   const [resultado, setResultado] = useState<{ importados: number; duplicados: number; errores: string[] } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { paged, page, pageSize, setPage, setPageSize, total } =
+    usePagination(filas);
 
   function descargarPlantilla() {
     const blob = new Blob(["\uFEFF" + PLANTILLA_CSV], { type: "text/csv;charset=utf-8" });
@@ -136,7 +140,7 @@ export function ImportarJugadoresView({
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {error && <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>}
 
       <div className="flex flex-wrap gap-4 items-center">
@@ -168,7 +172,7 @@ export function ImportarJugadoresView({
             <h3 className="px-4 py-3 text-sm font-semibold text-slate-800 border-b border-slate-100">
               Vista previa ({filas.length} filas)
             </h3>
-            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 text-slate-600">
@@ -180,7 +184,7 @@ export function ImportarJugadoresView({
                   </tr>
                 </thead>
                 <tbody>
-                  {filas.slice(0, 50).map((f, i) => (
+                  {paged.map((f, i) => (
                     <tr key={i} className="border-t border-slate-100">
                       <td className="py-2 px-4">{f.dni}</td>
                       <td className="py-2 px-4">{f.apellido}</td>
@@ -192,7 +196,14 @@ export function ImportarJugadoresView({
                 </tbody>
               </table>
             </div>
-            {filas.length > 50 && <p className="px-4 py-2 text-xs text-slate-500">Mostrando 50 de {filas.length}</p>}
+            <Pagination
+              total={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="filas"
+            />
           </div>
 
           <div className="flex gap-2 items-center">

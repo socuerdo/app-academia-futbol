@@ -2,6 +2,7 @@ import {
   EvaluacionesListView,
   type FilaEvaluacion,
 } from "@/components/dashboard/evaluaciones/EvaluacionesListView";
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -11,6 +12,8 @@ interface PageProps {
     tipo?: string;
     jugador?: string;
     temporada?: string;
+    page?: string;
+    pp?: string;
   }>;
 }
 
@@ -34,6 +37,29 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
   const jugadorId = sp.jugador?.trim() || "";
   const temporada = sp.temporada?.trim() || "";
 
+  const pageRaw = Number(sp.page ?? "1");
+  const ppRaw = Number(sp.pp ?? String(DEFAULT_PAGE_SIZE));
+  const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+  const pageSize = PAGE_SIZE_OPTIONS.includes(ppRaw)
+    ? ppRaw
+    : DEFAULT_PAGE_SIZE;
+
+  // Si hay filtro de categoría, pre-traemos los IDs de jugadores de esa
+  // categoría para filtrar evaluaciones del lado del servidor (necesario
+  // para que el count y el range sean correctos).
+  let jugadorIdsEnCategoria: string[] | null = null;
+  if (categoria) {
+    const { data: jugs } = await supabase
+      .from("jugadores")
+      .select("id")
+      .eq("club_id", profile.club_id)
+      .eq("categoria", categoria);
+    jugadorIdsEnCategoria = (jugs ?? []).map((j) => j.id);
+  }
+
+  const noHayFilasPorCategoria =
+    jugadorIdsEnCategoria !== null && jugadorIdsEnCategoria.length === 0;
+
   let query = supabase
     .from("evaluaciones")
     .select(
@@ -46,17 +72,27 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
       evaluador_id,
       jugadores (nombre, apellido, categoria, foto_url),
       tipos_evaluacion (nombre)
-    `
+    `,
+      { count: "exact" }
     )
     .eq("club_id", profile.club_id)
-    .order("fecha", { ascending: false })
-    .limit(800);
+    .order("fecha", { ascending: false });
 
   if (tipoId) query = query.eq("tipo_evaluacion_id", tipoId);
   if (jugadorId) query = query.eq("jugador_id", jugadorId);
   if (temporada) query = query.eq("temporada", temporada);
+  if (jugadorIdsEnCategoria !== null && jugadorIdsEnCategoria.length > 0) {
+    query = query.in("jugador_id", jugadorIdsEnCategoria);
+  }
 
-  const { data: rawRows } = await query;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  query = query.range(from, to);
+
+  const { data: rawRows, count } = noHayFilasPorCategoria
+    ? { data: [], count: 0 }
+    : await query;
+  const total = count ?? 0;
 
   type JugadorJoin = {
     nombre: string;
@@ -91,9 +127,7 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
     };
   });
 
-  const filas: FilaEvaluacion[] = categoria
-    ? rowsRaw.filter((r) => r.jugador?.categoria === categoria)
-    : rowsRaw;
+  const filas: FilaEvaluacion[] = rowsRaw;
 
   const evaluadorIds = [
     ...new Set(filas.map((f) => f.evaluador_id).filter(Boolean)),
@@ -168,6 +202,9 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
       tipos={tipos ?? []}
       temporadas={temporadas}
       jugadores={jugadores}
+      total={total}
+      page={page}
+      pageSize={pageSize}
     />
   );
 }

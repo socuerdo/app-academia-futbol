@@ -1,5 +1,7 @@
 "use client";
 
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import { exportReporteExcel, exportReportePDF, type FilaReporte } from "@/lib/export-report";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
@@ -41,6 +43,9 @@ export function ReportesAsistenciasView({
     const q = p.toString();
     if (q) router.replace(`/dashboard/asistencias/reportes?${q}`, { scroll: false });
   }, []);
+
+  const { paged, page, pageSize, setPage, setPageSize, total } =
+    usePagination(filas);
 
   const updateFilters = (sede: string, cat: string, desde: string, hasta: string) => {
     const p = new URLSearchParams();
@@ -150,7 +155,7 @@ export function ReportesAsistenciasView({
             </tr>
           </thead>
           <tbody>
-            {filas.map((f, i) => (
+            {paged.map((f, i) => (
               <tr key={i} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="py-2 px-4">{f.jugador}</td>
                 <td className="py-2 px-4">{f.categoria}</td>
@@ -167,6 +172,16 @@ export function ReportesAsistenciasView({
             ))}
           </tbody>
         </table>
+        {total > 0 && (
+          <Pagination
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="jugadores"
+          />
+        )}
       </div>
       {filas.length === 0 && (initialSedeId || initialCategoria || initialDesde) && (
         <p className="text-slate-500">No hay datos para los filtros seleccionados.</p>

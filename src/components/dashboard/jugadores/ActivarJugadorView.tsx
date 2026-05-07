@@ -1,6 +1,8 @@
 "use client";
 
 import { toggleActivoJugador } from "@/app/dashboard/jugadores/actions";
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -43,6 +45,9 @@ export function ActivarJugadorView({
       return true;
     });
   }, [jugadores, filtroCategoria, filtroSede]);
+
+  const { paged, page, pageSize, setPage, setPageSize, total } =
+    usePagination(filtered);
 
   async function handleToggle(j: JugadorRow) {
     const next = !j.activo;
@@ -105,7 +110,7 @@ export function ActivarJugadorView({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((j) => (
+            {paged.map((j) => (
               <tr key={j.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="py-2 px-4">{j.apellido}</td>
                 <td className="py-2 px-4">{j.nombre}</td>
@@ -145,8 +150,18 @@ export function ActivarJugadorView({
             ))}
           </tbody>
         </table>
+        {total > 0 && (
+          <Pagination
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="jugadores"
+          />
+        )}
       </div>
-      {filtered.length === 0 && (
+      {total === 0 && (
         <p className="text-slate-500 text-sm">No hay jugadores con los filtros seleccionados.</p>
       )}
     </div>

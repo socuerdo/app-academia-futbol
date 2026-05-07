@@ -1,5 +1,7 @@
 "use client";
 
+import { Pagination } from "@/components/ui/Pagination";
+import { usePagination } from "@/hooks/usePagination";
 import {
   exportReporteTodosExcel,
   exportReporteTodosPDF,
@@ -31,6 +33,9 @@ export function ReporteTodosView({
   filas,
 }: ReporteTodosViewProps) {
   const router = useRouter();
+
+  const { paged, page, pageSize, setPage, setPageSize, total } =
+    usePagination(filas);
 
   const updateFilters = (sede: string, cat: string, estado: string) => {
     const p = new URLSearchParams();
@@ -120,7 +125,7 @@ export function ReporteTodosView({
             </tr>
           </thead>
           <tbody>
-            {filas.map((f, i) => (
+            {paged.map((f, i) => (
               <tr key={i} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="py-2 px-4">{f.jugador}</td>
                 <td className="py-2 px-4">{f.categoria}</td>
@@ -144,6 +149,16 @@ export function ReporteTodosView({
             ))}
           </tbody>
         </table>
+        {total > 0 && (
+          <Pagination
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="jugadores"
+          />
+        )}
       </div>
       {filas.length === 0 && (
         <p className="text-slate-500">No hay jugadores con los filtros seleccionados.</p>

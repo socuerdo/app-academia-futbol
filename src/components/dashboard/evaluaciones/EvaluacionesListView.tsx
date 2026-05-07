@@ -1,5 +1,6 @@
 "use client";
 
+import { Pagination } from "@/components/ui/Pagination";
 import { badgePromedioClass } from "@/lib/evaluaciones/escala";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,6 +29,9 @@ interface EvaluacionesListViewProps {
   tipos: { id: string; nombre: string }[];
   temporadas: string[];
   jugadores: { id: string; label: string }[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export function EvaluacionesListView({
@@ -36,6 +40,9 @@ export function EvaluacionesListView({
   tipos,
   temporadas,
   jugadores,
+  total,
+  page,
+  pageSize,
 }: EvaluacionesListViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,24 +58,55 @@ export function EvaluacionesListView({
     [searchParams]
   );
 
+  const buildUrl = useCallback(
+    (overrides: Record<string, string | number | null>) => {
+      const p = new URLSearchParams(searchParams.toString());
+      Object.entries(overrides).forEach(([k, v]) => {
+        if (v === null || v === "" || v === undefined) p.delete(k);
+        else p.set(k, String(v));
+      });
+      const qs = p.toString();
+      return `/dashboard/evaluaciones${qs ? `?${qs}` : ""}`;
+    },
+    [searchParams]
+  );
+
   const aplicarFiltros = useCallback(
     (form: FormData) => {
-      const p = new URLSearchParams();
       const cat = String(form.get("categoria") ?? "").trim();
       const tipo = String(form.get("tipo") ?? "").trim();
       const jug = String(form.get("jugador") ?? "").trim();
       const temp = String(form.get("temporada") ?? "").trim();
-      if (cat) p.set("categoria", cat);
-      if (tipo) p.set("tipo", tipo);
-      if (jug) p.set("jugador", jug);
-      if (temp) p.set("temporada", temp);
+      const url = buildUrl({
+        categoria: cat || null,
+        tipo: tipo || null,
+        jugador: jug || null,
+        temporada: temp || null,
+        page: null,
+      });
       startTransition(() => {
-        router.push(
-          `/dashboard/evaluaciones${p.toString() ? `?${p.toString()}` : ""}`
-        );
+        router.push(url);
       });
     },
-    [router]
+    [router, buildUrl]
+  );
+
+  const goToPage = useCallback(
+    (next: number) => {
+      startTransition(() => {
+        router.push(buildUrl({ page: next === 1 ? null : next }));
+      });
+    },
+    [router, buildUrl]
+  );
+
+  const changePageSize = useCallback(
+    (next: number) => {
+      startTransition(() => {
+        router.push(buildUrl({ pp: next, page: null }));
+      });
+    },
+    [router, buildUrl]
   );
 
   return (
@@ -260,6 +298,16 @@ export function EvaluacionesListView({
             )}
           </tbody>
         </table>
+        {total > 0 && (
+          <Pagination
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            itemLabel="evaluaciones"
+          />
+        )}
       </div>
     </div>
   );
