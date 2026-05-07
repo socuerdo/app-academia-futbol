@@ -1,12 +1,6 @@
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import type { Rol } from "@/types/database";
 import type { MenuItem, MenuItemLink } from "@/types/dashboard";
-
-const PERMISO_CARGAR_JUGADOR = "jugadores.crear";
-const PERMISO_VER_REPORTES = "reportes.ver";
-
-function hasPermiso(permisos: string[] | undefined, permiso: string): boolean {
-  return Array.isArray(permisos) && permisos.includes(permiso);
-}
 
 export function getDashboardMenuItems(
   rol: Rol,
@@ -14,35 +8,39 @@ export function getDashboardMenuItems(
 ): MenuItem[] {
   const isAdmin = rol === "admin" || rol === "superadmin";
   const isProfesor = rol === "profesor";
-  const canCargarJugador = isAdmin || hasPermiso(permisos, PERMISO_CARGAR_JUGADOR);
-  const canVerReportes = isAdmin || hasPermiso(permisos, PERMISO_VER_REPORTES);
+  const canCrearEvaluaciones =
+    isAdmin || tienePermiso(permisos, PERMISO.EVALUACIONES_CREAR);
+  const canEditarEvaluaciones =
+    isAdmin || tienePermiso(permisos, PERMISO.EVALUACIONES_EDITAR);
+  const canDescargarEvaluaciones =
+    isAdmin || tienePermiso(permisos, PERMISO.EVALUACIONES_DESCARGAR);
+  const canVerEvaluaciones =
+    canCrearEvaluaciones || canEditarEvaluaciones || canDescargarEvaluaciones;
+  const canDescargarAsistencias =
+    isAdmin || tienePermiso(permisos, PERMISO.ASISTENCIAS_DESCARGAR);
 
   const items: MenuItem[] = [];
 
   items.push({ type: "link", label: "Dashboard", href: "/dashboard" });
 
-  if (canCargarJugador || isAdmin) {
-    const jugadoresItems: MenuItemLink[] = [];
-    if (isAdmin) {
-      jugadoresItems.push(
+  if (isAdmin) {
+    items.push({
+      type: "group",
+      label: "Jugadores",
+      items: [
         { type: "link", label: "Cargar jugador", href: "/dashboard/jugadores/cargar" },
         { type: "link", label: "Buscar/Editar", href: "/dashboard/jugadores/buscar" },
         { type: "link", label: "Activar/Desactivar", href: "/dashboard/jugadores/activar" },
         { type: "link", label: "Cambiar sede/categoría", href: "/dashboard/jugadores/cambiar-sede" },
-        { type: "link", label: "Importar jugadores", href: "/dashboard/jugadores/importar" }
-      );
-    } else {
-      jugadoresItems.push(
-        { type: "link", label: "Cargar jugador", href: "/dashboard/jugadores/cargar" }
-      );
-    }
-    items.push({ type: "group", label: "Jugadores", items: jugadoresItems });
+        { type: "link", label: "Importar jugadores", href: "/dashboard/jugadores/importar" },
+      ],
+    });
   }
 
   const asistenciasItems: MenuItemLink[] = [
     { type: "link", label: "Cargar asistencias", href: "/dashboard/asistencias/cargar" },
   ];
-  if (canVerReportes) {
+  if (canDescargarAsistencias) {
     asistenciasItems.push(
       { type: "link", label: "Reportes de asistencias", href: "/dashboard/asistencias/reportes" },
       { type: "link", label: "Reporte por jugador", href: "/dashboard/asistencias/reporte-jugador" },
@@ -51,14 +49,24 @@ export function getDashboardMenuItems(
   }
   items.push({ type: "group", label: "Asistencias", items: asistenciasItems });
 
-  if (isAdmin || isProfesor) {
+  if (isAdmin || (isProfesor && canVerEvaluaciones)) {
+    const evaluacionesItems: MenuItemLink[] = [];
+    if (canCrearEvaluaciones) {
+      evaluacionesItems.push({
+        type: "link",
+        label: "Cargar evaluación",
+        href: "/dashboard/evaluaciones/nueva",
+      });
+    }
+    evaluacionesItems.push({
+      type: "link",
+      label: "Ver evaluaciones",
+      href: "/dashboard/evaluaciones",
+    });
     items.push({
       type: "group",
       label: "Evaluaciones",
-      items: [
-        { type: "link", label: "Cargar evaluación", href: "/dashboard/evaluaciones/nueva" },
-        { type: "link", label: "Ver evaluaciones", href: "/dashboard/evaluaciones" },
-      ],
+      items: evaluacionesItems,
     });
   }
 

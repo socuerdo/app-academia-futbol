@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -33,17 +34,17 @@ export async function crearEvaluacion(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
 
   if (!profile?.club_id) return { ok: false, error: "Sin club" };
-  if (
-    profile.rol !== "admin" &&
-    profile.rol !== "profesor" &&
-    profile.rol !== "superadmin"
-  ) {
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  if (!isAdmin && profile.rol !== "profesor") {
     return { ok: false, error: "Sin permiso" };
+  }
+  if (!isAdmin && !tienePermiso(profile.permisos, PERMISO.EVALUACIONES_CREAR)) {
+    return { ok: false, error: "Sin permiso para cargar evaluaciones" };
   }
 
   const { data, error } = await supabase
@@ -90,7 +91,7 @@ export async function actualizarEvaluacion(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
 
@@ -106,10 +107,10 @@ export async function actualizarEvaluacion(
     return { ok: false, error: "No encontrada" };
   }
 
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const tienePermisoEditar = tienePermiso(profile.permisos, PERMISO.EVALUACIONES_EDITAR);
   const puedeEditar =
-    profile.rol === "admin" ||
-    profile.rol === "superadmin" ||
-    row.evaluador_id === user.id;
+    isAdmin || (row.evaluador_id === user.id && tienePermisoEditar);
 
   if (!puedeEditar) return { ok: false, error: "Sin permiso para editar" };
 

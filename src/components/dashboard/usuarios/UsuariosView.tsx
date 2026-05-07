@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type ProfileRow = {
   id: string;
@@ -13,11 +13,13 @@ type ProfileRow = {
   email: string;
 };
 
+type PermisoOpcion = { value: string; label: string };
+
 interface UsuariosViewProps {
   profiles: ProfileRow[];
   clubId: string;
   categorias: string[];
-  permisosOpciones: string[];
+  permisosOpciones: PermisoOpcion[];
 }
 
 export function UsuariosView({
@@ -32,8 +34,40 @@ export function UsuariosView({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedCategorias, setSelectedCategorias] = useState<string[]>([]);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
+
+  const permisoLabelByValue = useMemo(() => {
+    const m = new Map<string, string>();
+    permisosOpciones.forEach((p) => m.set(p.value, p.label));
+    return m;
+  }, [permisosOpciones]);
+
+  useEffect(() => {
+    if (!catDropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) {
+        setCatDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [catDropdownOpen]);
+
+  function toggleCategoria(c: string) {
+    setSelectedCategorias((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+    );
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setSelectedCategorias([]);
+    setCatDropdownOpen(false);
+  }
 
   async function handleToggleActivo(p: ProfileRow) {
     setUpdatingId(p.id);
@@ -64,7 +98,7 @@ export function UsuariosView({
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const nombre_completo = formData.get("nombre_completo") as string;
-    const categoriasAsignadas = form.getAll("categoria") as string[];
+    const categoriasAsignadas = selectedCategorias;
     const permisos = form.getAll("permiso") as string[];
 
     const res = await fetch("/api/users/create", {
@@ -85,8 +119,8 @@ export function UsuariosView({
       setError(data.error ?? "Error al crear usuario");
       return;
     }
-    setShowModal(false);
     form.reset();
+    closeModal();
     router.refresh();
   }
 
@@ -132,7 +166,11 @@ export function UsuariosView({
                   {(p.categorias_asignadas ?? []).length ? (p.categorias_asignadas ?? []).join(", ") : "—"}
                 </td>
                 <td className="py-2 px-4 text-xs">
-                  {(p.permisos ?? []).length ? (p.permisos ?? []).join(", ") : "—"}
+                  {(p.permisos ?? []).length
+                    ? (p.permisos ?? [])
+                        .map((perm) => permisoLabelByValue.get(perm) ?? perm)
+                        .join(", ")
+                    : "—"}
                 </td>
                 <td className="py-2 px-4 text-center">
                   <button
@@ -165,7 +203,7 @@ export function UsuariosView({
       {showModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-          onClick={() => !saving && setShowModal(false)}
+          onClick={() => !saving && closeModal()}
         >
           <div
             className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
@@ -173,7 +211,7 @@ export function UsuariosView({
           >
             <div className="p-4 border-b border-slate-200 flex justify-between items-center">
               <h2 className="text-lg font-semibold text-slate-800">Nuevo usuario (profesor)</h2>
-              <button type="button" onClick={() => setShowModal(false)} className="p-1 rounded text-slate-500 hover:bg-slate-100">✕</button>
+              <button type="button" onClick={closeModal} className="p-1 rounded text-slate-500 hover:bg-slate-100">✕</button>
             </div>
             <form onSubmit={handleCreateUser} className="p-4 space-y-4">
               <div>
@@ -190,28 +228,102 @@ export function UsuariosView({
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Categorías asignadas</label>
-                <div className="flex flex-wrap gap-2">
-                  {categorias.map((c) => (
-                    <label key={c} className="inline-flex items-center gap-1.5 text-sm">
-                      <input type="checkbox" name="categoria" value={c} className="rounded border-slate-300" />
-                      {c}
-                    </label>
-                  ))}
-                </div>
+                {categorias.length === 0 ? (
+                  <p className="text-xs text-slate-500">
+                    No hay categorías activas. Creá una en Configuración → Categorías.
+                  </p>
+                ) : (
+                  <div className="relative" ref={catDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setCatDropdownOpen((o) => !o)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left flex items-center justify-between gap-2 bg-white hover:border-slate-400"
+                    >
+                      <div className="flex flex-wrap gap-1 min-h-[1.25rem]">
+                        {selectedCategorias.length === 0 ? (
+                          <span className="text-slate-400">Seleccionar categorías...</span>
+                        ) : (
+                          selectedCategorias.map((c) => (
+                            <span
+                              key={c}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                              style={{ backgroundColor: "var(--color-primary)" }}
+                            >
+                              {c}
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleCategoria(c);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    toggleCategoria(c);
+                                  }
+                                }}
+                                className="hover:opacity-80 cursor-pointer"
+                                aria-label={`Quitar ${c}`}
+                              >
+                                ×
+                              </span>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <svg
+                        className={`w-4 h-4 text-slate-500 transition-transform flex-shrink-0 ${catDropdownOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {catDropdownOpen && (
+                      <div className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                        {categorias.map((c) => {
+                          const checked = selectedCategorias.includes(c);
+                          return (
+                            <label
+                              key={c}
+                              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleCategoria(c)}
+                                className="rounded border-slate-300"
+                              />
+                              <span className="text-slate-700">{c}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Permisos</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col gap-2">
                   {permisosOpciones.map((perm) => (
-                    <label key={perm} className="inline-flex items-center gap-1.5 text-sm">
-                      <input type="checkbox" name="permiso" value={perm} className="rounded border-slate-300" />
-                      {perm}
+                    <label key={perm.value} className="inline-flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        name="permiso"
+                        value={perm.value}
+                        className="rounded border-slate-300"
+                      />
+                      {perm.label}
                     </label>
                   ))}
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Cancelar</button>
+                <button type="button" onClick={closeModal} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700">Cancelar</button>
                 <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ backgroundColor: "var(--color-primary)" }}>
                   {saving ? "Creando..." : "Crear"}
                 </button>

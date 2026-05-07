@@ -1,4 +1,5 @@
 import { UsuariosView } from "@/components/dashboard/usuarios/UsuariosView";
+import { PERMISOS_PROFESOR } from "@/lib/permisos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -40,14 +41,14 @@ export default async function UsuariosPage() {
 
   let categorias: string[] = [];
   if (clubId) {
-    const { data: jugadores } = await supabase
-      .from("jugadores")
-      .select("categoria")
-      .eq("club_id", clubId);
-    categorias = [...new Set((jugadores ?? []).map((r: { categoria: string }) => r.categoria).filter(Boolean))].sort();
+    const { data: cats } = await supabase
+      .from("categorias")
+      .select("nombre, orden")
+      .eq("club_id", clubId)
+      .eq("activo", true)
+      .order("orden", { ascending: true });
+    categorias = (cats ?? []).map((c: { nombre: string }) => c.nombre).filter(Boolean);
   }
-
-  const PERMISOS_OPCIONES = ["jugadores.crear", "reportes.ver"];
 
   return (
     <div>
@@ -59,7 +60,7 @@ export default async function UsuariosPage() {
         }))}
         clubId={clubId ?? ""}
         categorias={categorias}
-        permisosOpciones={PERMISOS_OPCIONES}
+        permisosOpciones={PERMISOS_PROFESOR}
       />
     </div>
   );

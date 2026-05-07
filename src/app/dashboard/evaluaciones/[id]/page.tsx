@@ -2,6 +2,7 @@ import { DownloadEvaluacionPDFButton } from "@/components/dashboard/evaluaciones
 import { RadarEvaluacionChart } from "@/components/dashboard/evaluaciones/RadarEvaluacionChart";
 import { badgePromedioClass, ESCALA_EVALUACION } from "@/lib/evaluaciones/escala";
 import type { EvaluacionPDFData } from "@/lib/export-evaluacion-pdf";
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -40,11 +41,15 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
 
   if (!profile?.club_id) redirect("/login");
+
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const puedeDescargarPDF =
+    isAdmin || tienePermiso(profile.permisos, PERMISO.EVALUACIONES_DESCARGAR);
 
   const { data: row } = await supabase
     .from("evaluaciones")
@@ -146,7 +151,7 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
           <p className="text-sm text-slate-500">Detalle completo de la evaluación seleccionada.</p>
         </div>
         <div className="flex items-center gap-3">
-          <DownloadEvaluacionPDFButton data={pdfData} />
+          {puedeDescargarPDF && <DownloadEvaluacionPDFButton data={pdfData} />}
           <Link href="/dashboard/evaluaciones" className="text-sm text-slate-600 hover:underline">
             ← Volver al listado
           </Link>

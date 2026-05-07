@@ -1,4 +1,5 @@
 import { ReportesAsistenciasView } from "@/components/dashboard/asistencias/ReportesAsistenciasView";
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -15,10 +16,15 @@ export default async function ReportesAsistenciasPage({ searchParams }: PageProp
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) redirect("/login");
+
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  if (!isAdmin && !tienePermiso(profile.permisos, PERMISO.ASISTENCIAS_DESCARGAR)) {
+    redirect("/dashboard");
+  }
 
   const params = await searchParams;
   const sedeId = params.sede ?? "";

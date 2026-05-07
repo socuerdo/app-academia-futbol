@@ -1,4 +1,5 @@
 import { NuevaEvaluacionView } from "@/components/dashboard/evaluaciones/NuevaEvaluacionView";
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import type { TipoEvaluacion } from "@/types/database";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export default async function NuevaEvaluacionPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
 
@@ -22,6 +23,11 @@ export default async function NuevaEvaluacionPage() {
       profile.rol !== "profesor" &&
       profile.rol !== "superadmin")
   ) {
+    redirect("/dashboard/evaluaciones");
+  }
+
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  if (!isAdmin && !tienePermiso(profile.permisos, PERMISO.EVALUACIONES_CREAR)) {
     redirect("/dashboard/evaluaciones");
   }
 
