@@ -5,7 +5,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { exportReporteExcel, exportReportePDF, type FilaReporte } from "@/lib/export-report";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useState } from "react";
 
 interface ReportesAsistenciasViewProps {
   sedes: Pick<Sede, "id" | "nombre">[];
@@ -33,28 +33,36 @@ export function ReportesAsistenciasView({
   filas,
 }: ReportesAsistenciasViewProps) {
   const router = useRouter();
+  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filas);
 
-  useEffect(() => {
-    const p = new URLSearchParams();
-    if (initialSedeId) p.set("sede", initialSedeId);
-    if (initialCategoria) p.set("categoria", initialCategoria);
-    if (initialDesde) p.set("desde", initialDesde);
-    if (initialHasta) p.set("hasta", initialHasta);
-    const q = p.toString();
-    if (q) router.replace(`/dashboard/asistencias/reportes?${q}`, { scroll: false });
-  }, []);
+  const [localSede, setLocalSede] = useState(initialSedeId);
+  const [localCategoria, setLocalCategoria] = useState(initialCategoria);
+  const [localDesde, setLocalDesde] = useState(initialDesde);
+  const [localHasta, setLocalHasta] = useState(initialHasta);
 
-  const { paged, page, pageSize, setPage, setPageSize, total } =
-    usePagination(filas);
+  const hayFiltrosActivos = initialSedeId !== "" || initialCategoria !== "";
 
-  const updateFilters = (sede: string, cat: string, desde: string, hasta: string) => {
-    const p = new URLSearchParams();
-    if (sede) p.set("sede", sede);
-    if (cat) p.set("categoria", cat);
-    if (desde) p.set("desde", desde);
-    if (hasta) p.set("hasta", hasta);
-    router.push(`/dashboard/asistencias/reportes?${p.toString()}`);
-  };
+  function aplicarFiltros() {
+    const p = new URLSearchParams({ tab: "reporte" });
+    if (localSede) p.set("sede", localSede);
+    if (localCategoria) p.set("categoria", localCategoria);
+    if (localDesde) p.set("desde", localDesde);
+    if (localHasta) p.set("hasta", localHasta);
+    router.push(`/dashboard/asistencias?${p.toString()}`);
+  }
+
+  function quitarFiltros() {
+    const hoy = new Date();
+    const hace30 = new Date(hoy);
+    hace30.setDate(hace30.getDate() - 30);
+    const desde = hace30.toISOString().slice(0, 10);
+    const hasta = hoy.toISOString().slice(0, 10);
+    setLocalSede("");
+    setLocalCategoria("");
+    setLocalDesde(desde);
+    setLocalHasta(hasta);
+    router.push(`/dashboard/asistencias?tab=reporte`);
+  }
 
   return (
     <div className="space-y-4">
@@ -63,12 +71,9 @@ export function ReportesAsistenciasView({
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
             <select
-              name="sede"
-              defaultValue={initialSedeId}
+              value={localSede}
+              onChange={(e) => setLocalSede(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) =>
-                updateFilters(e.target.value, initialCategoria, initialDesde, initialHasta)
-              }
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -79,12 +84,9 @@ export function ReportesAsistenciasView({
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
             <select
-              name="categoria"
-              defaultValue={initialCategoria}
+              value={localCategoria}
+              onChange={(e) => setLocalCategoria(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) =>
-                updateFilters(initialSedeId, e.target.value, initialDesde, initialHasta)
-              }
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -93,31 +95,44 @@ export function ReportesAsistenciasView({
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr,1fr,auto] gap-4 max-w-xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Desde</label>
             <input
-              name="desde"
               type="date"
-              defaultValue={initialDesde}
+              value={localDesde}
+              onChange={(e) => setLocalDesde(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) =>
-                updateFilters(initialSedeId, initialCategoria, e.target.value, initialHasta)
-              }
             />
           </div>
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
             <input
-              name="hasta"
               type="date"
-              defaultValue={initialHasta}
+              value={localHasta}
+              onChange={(e) => setLocalHasta(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) =>
-                updateFilters(initialSedeId, initialCategoria, initialDesde, e.target.value)
-              }
             />
           </div>
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={aplicarFiltros}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            Buscar
+          </button>
+          {hayFiltrosActivos && (
+            <button
+              type="button"
+              onClick={quitarFiltros}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
+              Quitar filtros
+            </button>
+          )}
         </div>
       </div>
 
@@ -183,7 +198,7 @@ export function ReportesAsistenciasView({
           />
         )}
       </div>
-      {filas.length === 0 && (initialSedeId || initialCategoria || initialDesde) && (
+      {filas.length === 0 && (
         <p className="text-slate-500">No hay datos para los filtros seleccionados.</p>
       )}
     </div>

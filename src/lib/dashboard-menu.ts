@@ -1,6 +1,6 @@
 import { PERMISO, tienePermiso } from "@/lib/permisos";
 import type { Rol } from "@/types/database";
-import type { MenuItem, MenuItemLink } from "@/types/dashboard";
+import type { MenuItem } from "@/types/dashboard";
 
 export function getDashboardMenuItems(
   rol: Rol,
@@ -26,78 +26,18 @@ export function getDashboardMenuItems(
 
   items.push({ type: "link", label: "Dashboard", href: "/dashboard" });
 
-  if (isAdmin) {
-    items.push({
-      type: "group",
-      label: "Jugadores",
-      items: [
-        { type: "link", label: "Cargar jugador", href: "/dashboard/jugadores/cargar" },
-        { type: "link", label: "Buscar/Editar", href: "/dashboard/jugadores/buscar" },
-        { type: "link", label: "Activar/Desactivar", href: "/dashboard/jugadores/activar" },
-        { type: "link", label: "Cambiar sede/categoría", href: "/dashboard/jugadores/cambiar-sede" },
-        { type: "link", label: "Importar jugadores", href: "/dashboard/jugadores/importar" },
-      ],
-    });
-  } else if (isSecretaria) {
-    items.push({
-      type: "group",
-      label: "Jugadores",
-      items: [
-        { type: "link", label: "Buscar", href: "/dashboard/jugadores/buscar" },
-      ],
-    });
+  if (isAdmin || isSecretaria) {
+    items.push({ type: "link", label: "Jugadores", href: "/dashboard/jugadores" });
   }
 
-  if (!isSecretaria) {
-    const asistenciasItems: MenuItemLink[] = [
-      { type: "link", label: "Cargar asistencias", href: "/dashboard/asistencias/cargar" },
-    ];
-    if (canDescargarAsistencias) {
-      asistenciasItems.push(
-        { type: "link", label: "Reportes de asistencias", href: "/dashboard/asistencias/reportes" },
-        { type: "link", label: "Reporte por jugador", href: "/dashboard/asistencias/reporte-jugador" },
-        { type: "link", label: "Reporte todos los jugadores", href: "/dashboard/asistencias/reporte-todos" }
-      );
-    }
-    items.push({ type: "group", label: "Asistencias", items: asistenciasItems });
-  }
+  items.push({ type: "link", label: "Asistencias", href: "/dashboard/asistencias" });
 
   if (isAdmin || (isProfesor && canVerEvaluaciones)) {
-    const evaluacionesItems: MenuItemLink[] = [];
-    if (canCrearEvaluaciones) {
-      evaluacionesItems.push({
-        type: "link",
-        label: "Cargar evaluación",
-        href: "/dashboard/evaluaciones/nueva",
-      });
-    }
-    evaluacionesItems.push({
-      type: "link",
-      label: "Ver evaluaciones",
-      href: "/dashboard/evaluaciones",
-    });
-    items.push({
-      type: "group",
-      label: "Evaluaciones",
-      items: evaluacionesItems,
-    });
+    items.push({ type: "link", label: "Evaluaciones", href: "/dashboard/evaluaciones" });
   }
 
   if (canVerCuotas) {
-    const cuotasItems: MenuItemLink[] = [];
-    if (canCobrarCuotas) {
-      cuotasItems.push({
-        type: "link",
-        label: "Cobrar cuotas",
-        href: "/dashboard/cuotas",
-      });
-    }
-    cuotasItems.push({
-      type: "link",
-      label: "Morosidad",
-      href: "/dashboard/cuotas/morosidad",
-    });
-    items.push({ type: "group", label: "Cuotas", items: cuotasItems });
+    items.push({ type: "link", label: "Cuotas", href: "/dashboard/cuotas" });
   }
 
   if (isAdmin) {

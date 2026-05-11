@@ -9,6 +9,7 @@ import {
 } from "@/lib/export-report";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ReporteTodosViewProps {
   sedes: Pick<Sede, "id" | "nombre">[];
@@ -33,17 +34,28 @@ export function ReporteTodosView({
   filas,
 }: ReporteTodosViewProps) {
   const router = useRouter();
+  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filas);
 
-  const { paged, page, pageSize, setPage, setPageSize, total } =
-    usePagination(filas);
+  const [localSede, setLocalSede] = useState(initialSedeId);
+  const [localCategoria, setLocalCategoria] = useState(initialCategoria);
+  const [localEstado, setLocalEstado] = useState(initialEstado);
 
-  const updateFilters = (sede: string, cat: string, estado: string) => {
-    const p = new URLSearchParams();
-    if (sede) p.set("sede", sede);
-    if (cat) p.set("categoria", cat);
-    if (estado) p.set("estado", estado);
-    router.push(`/dashboard/asistencias/reporte-todos?${p.toString()}`);
-  };
+  const hayFiltrosActivos = initialSedeId !== "" || initialCategoria !== "" || initialEstado !== "";
+
+  function aplicarFiltros() {
+    const p = new URLSearchParams({ tab: "todos" });
+    if (localSede) p.set("sede", localSede);
+    if (localCategoria) p.set("categoria", localCategoria);
+    if (localEstado) p.set("estado", localEstado);
+    router.push(`/dashboard/asistencias?${p.toString()}`);
+  }
+
+  function quitarFiltros() {
+    setLocalSede("");
+    setLocalCategoria("");
+    setLocalEstado("");
+    router.push("/dashboard/asistencias?tab=todos");
+  }
 
   return (
     <div className="space-y-4">
@@ -52,10 +64,9 @@ export function ReporteTodosView({
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
             <select
-              name="sede"
-              defaultValue={initialSedeId}
+              value={localSede}
+              onChange={(e) => setLocalSede(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) => updateFilters(e.target.value, initialCategoria, initialEstado)}
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -66,10 +77,9 @@ export function ReporteTodosView({
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
             <select
-              name="categoria"
-              defaultValue={initialCategoria}
+              value={localCategoria}
+              onChange={(e) => setLocalCategoria(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) => updateFilters(initialSedeId, e.target.value, initialEstado)}
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -80,16 +90,34 @@ export function ReporteTodosView({
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
             <select
-              name="estado"
-              defaultValue={initialEstado}
+              value={localEstado}
+              onChange={(e) => setLocalEstado(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
-              onChange={(e) => updateFilters(initialSedeId, initialCategoria, e.target.value)}
             >
               <option value="">Todos</option>
               <option value="activo">Activo</option>
               <option value="inactivo">Inactivo</option>
             </select>
           </div>
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={aplicarFiltros}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ backgroundColor: "var(--color-primary)" }}
+          >
+            Buscar
+          </button>
+          {hayFiltrosActivos && (
+            <button
+              type="button"
+              onClick={quitarFiltros}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
+              Quitar filtros
+            </button>
+          )}
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 import { setEstadoCuota } from "@/app/dashboard/cuotas/actions";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
-import { formatPeriodo } from "@/lib/cuotas/periodo";
+import { formatPeriodo, periodoActual } from "@/lib/cuotas/periodo";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -46,23 +46,46 @@ export function CobrarCuotasView({
   const [filas, setFilas] = useState<FilaCuota[]>(initialFilas);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+
+  // Estado local de filtros (no navegan hasta que se presione Buscar)
+  const [localPeriodo, setLocalPeriodo] = useState(periodoSel);
+  const [localSede, setLocalSede] = useState(sedeSel);
+  const [localCategoria, setLocalCategoria] = useState(categoriaSel);
+
+  const hayFiltrosActivos = sedeSel !== "" || categoriaSel !== "" || periodoSel !== periodoActual();
+
+  const filasFiltradas = useMemo(() => {
+    if (!busqueda.trim()) return filas;
+    const q = busqueda.toLowerCase();
+    return filas.filter(
+      (f) =>
+        f.apellido.toLowerCase().includes(q) ||
+        f.nombre.toLowerCase().includes(q)
+    );
+  }, [filas, busqueda]);
 
   const totales = useMemo(() => {
     const pagados = filas.filter((f) => f.estado === "pagado").length;
     return { pagados, pendientes: filas.length - pagados, total: filas.length };
   }, [filas]);
 
-  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filas);
+  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filasFiltradas);
 
-  function navegarFiltros(next: { periodo?: string; sede?: string; categoria?: string }) {
+  function aplicarFiltros() {
     const p = new URLSearchParams();
-    const periodo = next.periodo ?? periodoSel;
-    const sede = next.sede ?? sedeSel;
-    const categoria = next.categoria ?? categoriaSel;
-    if (periodo) p.set("periodo", periodo);
-    if (sede) p.set("sede", sede);
-    if (categoria) p.set("categoria", categoria);
-    router.push(`/dashboard/cuotas${p.toString() ? `?${p.toString()}` : ""}`);
+    if (localPeriodo) p.set("periodo", localPeriodo);
+    if (localSede) p.set("sede", localSede);
+    if (localCategoria) p.set("categoria", localCategoria);
+    p.set("tab", "cobrar");
+    router.push(`/dashboard/cuotas?${p.toString()}`);
+  }
+
+  function quitarFiltros() {
+    setLocalPeriodo(periodoActual());
+    setLocalSede("");
+    setLocalCategoria("");
+    router.push("/dashboard/cuotas?tab=cobrar");
   }
 
   async function toggleEstado(fila: FilaCuota) {
@@ -83,7 +106,6 @@ export function CobrarCuotasView({
     setUpdatingId(null);
     if (!res.ok) {
       setError(res.error);
-      // Rollback
       setFilas((prev) =>
         prev.map((f) =>
           f.jugador_id === fila.jugador_id
@@ -98,62 +120,87 @@ export function CobrarCuotasView({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Cobrar cuotas</h1>
-        <p className="text-sm text-slate-500">
-          Registrá los pagos del período seleccionado.
-        </p>
-      </div>
-
       {error && (
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Período</label>
-          <select
-            value={periodoSel}
-            onChange={(e) => navegarFiltros({ periodo: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-          >
-            {periodoOpciones.map((p) => (
-              <option key={p} value={p}>
-                {formatPeriodo(p)}
-              </option>
-            ))}
-          </select>
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Período</label>
+            <select
+              value={localPeriodo}
+              onChange={(e) => setLocalPeriodo(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            >
+              {periodoOpciones.map((p) => (
+                <option key={p} value={p}>
+                  {formatPeriodo(p)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
+            <select
+              value={localSede}
+              onChange={(e) => setLocalSede(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            >
+              <option value="">Todas</option>
+              {sedes.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
+            <select
+              value={localCategoria}
+              onChange={(e) => setLocalCategoria(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            >
+              <option value="">Todas</option>
+              {categorias.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
-          <select
-            value={sedeSel}
-            onChange={(e) => navegarFiltros({ sede: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+        <div className="flex gap-2 items-center">
+          <button
+            type="button"
+            onClick={aplicarFiltros}
+            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >
-            <option value="">Todas</option>
-            {sedes.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nombre}
-              </option>
-            ))}
-          </select>
+            Buscar
+          </button>
+          {hayFiltrosActivos && (
+            <button
+              type="button"
+              onClick={quitarFiltros}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
+              Quitar filtros
+            </button>
+          )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
-          <select
-            value={categoriaSel}
-            onChange={(e) => navegarFiltros({ categoria: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-          >
-            <option value="">Todas</option>
-            {categorias.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          value={busqueda}
+          onChange={(e) => { setBusqueda(e.target.value); setPage(1); }}
+          placeholder="Buscar jugador por apellido o nombre..."
+          className="w-full max-w-sm px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+          style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
+        />
       </div>
 
       <div className="flex flex-wrap gap-3 text-sm">
@@ -231,7 +278,7 @@ export function CobrarCuotasView({
         )}
       </div>
 
-      {filas.length === 0 && (
+      {filasFiltradas.length === 0 && (
         <p className="text-slate-500 text-sm">No hay jugadores con los filtros seleccionados.</p>
       )}
     </div>
