@@ -11,9 +11,10 @@ import { Loader2, Save, Upload } from "lucide-react";
 interface CargarJugadorFormProps {
   clubId: string;
   sedes: Pick<Sede, "id" | "nombre">[];
+  onSuccess?: () => void;
 }
 
-export function CargarJugadorForm({ clubId, sedes }: CargarJugadorFormProps) {
+export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFormProps) {
   const router = useRouter();
   const { categorias, isLoading } = useCategorias(clubId);
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,10 @@ export function CargarJugadorForm({ clubId, sedes }: CargarJugadorFormProps) {
     setLoading(false);
     if (result.error) {
       setError(result.error);
+      return;
+    }
+    if (onSuccess) {
+      onSuccess();
       return;
     }
     setToast(true);
