@@ -135,13 +135,13 @@ export function CargarAsistenciasView({
           <div className="mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-700">Filtros de carga</h2>
           </div>
-          <div className="flex flex-wrap gap-4 items-end">
-            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:ring-offset-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
               <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
               <select
                 value={sedeId}
                 onChange={(e) => setSedeId(e.target.value)}
-                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none min-w-[180px]"
+                className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
               >
                 <option value="">Seleccionar</option>
                 {sedes.map((s) => (
@@ -149,12 +149,12 @@ export function CargarAsistenciasView({
                 ))}
               </select>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:ring-offset-1">
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
               <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
               <select
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none min-w-[140px]"
+                className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
               >
                 <option value="">Seleccionar</option>
                 {categorias.map((c) => (
@@ -162,13 +162,13 @@ export function CargarAsistenciasView({
                 ))}
               </select>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)] focus-within:ring-offset-1">
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
               <label className="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
               <input
                 type="date"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                className="px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
+                className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
               />
             </div>
           </div>

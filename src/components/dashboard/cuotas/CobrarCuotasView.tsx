@@ -1,9 +1,11 @@
 "use client";
 
 import { setEstadoCuota } from "@/app/dashboard/cuotas/actions";
+import { HistorialCuotasModal } from "@/components/dashboard/cuotas/HistorialCuotasModal";
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { formatPeriodo, periodoActual } from "@/lib/cuotas/periodo";
+import { History } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -47,6 +49,7 @@ export function CobrarCuotasView({
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const [historialFila, setHistorialFila] = useState<FilaCuota | null>(null);
 
   // Estado local de filtros (no navegan hasta que se presione Buscar)
   const [localPeriodo, setLocalPeriodo] = useState(periodoSel);
@@ -225,6 +228,7 @@ export function CobrarCuotasView({
               <th className="text-left py-2 px-4">Sede</th>
               <th className="text-left py-2 px-4">Pago</th>
               <th className="text-center py-2 px-4 w-28">Estado</th>
+              <th className="py-2 px-4 w-10" />
             </tr>
           </thead>
           <tbody>
@@ -261,6 +265,17 @@ export function CobrarCuotasView({
                       {pagado ? "Pagada" : "Pendiente"}
                     </span>
                   </td>
+                  <td className="py-2 px-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setHistorialFila(f)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      title="Ver historial de cuotas"
+                      aria-label={`Ver historial de ${f.apellido} ${f.nombre}`}
+                    >
+                      <History className="h-4 w-4" />
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -280,6 +295,14 @@ export function CobrarCuotasView({
 
       {filasFiltradas.length === 0 && (
         <p className="text-slate-500 text-sm">No hay jugadores con los filtros seleccionados.</p>
+      )}
+
+      {historialFila && (
+        <HistorialCuotasModal
+          jugadorId={historialFila.jugador_id}
+          jugadorNombre={`${historialFila.apellido}, ${historialFila.nombre}`}
+          onClose={() => setHistorialFila(null)}
+        />
       )}
     </div>
   );

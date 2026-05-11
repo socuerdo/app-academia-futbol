@@ -348,12 +348,12 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
       <h1 className="text-2xl font-bold text-slate-800">Asistencias</h1>
 
       {/* Tab bar */}
-      <div className="flex gap-0 border-b border-slate-200 overflow-x-auto">
+      <div className="flex gap-0 border-b border-slate-200 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {tabs.map((t) => (
           <Link
             key={t.id}
             href={`/dashboard/asistencias?tab=${t.id}`}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
               tab === t.id
                 ? "border-[var(--color-primary)] text-[var(--color-primary)]"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"

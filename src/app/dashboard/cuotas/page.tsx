@@ -240,10 +240,10 @@ export default async function CuotasPage({ searchParams }: PageProps) {
 
       {/* Tab bar: solo si el usuario puede cobrar (secretaria/admin) */}
       {canCobrar && (
-        <div className="flex gap-0 border-b border-slate-200">
+        <div className="flex gap-0 border-b border-slate-200 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
           <Link
             href="/dashboard/cuotas"
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
               tab === "cobrar"
                 ? "border-[var(--color-primary)] text-[var(--color-primary)]"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -253,7 +253,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
           </Link>
           <Link
             href="/dashboard/cuotas?tab=morosidad"
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+            className={`px-3 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
               tab === "morosidad"
                 ? "border-[var(--color-primary)] text-[var(--color-primary)]"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"

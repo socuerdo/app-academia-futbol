@@ -1,6 +1,7 @@
 "use client";
 
 import { actualizarSede, crearSede, eliminarSede } from "@/app/dashboard/sedes/actions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -26,6 +27,7 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -187,7 +189,7 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDelete(sede.id)}
+                        onClick={() => setConfirmDeleteId(sede.id)}
                         disabled={deletingId === sede.id || (jugadoresPorSede[sede.id] ?? 0) > 0}
                         className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -203,6 +205,17 @@ export function SedesView({ sedes: initialSedes, jugadoresPorSede }: SedesViewPr
             <p className="p-6 text-slate-500 text-center">No hay sedes. Agregá una para comenzar.</p>
           )}
         </div>
+      )}
+      {confirmDeleteId && (
+        <ConfirmDialog
+          open
+          title="¿Eliminar sede?"
+          description="Esta acción no se puede deshacer."
+          confirmLabel="Eliminar"
+          loading={deletingId === confirmDeleteId}
+          onConfirm={() => { handleDelete(confirmDeleteId); setConfirmDeleteId(null); }}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
       )}
     </div>
   );

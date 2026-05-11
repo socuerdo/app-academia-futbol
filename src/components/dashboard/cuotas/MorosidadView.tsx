@@ -47,11 +47,13 @@ export function MorosidadView({
   ventanaMeses,
 }: MorosidadViewProps) {
   const router = useRouter();
-  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filas);
-
   const [localPeriodo, setLocalPeriodo] = useState(periodoSel);
   const [localSede, setLocalSede] = useState(sedeSel);
   const [localCategoria, setLocalCategoria] = useState(categoriaSel);
+  const [filtroSexo, setFiltroSexo] = useState<"" | "M" | "F">("");
+
+  const filasVisibles = filtroSexo ? filas.filter((f) => f.sexo === filtroSexo) : filas;
+  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filasVisibles);
 
   const hayFiltrosActivos = sedeSel !== "" || categoriaSel !== "" || periodoSel !== periodoActual();
 
@@ -146,19 +148,32 @@ export function MorosidadView({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-sm">
-        <span className="px-3 py-1 rounded-full bg-red-100 text-red-800 font-medium">
-          {filas.length} jugadores con deuda
-        </span>
-        <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-medium">
+      <div className="flex flex-wrap gap-2 text-sm items-center">
+        <span className="text-xs text-slate-500 font-medium mr-1">Filtrar por sexo:</span>
+        <button
+          type="button"
+          onClick={() => setFiltroSexo("")}
+          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-red-700 text-white" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
+        >
+          Todos: {filas.length}
+        </button>
+        <button
+          type="button"
+          onClick={() => setFiltroSexo(filtroSexo === "M" ? "" : "M")}
+          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
+        >
           Masculino: {filas.filter((f) => f.sexo === "M").length}
-        </span>
-        <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-800 font-medium">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFiltroSexo(filtroSexo === "F" ? "" : "F")}
+          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
+        >
           Femenino: {filas.filter((f) => f.sexo === "F").length}
-        </span>
+        </button>
       </div>
 
-      {filas.length > 0 ? (
+      {filasVisibles.length > 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead>
@@ -192,7 +207,7 @@ export function MorosidadView({
             <tfoot>
               <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-700 text-xs">
                 <td colSpan={6} className="py-2 px-4">
-                  Total: {filas.length} · Masculino: {filas.filter((f) => f.sexo === "M").length} · Femenino: {filas.filter((f) => f.sexo === "F").length}
+                  Total: {filasVisibles.length}
                 </td>
               </tr>
             </tfoot>
@@ -210,8 +225,14 @@ export function MorosidadView({
         </div>
       ) : (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-          <p className="text-emerald-700 font-medium">¡Todos al día!</p>
-          <p className="text-emerald-600 text-sm mt-1">No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
+          {filas.length === 0 ? (
+            <>
+              <p className="text-emerald-700 font-medium">¡Todos al día!</p>
+              <p className="text-emerald-600 text-sm mt-1">No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
+            </>
+          ) : (
+            <p className="text-emerald-700 font-medium">No hay jugadores {filtroSexo === "M" ? "masculinos" : "femeninos"} con deuda.</p>
+          )}
         </div>
       )}
     </div>

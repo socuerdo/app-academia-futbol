@@ -34,11 +34,13 @@ export function ReporteTodosView({
   filas,
 }: ReporteTodosViewProps) {
   const router = useRouter();
-  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filas);
-
   const [localSede, setLocalSede] = useState(initialSedeId);
   const [localCategoria, setLocalCategoria] = useState(initialCategoria);
   const [localEstado, setLocalEstado] = useState(initialEstado);
+  const [filtroSexo, setFiltroSexo] = useState<"" | "M" | "F">("");
+
+  const filasVisibles = filtroSexo ? filas.filter((f) => f.sexo === filtroSexo) : filas;
+  const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filasVisibles);
 
   const hayFiltrosActivos = initialSedeId !== "" || initialCategoria !== "" || initialEstado !== "";
 
@@ -123,28 +125,41 @@ export function ReporteTodosView({
 
       {filas.length > 0 && (
         <>
-          <div className="flex flex-wrap gap-3 text-sm">
-            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
-              Total: {filas.length}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-medium">
+          <div className="flex flex-wrap gap-2 text-sm items-center">
+            <span className="text-xs text-slate-500 font-medium mr-1">Filtrar por sexo:</span>
+            <button
+              type="button"
+              onClick={() => setFiltroSexo("")}
+              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+            >
+              Todos: {filas.length}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFiltroSexo(filtroSexo === "M" ? "" : "M")}
+              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
+            >
               Masculino: {filas.filter((f) => f.sexo === "M").length}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-800 font-medium">
+            </button>
+            <button
+              type="button"
+              onClick={() => setFiltroSexo(filtroSexo === "F" ? "" : "F")}
+              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
+            >
               Femenino: {filas.filter((f) => f.sexo === "F").length}
-            </span>
+            </button>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => exportReporteTodosExcel(filas)}
+              onClick={() => exportReporteTodosExcel(filasVisibles)}
               className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Exportar Excel
             </button>
             <button
               type="button"
-              onClick={() => exportReporteTodosPDF(filas)}
+              onClick={() => exportReporteTodosPDF(filasVisibles)}
               className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
               style={{ backgroundColor: "var(--color-primary)" }}
             >
@@ -189,10 +204,10 @@ export function ReporteTodosView({
               </tr>
             ))}
           </tbody>
-          {filas.length > 0 && (
+          {filasVisibles.length > 0 && (
             <tfoot>
               <tr className="border-t-2 border-slate-200 bg-slate-50 text-slate-500 text-xs">
-                <td colSpan={5} className="py-2 px-4">Total: {filas.length}</td>
+                <td colSpan={5} className="py-2 px-4">Total: {filasVisibles.length}</td>
               </tr>
             </tfoot>
           )}
@@ -208,8 +223,8 @@ export function ReporteTodosView({
           />
         )}
       </div>
-      {filas.length === 0 && (
-        <p className="text-slate-500">No hay jugadores con los filtros seleccionados.</p>
+      {filasVisibles.length === 0 && (
+        <p className="text-slate-500">{filas.length === 0 ? "No hay jugadores con los filtros seleccionados." : "No hay jugadores con el sexo seleccionado."}</p>
       )}
     </div>
   );

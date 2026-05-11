@@ -3,6 +3,80 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export type HistorialEntry = {
+  periodo: string;
+  estado: "pagado" | "pendiente";
+  fecha_pago: string | null;
+  monto: number | null;
+};
+
+export type HistorialJugador = {
+  apellido: string;
+  nombre: string;
+  categoria: string;
+  sede_nombre: string;
+  fecha_inscripcion: string | null;
+  historial: HistorialEntry[];
+};
+
+export async function getHistorialCuotas(
+  jugador_id: string
+): Promise<{ ok: true; data: HistorialJugador } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("club_id, rol")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.club_id) return { ok: false, error: "Sin club" };
+
+  if (!["admin", "superadmin", "secretaria"].includes(profile.rol)) {
+    return { ok: false, error: "Sin permiso" };
+  }
+
+  const [{ data: jugador }, { data: cuotas }] = await Promise.all([
+    supabase
+      .from("jugadores")
+      .select("id, apellido, nombre, categoria, fecha_inscripcion, club_id, sede:sedes(nombre)")
+      .eq("id", jugador_id)
+      .single(),
+    supabase
+      .from("cuotas")
+      .select("periodo, estado, fecha_pago, monto")
+      .eq("jugador_id", jugador_id)
+      .eq("club_id", profile.club_id)
+      .order("periodo", { ascending: false }),
+  ]);
+
+  if (!jugador || jugador.club_id !== profile.club_id) {
+    return { ok: false, error: "Jugador no encontrado" };
+  }
+
+  const sede = Array.isArray(jugador.sede) ? jugador.sede[0] : jugador.sede;
+
+  return {
+    ok: true,
+    data: {
+      apellido: jugador.apellido as string,
+      nombre: jugador.nombre as string,
+      categoria: jugador.categoria as string,
+      sede_nombre: (sede?.nombre as string | undefined) ?? "—",
+      fecha_inscripcion: (jugador.fecha_inscripcion as string | null) ?? null,
+      historial: (cuotas ?? []).map((c) => ({
+        periodo: c.periodo as string,
+        estado: c.estado as "pagado" | "pendiente",
+        fecha_pago: c.fecha_pago as string | null,
+        monto: c.monto as number | null,
+      })),
+    },
+  };
+}
+
 const PERIODO_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export async function setEstadoCuota(input: {

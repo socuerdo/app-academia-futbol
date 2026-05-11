@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -34,6 +35,7 @@ export function UsuariosView({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<ProfileRow | null>(null);
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -188,7 +190,7 @@ export function UsuariosView({
                     role="switch"
                     aria-checked={p.activo}
                     disabled={updatingId === p.id}
-                    onClick={() => handleToggleActivo(p)}
+                    onClick={() => setConfirmToggle(p)}
                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50 ${
                       p.activo ? "" : ""
                     }`}
@@ -209,6 +211,19 @@ export function UsuariosView({
           </tbody>
         </table>
       </div>
+
+      {confirmToggle && (
+        <ConfirmDialog
+          open
+          title={`¿${confirmToggle.activo ? "Desactivar" : "Activar"} usuario?`}
+          description={`${confirmToggle.activo ? "Desactivará" : "Activará"} la cuenta de ${confirmToggle.nombre_completo || confirmToggle.email}. Esta acción no se puede deshacer.`}
+          confirmLabel={confirmToggle.activo ? "Desactivar" : "Activar"}
+          destructive={confirmToggle.activo}
+          loading={updatingId === confirmToggle.id}
+          onConfirm={() => { handleToggleActivo(confirmToggle); setConfirmToggle(null); }}
+          onCancel={() => setConfirmToggle(null)}
+        />
+      )}
 
       {showModal && (
         <div

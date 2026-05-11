@@ -213,6 +213,48 @@ export function DashboardPrincipal({
         </div>
       </div>
 
+      {proxCumpleanios.length > 0 && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 shadow-sm overflow-hidden">
+          <h2 className="px-4 py-3 text-sm font-semibold text-orange-800 border-b border-orange-100 flex items-center gap-2">
+            <Cake className="h-4 w-4" aria-hidden />
+            Próximos cumpleaños (14 días)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-orange-50 text-orange-700">
+                  <th className="text-left py-2 px-4">Jugador</th>
+                  <th className="text-left py-2 px-4">Categoría</th>
+                  <th className="text-left py-2 px-4">Fecha</th>
+                  <th className="text-left py-2 px-4">Cuándo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proxCumpleanios.map((j) => {
+                  const parts = j.fecha_nacimiento.split("-");
+                  const dia = Number(parts[2]);
+                  const mes = MESES_CORTOS[Number(parts[1]) - 1];
+                  return (
+                    <tr key={j.id} className="border-t border-orange-100 hover:bg-orange-100/40">
+                      <td className="py-2 px-4 font-medium text-slate-800">{j.apellido}, {j.nombre}</td>
+                      <td className="py-2 px-4 text-slate-600">{j.categoria}</td>
+                      <td className="py-2 px-4 text-slate-600">{dia} de {mes}</td>
+                      <td className="py-2 px-4">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          j.dias === 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-700"
+                        }`}>
+                          {labelDias(j.dias)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {jugadoresBajaAsistencia.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <h2 className="px-4 py-3 text-sm font-semibold text-slate-800 border-b border-slate-100">
@@ -274,47 +316,6 @@ export function DashboardPrincipal({
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      {proxCumpleanios.length > 0 && (
-        <div className="rounded-xl border border-orange-200 bg-orange-50 shadow-sm overflow-hidden">
-          <h2 className="px-4 py-3 text-sm font-semibold text-orange-800 border-b border-orange-100 flex items-center gap-2">
-            <Cake className="h-4 w-4" aria-hidden />
-            Próximos cumpleaños (14 días)
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-orange-50 text-orange-700">
-                  <th className="text-left py-2 px-4">Jugador</th>
-                  <th className="text-left py-2 px-4">Categoría</th>
-                  <th className="text-left py-2 px-4">Fecha</th>
-                  <th className="text-left py-2 px-4">Cuándo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {proxCumpleanios.map((j) => {
-                  const parts = j.fecha_nacimiento.split("-");
-                  const dia = Number(parts[2]);
-                  const mes = MESES_CORTOS[Number(parts[1]) - 1];
-                  return (
-                    <tr key={j.id} className="border-t border-orange-100 hover:bg-orange-100/40">
-                      <td className="py-2 px-4 font-medium text-slate-800">{j.apellido}, {j.nombre}</td>
-                      <td className="py-2 px-4 text-slate-600">{j.categoria}</td>
-                      <td className="py-2 px-4 text-slate-600">{dia} de {mes}</td>
-                      <td className="py-2 px-4">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          j.dias === 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-700"
-                        }`}>
-                          {labelDias(j.dias)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
               </tbody>
             </table>
           </div>

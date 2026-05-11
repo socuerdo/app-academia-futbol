@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useCategorias } from "@/hooks/useCategorias";
 import type { Categoria } from "@/types/database";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Toast } from "@/components/ui/Toast";
 
 interface CategoriasViewProps {
@@ -23,6 +24,8 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
     visible: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Categoria | null>(null);
+  const [confirmToggle, setConfirmToggle] = useState<Categoria | null>(null);
 
   const supabase = createClient();
   const sensors = useSensors(useSensor(PointerSensor));
@@ -103,7 +106,6 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
   }
 
   async function handleDelete(cat: Categoria) {
-    if (!confirm(`¿Eliminar la categoría "${cat.nombre}"?`)) return;
     setError(null);
 
     const { count, error: countError } = await supabase
@@ -336,14 +338,14 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleToggle(cat)}
+                          onClick={() => setConfirmToggle(cat)}
                           className="text-xs px-2 py-1 rounded-lg border border-slate-300 text-slate-700"
                         >
                           {cat.activo ? "Desactivar" : "Activar"}
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(cat)}
+                          onClick={() => setConfirmDelete(cat)}
                           className="text-xs px-2 py-1 rounded-lg border border-red-200 text-red-600"
                         >
                           Eliminar
@@ -363,6 +365,29 @@ export function CategoriasView({ clubId }: CategoriasViewProps) {
         visible={toast.visible}
         onClose={hideToast}
       />
+
+      {confirmDelete && (
+        <ConfirmDialog
+          open
+          title={`¿Eliminar la categoría "${confirmDelete.nombre}"?`}
+          description="Esta acción no se puede deshacer. Asegurate de que no haya jugadores asignados a esta categoría."
+          confirmLabel="Eliminar"
+          onConfirm={() => { handleDelete(confirmDelete); setConfirmDelete(null); }}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {confirmToggle && (
+        <ConfirmDialog
+          open
+          title={`¿${confirmToggle.activo ? "Desactivar" : "Activar"} la categoría "${confirmToggle.nombre}"?`}
+          description={confirmToggle.activo ? "Los jugadores de esta categoría dejarán de aparecer en los selectores." : "La categoría volverá a estar disponible."}
+          confirmLabel={confirmToggle.activo ? "Desactivar" : "Activar"}
+          destructive={confirmToggle.activo}
+          onConfirm={() => { handleToggle(confirmToggle); setConfirmToggle(null); }}
+          onCancel={() => setConfirmToggle(null)}
+        />
+      )}
     </div>
   );
 }
