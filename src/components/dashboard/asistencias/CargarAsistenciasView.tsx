@@ -3,7 +3,7 @@
 import { guardarAsistenciasBatch } from "@/app/dashboard/asistencias/actions";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Toast } from "@/components/ui/Toast";
 import { Loader2, Save, Upload } from "lucide-react";
 
@@ -65,15 +65,21 @@ export function CargarAsistenciasView({
     setAsistencias(next);
   }, [initialJugadores, asistenciasExistentes]);
 
+  const isMounted = useRef(false);
+
   const updateQuery = useCallback(() => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams({ tab: "cargar" });
     if (sedeId) p.set("sede", sedeId);
     if (categoria) p.set("categoria", categoria);
     if (fecha) p.set("fecha", fecha);
-    router.replace(`/dashboard/asistencias/cargar?${p.toString()}`, { scroll: false });
+    router.replace(`/dashboard/asistencias?${p.toString()}`, { scroll: false });
   }, [sedeId, categoria, fecha, router]);
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     updateQuery();
   }, [sedeId, categoria, fecha]);
 
