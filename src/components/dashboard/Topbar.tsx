@@ -1,7 +1,7 @@
 "use client";
 
 import type { Rol } from "@/types/database";
-import { Bell, LogOut, Menu, Slash, User } from "lucide-react";
+import { Bell, Cake, LogOut, Menu, Slash, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +12,7 @@ interface TopbarProps {
   userPhotoUrl?: string | null;
   rol: Rol;
   onMenuClick: () => void;
+  cumpleaniosCount?: number;
 }
 
 const rolLabels: Record<Rol, string> = {
@@ -42,6 +43,7 @@ export function Topbar({
   userPhotoUrl,
   rol,
   onMenuClick,
+  cumpleaniosCount = 0,
 }: TopbarProps) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
@@ -89,14 +91,27 @@ export function Topbar({
       </div>
 
       <div className="flex items-center gap-3">
+        {cumpleaniosCount > 0 && (
+          <a
+            href="/dashboard"
+            className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+            aria-label={`${cumpleaniosCount} cumpleaños próximos`}
+            title={`${cumpleaniosCount} cumpleaños en los próximos 14 días`}
+          >
+            <Cake className="w-5 h-5" />
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+              {cumpleaniosCount}
+            </span>
+          </a>
+        )}
         <button
           type="button"
-          className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-          aria-label="Notificaciones"
-          title="Notificaciones"
+          disabled
+          className="relative p-2 rounded-lg text-slate-300 cursor-not-allowed"
+          aria-label="Notificaciones (próximamente)"
+          title="Notificaciones (próximamente)"
         >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500" />
         </button>
         <div className="hidden sm:block text-right min-w-0">
           <p className="text-sm font-medium text-slate-800 truncate">{userName || userEmail}</p>

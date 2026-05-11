@@ -10,11 +10,13 @@ export type FilaMorosidad = {
   jugador_id: string;
   apellido: string;
   nombre: string;
+  sexo: string;
   categoria: string;
   sede_nombre: string;
   periodo_pagado: boolean;
   meses_atraso: number;
   ultimo_pago: string | null;
+  inscripcion_mes?: string | null;
 };
 
 interface MorosidadViewProps {
@@ -148,53 +150,69 @@ export function MorosidadView({
         <span className="px-3 py-1 rounded-full bg-red-100 text-red-800 font-medium">
           {filas.length} jugadores con deuda
         </span>
+        <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-medium">
+          Masculino: {filas.filter((f) => f.sexo === "M").length}
+        </span>
+        <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-800 font-medium">
+          Femenino: {filas.filter((f) => f.sexo === "F").length}
+        </span>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
-          <thead>
-            <tr className="bg-slate-50 text-slate-600">
-              <th className="text-left py-2 px-4">Apellido</th>
-              <th className="text-left py-2 px-4">Nombre</th>
-              <th className="text-left py-2 px-4">Categoría</th>
-              <th className="text-left py-2 px-4">Sede</th>
-              <th className="text-right py-2 px-4">Atraso</th>
-              <th className="text-left py-2 px-4">Último pago</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paged.map((f) => (
-              <tr key={f.jugador_id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="py-2 px-4">{f.apellido}</td>
-                <td className="py-2 px-4">{f.nombre}</td>
-                <td className="py-2 px-4">{f.categoria}</td>
-                <td className="py-2 px-4">{f.sede_nombre}</td>
-                <td className="py-2 px-4 text-right">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${severidadClass(f.meses_atraso)}`}>
-                    {f.meses_atraso} {f.meses_atraso === 1 ? "mes" : "meses"}
-                  </span>
-                </td>
-                <td className="py-2 px-4 text-slate-600">
-                  {f.ultimo_pago ? formatPeriodo(f.ultimo_pago) : "Sin pagos"}
+      {filas.length > 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
+            <thead>
+              <tr className="bg-slate-50 text-slate-600">
+                <th className="text-left py-2 px-4">Apellido</th>
+                <th className="text-left py-2 px-4">Nombre</th>
+                <th className="text-left py-2 px-4">Categoría</th>
+                <th className="text-left py-2 px-4">Sede</th>
+                <th className="text-right py-2 px-4">Atraso</th>
+                <th className="text-left py-2 px-4">Último pago</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paged.map((f) => (
+                <tr key={f.jugador_id} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="py-2 px-4">{f.apellido}</td>
+                  <td className="py-2 px-4">{f.nombre}</td>
+                  <td className="py-2 px-4">{f.categoria}</td>
+                  <td className="py-2 px-4">{f.sede_nombre}</td>
+                  <td className="py-2 px-4 text-right">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${severidadClass(f.meses_atraso)}`}>
+                      {f.meses_atraso} {f.meses_atraso === 1 ? "mes" : "meses"}
+                    </span>
+                  </td>
+                  <td className="py-2 px-4 text-slate-600">
+                    {f.ultimo_pago ? formatPeriodo(f.ultimo_pago) : "Sin pagos"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-700 text-xs">
+                <td colSpan={6} className="py-2 px-4">
+                  Total: {filas.length} · Masculino: {filas.filter((f) => f.sexo === "M").length} · Femenino: {filas.filter((f) => f.sexo === "F").length}
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {total > 0 && (
-          <Pagination
-            total={total}
-            page={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-            itemLabel="jugadores"
-          />
-        )}
-      </div>
-
-      {filas.length === 0 && (
-        <p className="text-emerald-700 text-sm">¡Todos al día! No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
+            </tfoot>
+          </table>
+          {total > 0 && (
+            <Pagination
+              total={total}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              itemLabel="jugadores"
+            />
+          )}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+          <p className="text-emerald-700 font-medium">¡Todos al día!</p>
+          <p className="text-emerald-600 text-sm mt-1">No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
+        </div>
       )}
     </div>
   );

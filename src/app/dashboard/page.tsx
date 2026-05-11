@@ -1,5 +1,6 @@
 import { DashboardPrincipal } from "@/components/dashboard/DashboardPrincipal";
 import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
+import { diasHastaCumpleanios } from "@/lib/fecha";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -56,7 +57,7 @@ export default async function DashboardPage() {
 
   const { data: jugadoresConAsistencia } = await supabase
     .from("jugadores")
-    .select("id, nombre, apellido, categoria, dni")
+    .select("id, nombre, apellido, categoria, dni, fecha_nacimiento")
     .eq("club_id", clubId)
     .eq("activo", true);
 
@@ -82,6 +83,22 @@ export default async function DashboardPage() {
   }
 
   const cuotasImpagasSet = await getJugadoresConCuotaImpaga(supabase, clubId);
+
+  const DIAS_CUMPLEANIOS = 14;
+  const hoyDate = new Date();
+  const proxCumpleanios = (jugadoresConAsistencia ?? [])
+    .filter((j) => j.fecha_nacimiento)
+    .map((j) => ({
+      id: j.id,
+      nombre: j.nombre,
+      apellido: j.apellido,
+      categoria: j.categoria,
+      fecha_nacimiento: j.fecha_nacimiento as string,
+      dias: diasHastaCumpleanios(j.fecha_nacimiento as string, hoyDate),
+    }))
+    .filter((j) => j.dias <= DIAS_CUMPLEANIOS)
+    .sort((a, b) => a.dias - b.dias);
+
   const stats = {
     jugadoresActivos: jugadoresNum,
     presentesHoy: presentesHoy ?? 0,
@@ -94,7 +111,8 @@ export default async function DashboardPage() {
     <DashboardPrincipal
       stats={stats}
       jugadoresBajaAsistencia={jugadoresConBajaAsistencia}
-      rol={profile.rol as "admin" | "profesor"}
+      proxCumpleanios={proxCumpleanios}
+      rol={profile.rol as "admin" | "superadmin" | "profesor" | "secretaria"}
     />
   );
 }

@@ -6,6 +6,7 @@ export type FilaReporte = {
   jugador: string;
   categoria: string;
   sede: string;
+  sexo: string;
   presencias: number;
   ausencias: number;
   total: number;
@@ -77,6 +78,7 @@ export type FilaReporteTodos = {
   jugador: string;
   categoria: string;
   sede: string;
+  sexo: string;
   estado: string;
   vencimiento_carnet: string | null;
 };

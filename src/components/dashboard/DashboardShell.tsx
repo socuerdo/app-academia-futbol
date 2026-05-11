@@ -19,6 +19,7 @@ interface DashboardShellProps {
   userPhotoUrl?: string | null;
   rol: Rol;
   menuItems: MenuItem[];
+  cumpleaniosCount?: number;
 }
 
 export function DashboardShell({
@@ -29,6 +30,7 @@ export function DashboardShell({
   userPhotoUrl,
   rol,
   menuItems,
+  cumpleaniosCount = 0,
 }: DashboardShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -99,6 +101,7 @@ export function DashboardShell({
           userPhotoUrl={userPhotoUrl ?? null}
           rol={rol}
           onMenuClick={openMobile}
+          cumpleaniosCount={cumpleaniosCount}
         />
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </div>

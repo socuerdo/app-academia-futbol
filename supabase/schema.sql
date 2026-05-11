@@ -63,6 +63,8 @@ CREATE TABLE public.jugadores (
   numero_carnet text,
   fecha_vencimiento_carnet date,
   foto_url text,
+  telefono text,
+  fecha_inscripcion date,
   activo boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(club_id, dni)

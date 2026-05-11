@@ -158,7 +158,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
 
     const { data: jugadoresData } = await supabase
       .from("jugadores")
-      .select("id, apellido, nombre, categoria, sede:sedes(id, nombre)")
+      .select("id, apellido, nombre, sexo, categoria, fecha_inscripcion, sede:sedes(id, nombre)")
       .eq("club_id", profile.club_id)
       .eq("activo", true)
       .order("apellido");
@@ -175,6 +175,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
       jugador: string;
       categoria: string;
       sede: string;
+      sexo: string;
       presencias: number;
       ausencias: number;
       total: number;
@@ -184,14 +185,19 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
     if (ids.length > 0 && desde && hasta) {
       const { data: asis } = await supabase
         .from("asistencias")
-        .select("jugador_id, presente")
+        .select("jugador_id, fecha, presente")
         .in("jugador_id", ids)
         .gte("fecha", desde)
         .lte("fecha", hasta);
 
+      const inscripcionPorJugador: Record<string, string | null> = {};
+      jugadores.forEach((j: any) => { inscripcionPorJugador[j.id] = j.fecha_inscripcion ?? null; });
+
       const porJugador: Record<string, { p: number; a: number }> = {};
       ids.forEach((id) => (porJugador[id] = { p: 0, a: 0 }));
       (asis ?? []).forEach((a) => {
+        const fi = inscripcionPorJugador[a.jugador_id];
+        if (fi && a.fecha < fi) return;
         if (a.presente) porJugador[a.jugador_id].p++;
         else porJugador[a.jugador_id].a++;
       });
@@ -203,6 +209,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
           jugador: `${j.apellido}, ${j.nombre}`,
           categoria: j.categoria,
           sede: j.sede?.nombre ?? "-",
+          sexo: j.sexo ?? "",
           presencias: p,
           ausencias: a,
           total,
@@ -245,7 +252,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
       const term = `%${query}%`;
       const { data: list } = await supabase
         .from("jugadores")
-        .select("id, apellido, nombre, dni, categoria, foto_url, sede:sedes(nombre)")
+        .select("id, apellido, nombre, dni, categoria, foto_url, fecha_inscripcion, sede:sedes(nombre)")
         .eq("club_id", profile.club_id)
         .eq("activo", true)
         .or(`dni.ilike.${term},apellido.ilike.${term},nombre.ilike.${term}`)
@@ -258,11 +265,14 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
         };
         const hace90 = new Date();
         hace90.setDate(hace90.getDate() - 90);
+        const fechaDesde = first.fecha_inscripcion && first.fecha_inscripcion > hace90.toISOString().slice(0, 10)
+          ? first.fecha_inscripcion
+          : hace90.toISOString().slice(0, 10);
         const { data: asis } = await supabase
           .from("asistencias")
           .select("fecha, presente, observacion")
           .eq("jugador_id", jugador.id)
-          .gte("fecha", hace90.toISOString().slice(0, 10))
+          .gte("fecha", fechaDesde)
           .lte("fecha", new Date().toISOString().slice(0, 10))
           .order("fecha", { ascending: false });
         detalle = (asis ?? []).map((a) => ({
@@ -297,7 +307,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
     let query = supabase
       .from("jugadores")
       .select(
-        "id, apellido, nombre, dni, categoria, activo, fecha_vencimiento_carnet, sede:sedes(id, nombre)"
+        "id, apellido, nombre, sexo, dni, categoria, activo, fecha_vencimiento_carnet, sede:sedes(id, nombre)"
       )
       .eq("club_id", profile.club_id)
       .order("apellido");
@@ -316,6 +326,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
       jugador: `${j.apellido}, ${j.nombre}`,
       categoria: j.categoria,
       sede: j.sede?.nombre ?? "-",
+      sexo: j.sexo ?? "",
       estado: j.activo ? "Activo" : "Inactivo",
       vencimiento_carnet: j.fecha_vencimiento_carnet,
     }));

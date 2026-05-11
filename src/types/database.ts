@@ -61,6 +61,8 @@ export interface Jugador {
   categoria: string;
   numero_camiseta: number | null;
   fecha_nacimiento: string | null;
+  fecha_inscripcion: string | null;
+  telefono: string | null;
   numero_carnet: string | null;
   fecha_vencimiento_carnet: string | null;
   foto_url: string | null;

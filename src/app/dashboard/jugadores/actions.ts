@@ -62,6 +62,8 @@ export async function crearJugador(formData: FormData): Promise<{ id?: string; e
       categoria,
       numero_camiseta: parseIntOrNull(formData.get("numero_camiseta")),
       fecha_nacimiento: parseDate(formData.get("fecha_nacimiento")),
+      fecha_inscripcion: parseDate(formData.get("fecha_inscripcion")) ?? new Date().toISOString().slice(0, 10),
+      telefono: String(formData.get("telefono") ?? "").trim() || null,
       numero_carnet: parseDate(formData.get("numero_carnet")),
       fecha_vencimiento_carnet: parseDate(formData.get("fecha_vencimiento_carnet")),
       activo: true,
@@ -139,6 +141,8 @@ export async function actualizarJugador(
       sede_id: sedeId,
       numero_camiseta: parseIntOrNull(formData.get("numero_camiseta")),
       fecha_nacimiento: parseDate(formData.get("fecha_nacimiento")),
+      fecha_inscripcion: parseDate(formData.get("fecha_inscripcion")),
+      telefono: String(formData.get("telefono") ?? "").trim() || null,
       numero_carnet: parseDate(formData.get("numero_carnet")),
       fecha_vencimiento_carnet: parseDate(formData.get("fecha_vencimiento_carnet")),
     })

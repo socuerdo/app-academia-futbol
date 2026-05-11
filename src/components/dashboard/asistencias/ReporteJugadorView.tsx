@@ -1,6 +1,7 @@
 "use client";
 
 import { exportJugadorPDF } from "@/lib/export-jugador-pdf";
+import { formatFecha } from "@/lib/fecha";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -37,7 +38,7 @@ export function ReporteJugadorView({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    if (q) router.push(`/dashboard/asistencias/reporte-jugador?q=${encodeURIComponent(q)}`);
+    if (q) router.push(`/dashboard/asistencias?tab=jugador&q=${encodeURIComponent(q)}`);
   };
 
   const heatmapData = useMemo(() => {
@@ -180,7 +181,7 @@ export function ReporteJugadorView({
               <tbody>
                 {detalle.map((d, i) => (
                   <tr key={i} className="border-t border-slate-100">
-                    <td className="py-2 px-4">{d.fecha}</td>
+                    <td className="py-2 px-4">{formatFecha(d.fecha)}</td>
                     <td className="py-2 px-4">{d.presente ? "Sí" : "No"}</td>
                     <td className="py-2 px-4 text-slate-500">{d.observacion || "-"}</td>
                   </tr>

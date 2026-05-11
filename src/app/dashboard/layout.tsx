@@ -1,5 +1,6 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getDashboardMenuItems } from "@/lib/dashboard-menu";
+import { diasHastaCumpleanios } from "@/lib/fecha";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -58,6 +59,18 @@ export default async function DashboardLayout({
   const menuItems = getDashboardMenuItems(profile.rol, profile.permisos ?? []);
   const userName = profile.nombre_completo?.trim() || user.email || "";
 
+  const { data: jugadoresNac } = await supabase
+    .from("jugadores")
+    .select("fecha_nacimiento")
+    .eq("club_id", profile.club_id)
+    .eq("activo", true)
+    .not("fecha_nacimiento", "is", null);
+
+  const hoyLayout = new Date();
+  const cumpleaniosCount = (jugadoresNac ?? []).filter(
+    (j) => j.fecha_nacimiento && diasHastaCumpleanios(j.fecha_nacimiento, hoyLayout) <= 14
+  ).length;
+
   return (
     <DashboardShell
       club={club}
@@ -66,6 +79,7 @@ export default async function DashboardLayout({
       userPhotoUrl={profile.foto_url ?? null}
       rol={profile.rol}
       menuItems={menuItems}
+      cumpleaniosCount={cumpleaniosCount}
     >
       {children}
     </DashboardShell>

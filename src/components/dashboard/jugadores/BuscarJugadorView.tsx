@@ -196,7 +196,7 @@ export function BuscarJugadorView({
                     <button
                       type="button"
                       onClick={() => openEditing(j)}
-                      className="font-medium hover:underline"
+                      className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                       style={{ color: "var(--color-primary)" }}
                     >
                       Editar
@@ -240,10 +240,10 @@ export function BuscarJugadorView({
             </div>
             <form onSubmit={handleSaveEdit} className="p-4 space-y-4">
               {error && (
-                <div className="p-2 rounded text-sm bg-red-50 text-red-700">{error}</div>
+                <div className="p-2 rounded text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>
               )}
               <input type="hidden" name="id" value={editing.id} />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Apellido *</label>
                   <input name="apellido" defaultValue={editing.apellido} required className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
@@ -283,6 +283,14 @@ export function BuscarJugadorView({
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">F. nacimiento</label>
                   <input name="fecha_nacimiento" type="date" defaultValue={editing.fecha_nacimiento ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">F. inscripción</label>
+                  <input name="fecha_inscripcion" type="date" defaultValue={editing.fecha_inscripcion ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+                  <input name="telefono" type="tel" defaultValue={editing.telefono ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Nº carnet</label>

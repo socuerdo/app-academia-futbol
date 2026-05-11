@@ -40,7 +40,15 @@ export function ReportesAsistenciasView({
   const [localDesde, setLocalDesde] = useState(initialDesde);
   const [localHasta, setLocalHasta] = useState(initialHasta);
 
-  const hayFiltrosActivos = initialSedeId !== "" || initialCategoria !== "";
+  const defaultDesde = (() => {
+    const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10);
+  })();
+  const defaultHasta = new Date().toISOString().slice(0, 10);
+  const hayFiltrosActivos =
+    initialSedeId !== "" ||
+    initialCategoria !== "" ||
+    initialDesde !== defaultDesde ||
+    initialHasta !== defaultHasta;
 
   function aplicarFiltros() {
     const p = new URLSearchParams({ tab: "reporte" });
@@ -137,23 +145,36 @@ export function ReportesAsistenciasView({
       </div>
 
       {filas.length > 0 && (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => exportReporteExcel(filas)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            Exportar Excel
-          </button>
-          <button
-            type="button"
-            onClick={() => exportReportePDF(filas)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
-            style={{ backgroundColor: "var(--color-primary)" }}
-          >
-            Exportar PDF
-          </button>
-        </div>
+        <>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+              Total: {filas.length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-medium">
+              Masculino: {filas.filter((f) => f.sexo === "M").length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-800 font-medium">
+              Femenino: {filas.filter((f) => f.sexo === "F").length}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => exportReporteExcel(filas)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              Exportar Excel
+            </button>
+            <button
+              type="button"
+              onClick={() => exportReportePDF(filas)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Exportar PDF
+            </button>
+          </div>
+        </>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
@@ -186,6 +207,17 @@ export function ReportesAsistenciasView({
               </tr>
             ))}
           </tbody>
+          {filas.length > 0 && (
+            <tfoot>
+              <tr className="border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-700 text-xs">
+                <td colSpan={3} className="py-2 px-4 text-slate-500">Total: {filas.length}</td>
+                <td className="py-2 px-4 text-right">{filas.reduce((s, f) => s + f.presencias, 0)}</td>
+                <td className="py-2 px-4 text-right">{filas.reduce((s, f) => s + f.ausencias, 0)}</td>
+                <td className="py-2 px-4 text-right">{filas.reduce((s, f) => s + f.total, 0)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          )}
         </table>
         {total > 0 && (
           <Pagination

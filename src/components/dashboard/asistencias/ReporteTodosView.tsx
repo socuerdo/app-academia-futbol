@@ -122,23 +122,36 @@ export function ReporteTodosView({
       </div>
 
       {filas.length > 0 && (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => exportReporteTodosExcel(filas)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            Exportar Excel
-          </button>
-          <button
-            type="button"
-            onClick={() => exportReporteTodosPDF(filas)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
-            style={{ backgroundColor: "var(--color-primary)" }}
-          >
-            Exportar PDF
-          </button>
-        </div>
+        <>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+              Total: {filas.length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-medium">
+              Masculino: {filas.filter((f) => f.sexo === "M").length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-800 font-medium">
+              Femenino: {filas.filter((f) => f.sexo === "F").length}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => exportReporteTodosExcel(filas)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              Exportar Excel
+            </button>
+            <button
+              type="button"
+              onClick={() => exportReporteTodosPDF(filas)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Exportar PDF
+            </button>
+          </div>
+        </>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
@@ -176,6 +189,13 @@ export function ReporteTodosView({
               </tr>
             ))}
           </tbody>
+          {filas.length > 0 && (
+            <tfoot>
+              <tr className="border-t-2 border-slate-200 bg-slate-50 text-slate-500 text-xs">
+                <td colSpan={5} className="py-2 px-4">Total: {filas.length}</td>
+              </tr>
+            </tfoot>
+          )}
         </table>
         {total > 0 && (
           <Pagination

@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   BarChart2,
+  Cake,
   CheckCircle,
   ClipboardList,
   DollarSign,
@@ -28,11 +29,21 @@ interface JugadorBaja {
   pct: number;
 }
 
+interface JugadorCumpleanios {
+  id: string;
+  nombre: string;
+  apellido: string;
+  categoria: string;
+  fecha_nacimiento: string;
+  dias: number;
+}
+
 type Rol = "admin" | "superadmin" | "profesor" | "secretaria";
 
 interface DashboardPrincipalProps {
   stats: Stats;
   jugadoresBajaAsistencia: JugadorBaja[];
+  proxCumpleanios?: JugadorCumpleanios[];
   rol: Rol;
 }
 
@@ -111,9 +122,18 @@ function getAccesos(rol: Rol) {
   return accesosProfesor;
 }
 
+const MESES_CORTOS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+function labelDias(dias: number): string {
+  if (dias === 0) return "Hoy";
+  if (dias === 1) return "Mañana";
+  return `En ${dias} días`;
+}
+
 export function DashboardPrincipal({
   stats,
   jugadoresBajaAsistencia,
+  proxCumpleanios = [],
   rol,
 }: DashboardPrincipalProps) {
   const accesos = getAccesos(rol);
@@ -187,7 +207,7 @@ export function DashboardPrincipal({
                 <a.Icon className="h-4 w-4" aria-hidden />
               </span>
               <span className="text-sm font-semibold text-slate-800">{a.label}</span>
-              <span className="text-xs text-slate-500">{a.desc}</span>
+              <span className="text-xs text-slate-500 line-clamp-1">{a.desc}</span>
             </Link>
           ))}
         </div>
@@ -205,7 +225,7 @@ export function DashboardPrincipal({
                   <th className="text-left py-2 px-4">Apellido</th>
                   <th className="text-left py-2 px-4">Nombre</th>
                   <th className="text-left py-2 px-4">Categoría</th>
-                  <th className="text-left py-2 px-4">DNI</th>
+                  <th className="text-left py-2 px-4 hidden sm:table-cell">DNI</th>
                   <th className="text-right py-2 px-4">% mes</th>
                   <th className="text-right py-2 px-4">Acción</th>
                 </tr>
@@ -221,7 +241,7 @@ export function DashboardPrincipal({
                     <td className="py-2 px-4">{j.apellido}</td>
                     <td className="py-2 px-4">{j.nombre}</td>
                     <td className="py-2 px-4">{j.categoria}</td>
-                    <td className="py-2 px-4">{j.dni}</td>
+                    <td className="py-2 px-4 hidden sm:table-cell">{j.dni}</td>
                     <td className="py-2 px-4">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-24 h-2 rounded-full bg-slate-200 overflow-hidden">
@@ -254,6 +274,47 @@ export function DashboardPrincipal({
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      {proxCumpleanios.length > 0 && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 shadow-sm overflow-hidden">
+          <h2 className="px-4 py-3 text-sm font-semibold text-orange-800 border-b border-orange-100 flex items-center gap-2">
+            <Cake className="h-4 w-4" aria-hidden />
+            Próximos cumpleaños (14 días)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-orange-50 text-orange-700">
+                  <th className="text-left py-2 px-4">Jugador</th>
+                  <th className="text-left py-2 px-4">Categoría</th>
+                  <th className="text-left py-2 px-4">Fecha</th>
+                  <th className="text-left py-2 px-4">Cuándo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {proxCumpleanios.map((j) => {
+                  const parts = j.fecha_nacimiento.split("-");
+                  const dia = Number(parts[2]);
+                  const mes = MESES_CORTOS[Number(parts[1]) - 1];
+                  return (
+                    <tr key={j.id} className="border-t border-orange-100 hover:bg-orange-100/40">
+                      <td className="py-2 px-4 font-medium text-slate-800">{j.apellido}, {j.nombre}</td>
+                      <td className="py-2 px-4 text-slate-600">{j.categoria}</td>
+                      <td className="py-2 px-4 text-slate-600">{dia} de {mes}</td>
+                      <td className="py-2 px-4">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          j.dias === 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-700"
+                        }`}>
+                          {labelDias(j.dias)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

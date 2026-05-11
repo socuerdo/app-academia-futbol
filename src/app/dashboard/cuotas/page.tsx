@@ -74,7 +74,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
         .order("orden"),
       supabase
         .from("jugadores")
-        .select("id, apellido, nombre, categoria, sede_id, sede:sedes(nombre)")
+        .select("id, apellido, nombre, sexo, categoria, sede_id, fecha_inscripcion, sede:sedes(nombre)")
         .eq("club_id", profile.club_id)
         .eq("activo", true)
         .order("apellido"),
@@ -190,23 +190,33 @@ export default async function CuotasPage({ searchParams }: PageProps) {
       .map((j) => {
         const sede = Array.isArray(j.sede) ? j.sede[0] : j.sede;
         const cuotasJugador = cuotasMap.get(j.id);
+        const inscripcionMes = (j.fecha_inscripcion as string | null)?.slice(0, 7) ?? null;
         const periodoActualPagado =
           cuotasJugador?.get(periodoSel)?.estado === "pagado";
-        const mesesAtraso = ventana.filter(
+        const ventanaValida = inscripcionMes
+          ? ventana.filter((p) => p >= inscripcionMes)
+          : ventana;
+        const mesesAtraso = ventanaValida.filter(
           (p) => cuotasJugador?.get(p)?.estado !== "pagado"
         ).length;
         return {
           jugador_id: j.id,
           apellido: j.apellido as string,
           nombre: j.nombre as string,
+          sexo: (j.sexo as string | undefined) ?? "",
           categoria: j.categoria as string,
           sede_nombre: (sede?.nombre as string | undefined) ?? "—",
           periodo_pagado: periodoActualPagado,
           meses_atraso: mesesAtraso,
           ultimo_pago: ultimoPagoMap.get(j.id) ?? null,
+          inscripcion_mes: inscripcionMes,
         };
       })
-      .filter((f) => !f.periodo_pagado)
+      .filter((f) => {
+        if (f.periodo_pagado) return false;
+        if (f.inscripcion_mes && periodoSel < f.inscripcion_mes) return false;
+        return true;
+      })
       .sort((a, b) => b.meses_atraso - a.meses_atraso);
 
     content = (
