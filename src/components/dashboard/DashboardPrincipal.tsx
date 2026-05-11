@@ -7,7 +7,6 @@ import {
   ClipboardList,
   DollarSign,
   UserCog,
-  UserPlus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,66 +28,96 @@ interface JugadorBaja {
   pct: number;
 }
 
+type Rol = "admin" | "superadmin" | "profesor" | "secretaria";
+
 interface DashboardPrincipalProps {
   stats: Stats;
   jugadoresBajaAsistencia: JugadorBaja[];
-  rol: "admin" | "profesor";
+  rol: Rol;
 }
 
 const accesosAdmin = [
   {
-    label: "Cargar jugador",
-    desc: "Alta rápida de nuevos jugadores",
-    href: "/dashboard/jugadores/cargar",
-    Icon: UserPlus,
+    label: "Jugadores",
+    desc: "Gestionar y consultar el plantel",
+    href: "/dashboard/jugadores",
+    Icon: Users,
   },
   {
     label: "Cargar asistencias",
     desc: "Registrar presentes y ausentes",
-    href: "/dashboard/asistencias/cargar",
+    href: "/dashboard/asistencias",
     Icon: CheckCircle,
   },
   {
     label: "Reportes",
     desc: "Ver métricas y evolución mensual",
-    href: "/dashboard/asistencias/reportes",
+    href: "/dashboard/asistencias?tab=reporte",
     Icon: BarChart2,
   },
   {
     label: "Gestión de usuarios",
     desc: "Administrar accesos del staff",
-    href: "/dashboard/administracion/usuarios",
+    href: "/dashboard/usuarios",
     Icon: UserCog,
   },
 ];
 
 const accesosProfesor = [
   {
-    label: "Cargar jugador",
-    desc: "Alta rápida de nuevos jugadores",
-    href: "/dashboard/jugadores/cargar",
-    Icon: UserPlus,
-  },
-  {
     label: "Cargar asistencias",
     desc: "Registrar presentes y ausentes",
-    href: "/dashboard/asistencias/cargar",
+    href: "/dashboard/asistencias",
     Icon: CheckCircle,
   },
   {
     label: "Reportes",
     desc: "Ver métricas y evolución mensual",
-    href: "/dashboard/asistencias/reportes",
+    href: "/dashboard/asistencias?tab=reporte",
     Icon: BarChart2,
   },
+  {
+    label: "Evaluaciones",
+    desc: "Ver y registrar evaluaciones",
+    href: "/dashboard/evaluaciones",
+    Icon: ClipboardList,
+  },
 ];
+
+const accesosSecretaria = [
+  {
+    label: "Jugadores",
+    desc: "Consultar y gestionar plantel",
+    href: "/dashboard/jugadores",
+    Icon: Users,
+  },
+  {
+    label: "Cobrar cuotas",
+    desc: "Registrar pagos del período",
+    href: "/dashboard/cuotas",
+    Icon: DollarSign,
+  },
+  {
+    label: "Morosidad",
+    desc: "Jugadores con cuota pendiente",
+    href: "/dashboard/cuotas?tab=morosidad",
+    Icon: AlertTriangle,
+  },
+];
+
+function getAccesos(rol: Rol) {
+  if (rol === "admin" || rol === "superadmin") return accesosAdmin;
+  if (rol === "secretaria") return accesosSecretaria;
+  return accesosProfesor;
+}
 
 export function DashboardPrincipal({
   stats,
   jugadoresBajaAsistencia,
   rol,
 }: DashboardPrincipalProps) {
-  const accesos = rol === "admin" ? accesosAdmin : accesosProfesor;
+  const accesos = getAccesos(rol);
+  const canVerCuotas = rol !== "profesor";
 
   return (
     <div className="space-y-6">
@@ -113,21 +142,55 @@ export function DashboardPrincipal({
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.pctAsistenciaMes}%</p>
           <p className="text-xs text-slate-500 mt-1">Promedio mensual del club</p>
         </div>
-        <div className="relative rounded-xl border border-slate-200 bg-rose-50 p-4 shadow-sm border-l-4 border-l-rose-500 hover:shadow-md transition-shadow duration-200">
+        <Link
+          href="/dashboard/asistencias?tab=reporte"
+          className="relative rounded-xl border border-slate-200 bg-rose-50 p-4 shadow-sm border-l-4 border-l-rose-500 hover:shadow-md transition-shadow duration-200"
+        >
           <AlertTriangle className="h-9 w-9 text-rose-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">Alertas (&lt;70% mes)</p>
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.alertasBajaAsistencia}</p>
           <p className="text-xs text-slate-500 mt-1">Jugadores para seguimiento</p>
-        </div>
-        <Link
-          href="/dashboard/cuotas/morosidad"
-          className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow duration-200"
-        >
-          <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
-          <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
-          <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
         </Link>
+        {canVerCuotas ? (
+          <Link
+            href="/dashboard/cuotas?tab=morosidad"
+            className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow duration-200"
+          >
+            <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
+            <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
+            <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
+          </Link>
+        ) : (
+          <div className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500">
+            <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
+            <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
+            <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
+            <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-800 mb-3">Accesos rápidos</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {accesos.map((a) => (
+            <Link
+              key={a.href}
+              href={a.href}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex flex-col gap-1 hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+            >
+              <span
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                <a.Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="text-sm font-semibold text-slate-800">{a.label}</span>
+              <span className="text-xs text-slate-500">{a.desc}</span>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {jugadoresBajaAsistencia.length > 0 && (
@@ -182,11 +245,11 @@ export function DashboardPrincipal({
                     </td>
                     <td className="py-2 px-4 text-right">
                       <Link
-                        href={`/dashboard/jugadores/buscar?dni=${encodeURIComponent(j.dni)}`}
+                        href={`/dashboard/asistencias?tab=jugador&jugador=${encodeURIComponent(j.id)}`}
                         className="font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 rounded"
                         style={{ color: "var(--color-primary)" }}
                       >
-                        Editar
+                        Ver reporte
                       </Link>
                     </td>
                   </tr>
@@ -196,28 +259,6 @@ export function DashboardPrincipal({
           </div>
         </div>
       )}
-
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-800 mb-3">Accesos rápidos</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {accesos.map((a) => (
-            <Link
-              key={a.href}
-              href={a.href}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex flex-col gap-1 hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-            >
-              <span
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white"
-                style={{ backgroundColor: "var(--color-primary)" }}
-              >
-                <a.Icon className="h-4 w-4" aria-hidden />
-              </span>
-              <span className="text-sm font-semibold text-slate-800">{a.label}</span>
-              <span className="text-xs text-slate-500">{a.desc}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
