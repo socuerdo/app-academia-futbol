@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export type AsistenciaInput = {
@@ -23,7 +24,7 @@ export async function guardarAsistenciasBatch(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { error: "Sin club asignado" };
@@ -49,6 +50,18 @@ export async function guardarAsistenciasBatch(
     });
 
   if (error) return { error: error.message };
+
+  const presentes = asistencias.filter((a) => a.presente).length;
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "guardar_asistencias",
+    entidad: "asistencia",
+    entidadDescripcion: `${categoria} · ${fecha} · ${presentes}/${asistencias.length} presentes`,
+    cambios: { fecha, categoria, sedeId, presentes, total: asistencias.length },
+  });
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/asistencias/cargar");
   return {};

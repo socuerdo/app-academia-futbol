@@ -5,6 +5,7 @@ import {
   eliminarJugador,
   toggleActivoJugador,
 } from "@/app/dashboard/jugadores/actions";
+import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { CargarJugadorForm } from "@/components/dashboard/jugadores/CargarJugadorForm";
 import { ImportarJugadoresView } from "@/components/dashboard/jugadores/ImportarJugadoresView";
 import { Pagination } from "@/components/ui/Pagination";
@@ -37,6 +38,7 @@ interface JugadoresUnificadosViewProps {
   initialJugadores: JugadorRow[];
   sedes: Pick<Sede, "id" | "nombre">[];
   rol: string;
+  permisos?: string[];
   jugadoresConDeuda: string[];
   sedeIdPorNombre: Record<string, string>;
 }
@@ -46,13 +48,18 @@ export function JugadoresUnificadosView({
   initialJugadores,
   sedes,
   rol,
+  permisos = [],
   jugadoresConDeuda,
   sedeIdPorNombre,
 }: JugadoresUnificadosViewProps) {
   const router = useRouter();
   const { categorias } = useCategorias(clubId);
   const deudaSet = new Set(jugadoresConDeuda);
-  const esAdmin = rol === "admin" || rol === "superadmin" || rol === "secretaria";
+  const esAdmin =
+    rol === "admin" ||
+    rol === "superadmin" ||
+    rol === "secretaria" ||
+    tienePermiso(permisos, PERMISO.JUGADORES_EDITAR);
 
   const [jugadores, setJugadores] = useState<JugadorRow[]>(initialJugadores);
   const [query, setQuery] = useState("");
@@ -617,6 +624,7 @@ export function JugadoresUnificadosView({
                 clubId={clubId}
                 sedes={sedes}
                 sedeIdPorNombre={sedeIdPorNombre}
+                categorias={categorias.map((c) => c.nombre)}
               />
             </div>
           </div>

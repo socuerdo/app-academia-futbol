@@ -20,6 +20,11 @@ export async function middleware(request: NextRequest) {
             options?: Parameters<typeof response.cookies.set>[2];
           }[]
         ) {
+          // Propagar al request para que getUser() obtenga la sesión actualizada
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -30,7 +35,19 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  // Refresh token inválido o expirado: limpiar cookies y redirigir a login
+  if (authError && authError.message?.toLowerCase().includes("refresh token")) {
+    const loginUrl = new URL("/login", request.url);
+    const cleanResponse = NextResponse.redirect(loginUrl);
+    request.cookies
+      .getAll()
+      .filter((c) => c.name.startsWith("sb-"))
+      .forEach((c) => cleanResponse.cookies.delete(c.name));
+    return cleanResponse;
+  }
 
   const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
   const isSuperadminPanel = request.nextUrl.pathname.startsWith("/superadmin");

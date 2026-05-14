@@ -3,6 +3,7 @@ export const PERMISO = {
   EVALUACIONES_EDITAR: "evaluaciones.editar",
   EVALUACIONES_DESCARGAR: "evaluaciones.descargar",
   ASISTENCIAS_DESCARGAR: "asistencias.descargar",
+  JUGADORES_EDITAR: "jugadores.editar",
 } as const;
 
 export type PermisoKey = (typeof PERMISO)[keyof typeof PERMISO];
@@ -12,9 +13,11 @@ export const PERMISO_LABELS: Record<string, string> = {
   [PERMISO.EVALUACIONES_EDITAR]: "Editar evaluaciones",
   [PERMISO.EVALUACIONES_DESCARGAR]: "Descargar reporte de evaluaciones",
   [PERMISO.ASISTENCIAS_DESCARGAR]: "Descargar reporte de asistencias",
+  [PERMISO.JUGADORES_EDITAR]: "Editar y crear jugadores",
 };
 
 export const PERMISOS_PROFESOR: { value: string; label: string }[] = [
+  { value: PERMISO.JUGADORES_EDITAR, label: PERMISO_LABELS[PERMISO.JUGADORES_EDITAR] },
   { value: PERMISO.EVALUACIONES_CREAR, label: PERMISO_LABELS[PERMISO.EVALUACIONES_CREAR] },
   { value: PERMISO.EVALUACIONES_EDITAR, label: PERMISO_LABELS[PERMISO.EVALUACIONES_EDITAR] },
   { value: PERMISO.EVALUACIONES_DESCARGAR, label: PERMISO_LABELS[PERMISO.EVALUACIONES_DESCARGAR] },

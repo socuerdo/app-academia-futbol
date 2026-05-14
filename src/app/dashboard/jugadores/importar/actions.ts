@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export type FilaImportacion = {
@@ -8,26 +9,40 @@ export type FilaImportacion = {
   apellido: string;
   nombre: string;
   sexo: string;
-  categoria: string;
+  categoria?: string;
   sede_nombre?: string;
   sede_id?: string;
   numero_camiseta?: number | null;
   fecha_nacimiento?: string | null;
+  fecha_inscripcion?: string | null;
   numero_carnet?: string | null;
   fecha_vencimiento_carnet?: string | null;
+};
+
+export type JugadorImportado = {
+  id: string;
+  dni: string;
+  apellido: string;
+  nombre: string;
 };
 
 export type ResultadoImportacion = {
   importados: number;
   duplicados: number;
   errores: string[];
+  jugadoresImportados: JugadorImportado[];
 };
 
 export async function importarJugadoresBatch(
   filas: FilaImportacion[],
   sedeIdPorNombre: Record<string, string>
 ): Promise<ResultadoImportacion> {
-  const result: ResultadoImportacion = { importados: 0, duplicados: 0, errores: [] };
+  const result: ResultadoImportacion = {
+    importados: 0,
+    duplicados: 0,
+    errores: [],
+    jugadoresImportados: [],
+  };
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,7 +54,7 @@ export async function importarJugadoresBatch(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) {
@@ -48,17 +63,18 @@ export async function importarJugadoresBatch(
   }
 
   const clubId = profile.club_id;
+  const hoy = new Date().toISOString().slice(0, 10);
 
   for (const row of filas) {
     const dni = String(row.dni ?? "").trim();
     const apellido = String(row.apellido ?? "").trim();
     const nombre = String(row.nombre ?? "").trim();
     const sexo = String(row.sexo ?? "M").trim().toUpperCase().slice(0, 1) || "M";
-    const categoria = String(row.categoria ?? "").trim();
+    const categoria = String(row.categoria ?? "").trim() || "Sin categoría";
     const sedeId = row.sede_id || (row.sede_nombre && sedeIdPorNombre[row.sede_nombre]) || null;
 
-    if (!dni || !apellido || !nombre || !categoria) {
-      result.errores.push(`Fila con DNI "${dni || "?"}": faltan datos obligatorios`);
+    if (!dni || !apellido || !nombre) {
+      result.errores.push(`Fila con DNI "${dni || "?"}": faltan datos obligatorios (DNI, apellido, nombre)`);
       continue;
     }
     if (!sedeId) {
@@ -78,29 +94,94 @@ export async function importarJugadoresBatch(
       continue;
     }
 
-    const { error } = await supabase.from("jugadores").insert({
-      club_id: clubId,
-      sede_id: sedeId,
-      dni,
-      apellido,
-      nombre,
-      sexo: sexo === "F" ? "F" : "M",
-      categoria,
-      numero_camiseta: row.numero_camiseta ?? null,
-      fecha_nacimiento: row.fecha_nacimiento || null,
-      numero_carnet: row.numero_carnet || null,
-      fecha_vencimiento_carnet: row.fecha_vencimiento_carnet || null,
-      activo: true,
-    });
+    const { data: creado, error } = await supabase
+      .from("jugadores")
+      .insert({
+        club_id: clubId,
+        sede_id: sedeId,
+        dni,
+        apellido,
+        nombre,
+        sexo: sexo === "F" ? "F" : "M",
+        categoria,
+        numero_camiseta: row.numero_camiseta ?? null,
+        fecha_nacimiento: row.fecha_nacimiento || null,
+        fecha_inscripcion: row.fecha_inscripcion || hoy,
+        numero_carnet: row.numero_carnet || null,
+        fecha_vencimiento_carnet: row.fecha_vencimiento_carnet || null,
+        activo: true,
+      })
+      .select("id")
+      .single();
 
     if (error) {
       result.errores.push(`DNI ${dni}: ${error.message}`);
       continue;
     }
-    result.importados++;
+    if (creado) {
+      result.importados++;
+      result.jugadoresImportados.push({ id: creado.id, dni, apellido, nombre });
+    }
+  }
+
+  if (result.importados > 0) {
+    await registrarAccion(supabase, {
+      clubId,
+      usuarioId: user.id,
+      usuarioNombre: profile.nombre_completo,
+      accion: "importar",
+      entidad: "importacion",
+      entidadDescripcion: `Importación masiva: ${result.importados} jugadores`,
+      cambios: { importados: result.importados, duplicados: result.duplicados },
+    });
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/jugadores/importar");
   return result;
+}
+
+export async function asignarCategoriaBatch(
+  jugadorIds: string[],
+  categoria: string
+): Promise<{ asignados: number; error?: string }> {
+  if (!jugadorIds.length || !categoria.trim()) {
+    return { asignados: 0, error: "Seleccioná al menos un jugador y una categoría." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { asignados: 0, error: "No autorizado" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("club_id, nombre_completo")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.club_id) return { asignados: 0, error: "Sin club asignado" };
+
+  const { error, count } = await supabase
+    .from("jugadores")
+    .update({ categoria: categoria.trim() })
+    .eq("club_id", profile.club_id)
+    .in("id", jugadorIds);
+
+  if (error) return { asignados: 0, error: error.message };
+
+  const asignados = count ?? jugadorIds.length;
+
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "asignar_categoria",
+    entidad: "jugador",
+    entidadDescripcion: `Asignación masiva de categoría "${categoria}" a ${asignados} jugadores`,
+    cambios: { categoria, jugadorIds },
+  });
+
+  revalidatePath("/dashboard/jugadores");
+  return { asignados };
 }

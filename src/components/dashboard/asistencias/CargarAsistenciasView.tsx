@@ -58,7 +58,7 @@ export function CargarAsistenciasView({
     initialJugadores.forEach((j) => {
       const ex = asistenciasExistentes[j.id];
       next[j.id] = {
-        presente: ex?.presente ?? true,
+        presente: ex?.presente ?? false,
         observacion: ex?.observacion ?? "",
       };
     });
@@ -113,7 +113,7 @@ export function CargarAsistenciasView({
     setSaving(true);
     const rows = jugadores.map((j) => ({
       jugador_id: j.id,
-      presente: asistencias[j.id]?.presente ?? true,
+      presente: asistencias[j.id]?.presente ?? false,
       observacion: asistencias[j.id]?.observacion || null,
     }));
     const result = await guardarAsistenciasBatch(fecha, sedeId, categoria, rows);
@@ -209,18 +209,18 @@ export function CargarAsistenciasView({
 
             <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[420px]">
+                <table className="w-full text-sm min-w-[580px]">
                   <thead>
                     <tr className="bg-slate-50 text-slate-600">
                       <th className="text-left py-2 px-4 w-12">Foto</th>
                       <th className="text-left py-2 px-4">Jugador</th>
                       <th className="text-center py-2 px-4 w-32">Presente</th>
-                      <th className="text-left py-2 px-4 hidden md:table-cell">Observación</th>
+                      <th className="text-left py-2 px-4">Observación</th>
                     </tr>
                   </thead>
                   <tbody>
                     {jugadores.map((j) => {
-                      const presente = asistencias[j.id]?.presente ?? true;
+                      const presente = asistencias[j.id]?.presente ?? false;
                       return (
                         <tr key={j.id} className="border-t border-slate-100 hover:bg-slate-50">
                           <td className="py-2 px-4">
@@ -273,7 +273,7 @@ export function CargarAsistenciasView({
                               </span>
                             </div>
                           </td>
-                          <td className="py-2 px-4 hidden md:table-cell">
+                          <td className="py-2 px-4">
                             <input
                               type="text"
                               value={asistencias[j.id]?.observacion ?? ""}

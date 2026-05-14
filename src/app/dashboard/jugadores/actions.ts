@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 function parseDate(v: FormDataEntryValue | null): string | null {
@@ -25,7 +26,7 @@ export async function crearJugador(formData: FormData): Promise<{ id?: string; e
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { error: "Sin club asignado" };
@@ -92,6 +93,16 @@ export async function crearJugador(formData: FormData): Promise<{ id?: string; e
     }
   }
 
+  await registrarAccion(supabase, {
+    clubId,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "crear",
+    entidad: "jugador",
+    entidadId: jugador.id,
+    entidadDescripcion: `${apellido}, ${nombre} (DNI ${dni})`,
+  });
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/jugadores/cargar");
   return { id: jugador.id };
@@ -109,14 +120,14 @@ export async function actualizarJugador(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { error: "Sin club asignado" };
 
   const { data: jugador } = await supabase
     .from("jugadores")
-    .select("id, club_id")
+    .select("id, club_id, apellido, nombre, dni, categoria, sexo, sede_id")
     .eq("id", jugadorId)
     .eq("club_id", profile.club_id)
     .single();
@@ -150,6 +161,24 @@ export async function actualizarJugador(
 
   if (error) return { error: error.message };
 
+  const cambios: Record<string, unknown> = {};
+  if (jugador.apellido !== apellido) cambios.apellido = { anterior: jugador.apellido, nuevo: apellido };
+  if (jugador.nombre !== nombre) cambios.nombre = { anterior: jugador.nombre, nuevo: nombre };
+  if (jugador.sexo !== sexo) cambios.sexo = { anterior: jugador.sexo, nuevo: sexo };
+  if (jugador.categoria !== categoria) cambios.categoria = { anterior: jugador.categoria, nuevo: categoria };
+  if (jugador.sede_id !== sedeId) cambios.sede_id = { anterior: jugador.sede_id, nuevo: sedeId };
+
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "editar",
+    entidad: "jugador",
+    entidadId: jugadorId,
+    entidadDescripcion: `${jugador.apellido}, ${jugador.nombre} (DNI ${jugador.dni})`,
+    cambios: Object.keys(cambios).length ? cambios : undefined,
+  });
+
   revalidatePath("/dashboard/jugadores/buscar");
   return {};
 }
@@ -163,10 +192,17 @@ export async function toggleActivoJugador(jugadorId: string, activo: boolean): P
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id")
+    .select("club_id, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { error: "Sin club asignado" };
+
+  const { data: jugador } = await supabase
+    .from("jugadores")
+    .select("apellido, nombre, dni")
+    .eq("id", jugadorId)
+    .eq("club_id", profile.club_id)
+    .maybeSingle();
 
   const { error } = await supabase
     .from("jugadores")
@@ -175,6 +211,17 @@ export async function toggleActivoJugador(jugadorId: string, activo: boolean): P
     .eq("club_id", profile.club_id);
 
   if (error) return { error: error.message };
+
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: activo ? "activar" : "desactivar",
+    entidad: "jugador",
+    entidadId: jugadorId,
+    entidadDescripcion: jugador ? `${jugador.apellido}, ${jugador.nombre} (DNI ${jugador.dni})` : undefined,
+  });
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/jugadores/activar");
   return {};
@@ -189,7 +236,7 @@ export async function eliminarJugador(jugadorId: string): Promise<{ error?: stri
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, nombre_completo")
     .eq("id", user.id)
     .single();
 
@@ -198,6 +245,13 @@ export async function eliminarJugador(jugadorId: string): Promise<{ error?: stri
     return { error: "Solo administradores pueden eliminar jugadores" };
   }
 
+  const { data: jugador } = await supabase
+    .from("jugadores")
+    .select("apellido, nombre, dni")
+    .eq("id", jugadorId)
+    .eq("club_id", profile.club_id)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("jugadores")
     .delete()
@@ -205,6 +259,16 @@ export async function eliminarJugador(jugadorId: string): Promise<{ error?: stri
     .eq("club_id", profile.club_id);
 
   if (error) return { error: error.message };
+
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "eliminar",
+    entidad: "jugador",
+    entidadId: jugadorId,
+    entidadDescripcion: jugador ? `${jugador.apellido}, ${jugador.nombre} (DNI ${jugador.dni})` : undefined,
+  });
 
   revalidatePath("/dashboard/jugadores/buscar");
   return {};

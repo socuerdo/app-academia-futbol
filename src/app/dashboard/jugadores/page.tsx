@@ -12,7 +12,7 @@ export default async function JugadoresPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, permisos")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) redirect("/login");
@@ -53,6 +53,7 @@ export default async function JugadoresPage() {
         initialJugadores={jugadores}
         sedes={sedes}
         rol={profile.rol}
+        permisos={profile.permisos ?? []}
         jugadoresConDeuda={Array.from(jugadoresConDeudaSet)}
         sedeIdPorNombre={sedeIdPorNombre}
       />

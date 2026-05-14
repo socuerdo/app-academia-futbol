@@ -21,12 +21,14 @@ export function getDashboardMenuItems(
     isAdmin || tienePermiso(permisos, PERMISO.ASISTENCIAS_DESCARGAR);
   const canVerCuotas = isAdmin || isSecretaria || isProfesor;
   const canCobrarCuotas = isAdmin || isSecretaria;
+  const canEditarJugadores =
+    isAdmin || isSecretaria || tienePermiso(permisos, PERMISO.JUGADORES_EDITAR);
 
   const items: MenuItem[] = [];
 
   items.push({ type: "link", label: "Dashboard", href: "/dashboard" });
 
-  if (isAdmin || isSecretaria) {
+  if (canEditarJugadores) {
     items.push({ type: "link", label: "Jugadores", href: "/dashboard/jugadores" });
   }
 
@@ -49,6 +51,7 @@ export function getDashboardMenuItems(
         { type: "link", label: "Categorías", href: "/dashboard/configuracion/categorias" },
         { type: "link", label: "Usuarios", href: "/dashboard/usuarios" },
         { type: "link", label: "Personalización", href: "/dashboard/configuracion" },
+        { type: "link", label: "Historial de actividad", href: "/dashboard/historial" },
       ],
     });
   }
