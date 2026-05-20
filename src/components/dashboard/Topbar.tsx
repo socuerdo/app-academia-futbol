@@ -5,6 +5,7 @@ import { Bell, Cake, LogOut, Menu, Slash, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { RoleSimulationModal } from "./RoleSimulationModal";
 import { RoleSimulationTrigger } from "./RoleSimulationTrigger";
 
 interface TopbarProps {
@@ -53,6 +54,7 @@ export function Topbar({
   const initials = getInitials(userName || userEmail);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -164,7 +166,7 @@ export function Topbar({
               </Link>
               {(rol === "admin" || rol === "superadmin") && (
                 <div className="border-t border-slate-100">
-                  <RoleSimulationTrigger rol={rol} />
+                  <RoleSimulationTrigger onOpen={() => { setMenuOpen(false); setRoleModalOpen(true); }} />
                 </div>
               )}
               <form action="/api/auth/signout" method="post" className="border-t border-slate-100">
@@ -181,6 +183,10 @@ export function Topbar({
           )}
         </div>
       </div>
+
+      {roleModalOpen && (
+        <RoleSimulationModal rol={rol} onClose={() => setRoleModalOpen(false)} />
+      )}
     </header>
   );
 }
