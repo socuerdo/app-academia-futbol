@@ -2,7 +2,11 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getDashboardMenuItems } from "@/lib/dashboard-menu";
 import { diasHastaCumpleanios } from "@/lib/fecha";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { Rol } from "@/types/database";
+
+const SIMULATION_ROLES_IN_DASHBOARD: Rol[] = ["profesor", "secretaria"];
 
 export default async function DashboardLayout({
   children,
@@ -61,7 +65,17 @@ export default async function DashboardLayout({
     );
   }
 
-  const menuItems = getDashboardMenuItems(profile.rol, profile.permisos ?? []);
+  const cookieStore = await cookies();
+  const simulatedRoleCookie = cookieStore.get("simulated_role")?.value as Rol | undefined;
+  const isPrivileged = profile.rol === "admin" || profile.rol === "superadmin";
+  const effectiveRol: Rol =
+    isPrivileged &&
+    simulatedRoleCookie &&
+    SIMULATION_ROLES_IN_DASHBOARD.includes(simulatedRoleCookie)
+      ? simulatedRoleCookie
+      : profile.rol;
+
+  const menuItems = getDashboardMenuItems(effectiveRol, effectiveRol === profile.rol ? (profile.permisos ?? []) : []);
   const userName = profile.nombre_completo?.trim() || user.email || "";
 
   const { data: jugadoresNac } = await supabase
@@ -82,7 +96,7 @@ export default async function DashboardLayout({
       user={{ id: user.id, email: user.email ?? undefined }}
       userName={userName}
       userPhotoUrl={profile.foto_url ?? null}
-      rol={profile.rol}
+      rol={effectiveRol}
       menuItems={menuItems}
       cumpleaniosCount={cumpleaniosCount}
     >
