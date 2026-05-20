@@ -2,7 +2,6 @@
 
 import { useRoleSimulation } from "@/hooks/useRoleSimulation";
 import { ShieldCheck } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -34,7 +33,6 @@ interface RoleSimulationTriggerProps {
 export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const router = useRouter();
   const { simulateRole } = useRoleSimulation();
 
   useEffect(() => { setMounted(true); }, []);
@@ -42,7 +40,7 @@ export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
   function handleSelect(selected: (typeof SIMULATION_ROLES)[number]) {
     simulateRole(selected.value, rol, "/dashboard");
     setShowModal(false);
-    router.push(selected.path);
+    window.location.assign(selected.path);
   }
 
   return (

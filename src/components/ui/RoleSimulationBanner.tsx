@@ -1,7 +1,6 @@
 "use client";
 
 import { useRoleSimulation } from "@/hooks/useRoleSimulation";
-import { useRouter } from "next/navigation";
 
 const ROL_LABELS: Record<string, string> = {
   canchero: "Canchero",
@@ -13,13 +12,12 @@ const ROL_LABELS: Record<string, string> = {
 
 export function RoleSimulationBanner() {
   const { isSimulating, simulatedRole, returnPath, clearSimulation } = useRoleSimulation();
-  const router = useRouter();
 
   if (!isSimulating || !simulatedRole) return null;
 
   function handleReturn() {
     clearSimulation();
-    router.push(returnPath);
+    window.location.assign(returnPath);
   }
 
   return (
