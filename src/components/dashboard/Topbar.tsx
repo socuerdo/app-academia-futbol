@@ -72,7 +72,7 @@ export function Topbar({
   }, [pathname]);
 
   return (
-    <header className="h-14 shrink-0 flex items-center justify-between px-4 gap-4 bg-white/90 backdrop-blur border-b border-slate-200/70 shadow-sm">
+    <header className="relative z-30 h-14 shrink-0 flex items-center justify-between px-4 gap-4 bg-white/90 backdrop-blur border-b border-slate-200/70 shadow-sm">
       <button
         type="button"
         onClick={onMenuClick}
