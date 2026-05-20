@@ -40,7 +40,11 @@ export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
   function handleSelect(selected: (typeof SIMULATION_ROLES)[number]) {
     simulateRole(selected.value, rol, "/dashboard");
     setShowModal(false);
-    window.location.assign(selected.path);
+    if (window.location.pathname.startsWith(selected.path)) {
+      window.location.reload();
+    } else {
+      window.location.href = selected.path;
+    }
   }
 
   return (
