@@ -1,5 +1,6 @@
 "use client";
 
+import { stopRoleSimulation } from "@/app/simulation-actions";
 import { useRoleSimulation } from "@/hooks/useRoleSimulation";
 
 const ROL_LABELS: Record<string, string> = {
@@ -15,7 +16,8 @@ export function RoleSimulationBanner() {
 
   if (!isSimulating || !simulatedRole) return null;
 
-  function handleReturn() {
+  async function handleReturn() {
+    await stopRoleSimulation();
     clearSimulation();
     window.location.assign(returnPath);
   }

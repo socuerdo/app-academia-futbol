@@ -1,5 +1,6 @@
 "use client";
 
+import { startRoleSimulation } from "@/app/simulation-actions";
 import { useRoleSimulation } from "@/hooks/useRoleSimulation";
 import { ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -37,7 +38,8 @@ export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
 
   useEffect(() => { setMounted(true); }, []);
 
-  function handleSelect(selected: (typeof SIMULATION_ROLES)[number]) {
+  async function handleSelect(selected: (typeof SIMULATION_ROLES)[number]) {
+    await startRoleSimulation(selected.value);
     simulateRole(selected.value, rol, "/dashboard");
     setShowModal(false);
     if (window.location.pathname.startsWith(selected.path)) {
