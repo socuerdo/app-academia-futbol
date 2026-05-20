@@ -58,7 +58,7 @@ export function CargarAsistenciasView({
     initialJugadores.forEach((j) => {
       const ex = asistenciasExistentes[j.id];
       next[j.id] = {
-        presente: false,
+        presente: ex?.presente ?? false,
         observacion: ex?.observacion ?? "",
       };
     });

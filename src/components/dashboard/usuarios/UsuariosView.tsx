@@ -3,6 +3,7 @@
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Pencil } from "lucide-react";
 
 type ProfileRow = {
   id: string;
@@ -41,6 +42,14 @@ export function UsuariosView({
   const catDropdownRef = useRef<HTMLDivElement | null>(null);
   const [nuevoRol, setNuevoRol] = useState<"profesor" | "secretaria">("profesor");
 
+  // Estado para el modal de edición
+  const [editingProfile, setEditingProfile] = useState<ProfileRow | null>(null);
+  const [editCategorias, setEditCategorias] = useState<string[]>([]);
+  const [editPermisos, setEditPermisos] = useState<string[]>([]);
+  const [editCatDropdownOpen, setEditCatDropdownOpen] = useState(false);
+  const editCatDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
 
   const permisoLabelByValue = useMemo(() => {
@@ -71,6 +80,66 @@ export function UsuariosView({
     setSelectedCategorias([]);
     setCatDropdownOpen(false);
     setNuevoRol("profesor");
+  }
+
+  useEffect(() => {
+    if (!editCatDropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (editCatDropdownRef.current && !editCatDropdownRef.current.contains(e.target as Node)) {
+        setEditCatDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editCatDropdownOpen]);
+
+  function openEditModal(p: ProfileRow) {
+    setEditingProfile(p);
+    setEditCategorias(p.categorias_asignadas ?? []);
+    setEditPermisos(p.permisos ?? []);
+    setEditCatDropdownOpen(false);
+    setError(null);
+  }
+
+  function closeEditModal() {
+    setEditingProfile(null);
+    setEditCategorias([]);
+    setEditPermisos([]);
+    setEditCatDropdownOpen(false);
+  }
+
+  function toggleEditCategoria(c: string) {
+    setEditCategorias((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+  }
+
+  function toggleEditPermiso(v: string) {
+    setEditPermisos((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
+  }
+
+  async function handleEditSave() {
+    if (!editingProfile) return;
+    setEditSaving(true);
+    setError(null);
+    const res = await fetch(`/api/users/update/${encodeURIComponent(editingProfile.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categorias_asignadas: editCategorias, permisos: editPermisos }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setEditSaving(false);
+    if (!res.ok) {
+      setError(data.error ?? "Error al actualizar");
+      return;
+    }
+    setProfiles((prev) =>
+      prev.map((x) =>
+        x.id === editingProfile.id
+          ? { ...x, categorias_asignadas: editCategorias, permisos: editPermisos }
+          : x
+      )
+    );
+    closeEditModal();
+    router.refresh();
   }
 
   async function handleToggleActivo(p: ProfileRow) {
@@ -164,6 +233,7 @@ export function UsuariosView({
               <th className="text-left py-2 px-4">Categorías</th>
               <th className="text-left py-2 px-4">Permisos</th>
               <th className="text-center py-2 px-4 w-24">Activo</th>
+              <th className="w-10" />
             </tr>
           </thead>
           <tbody>
@@ -191,9 +261,7 @@ export function UsuariosView({
                     aria-checked={p.activo}
                     disabled={updatingId === p.id}
                     onClick={() => setConfirmToggle(p)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50 ${
-                      p.activo ? "" : ""
-                    }`}
+                    className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50"
                     style={{
                       backgroundColor: p.activo ? "var(--color-primary)" : "#cbd5e1",
                     }}
@@ -205,6 +273,18 @@ export function UsuariosView({
                       style={{ marginTop: 2 }}
                     />
                   </button>
+                </td>
+                <td className="py-2 px-2">
+                  {(p.rol === "profesor" || p.rol === "secretaria") && (
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(p)}
+                      className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      aria-label={`Editar ${p.nombre_completo || p.email}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -223,6 +303,110 @@ export function UsuariosView({
           onConfirm={() => { handleToggleActivo(confirmToggle); setConfirmToggle(null); }}
           onCancel={() => setConfirmToggle(null)}
         />
+      )}
+
+      {editingProfile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => !editSaving && closeEditModal()}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-slate-800">
+                Editar {editingProfile.nombre_completo || editingProfile.email}
+              </h2>
+              <button type="button" onClick={closeEditModal} className="p-1 rounded text-slate-500 hover:bg-slate-100">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              {editingProfile.rol === "profesor" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Categorías asignadas</label>
+                    {categorias.length === 0 ? (
+                      <p className="text-xs text-slate-500">No hay categorías activas.</p>
+                    ) : (
+                      <div className="relative" ref={editCatDropdownRef}>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setEditCatDropdownOpen((o) => !o)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setEditCatDropdownOpen((o) => !o); }
+                          }}
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left flex items-center justify-between gap-2 bg-white hover:border-slate-400 cursor-pointer"
+                        >
+                          <div className="flex flex-wrap gap-1 min-h-[1.25rem]">
+                            {editCategorias.length === 0 ? (
+                              <span className="text-slate-400">Sin categorías asignadas</span>
+                            ) : (
+                              editCategorias.map((c) => (
+                                <span
+                                  key={c}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                  style={{ backgroundColor: "var(--color-primary)" }}
+                                >
+                                  {c}
+                                  <span
+                                    onClick={(e) => { e.stopPropagation(); toggleEditCategoria(c); }}
+                                    className="hover:opacity-80 cursor-pointer"
+                                    aria-label={`Quitar ${c}`}
+                                  >×</span>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                          <svg className={`w-4 h-4 text-slate-500 transition-transform flex-shrink-0 ${editCatDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        {editCatDropdownOpen && (
+                          <div className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                            {categorias.map((c) => (
+                              <label key={c} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={editCategorias.includes(c)}
+                                  onChange={() => toggleEditCategoria(c)}
+                                  className="rounded border-slate-300"
+                                />
+                                <span className="text-slate-700">{c}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Permisos</label>
+                    <div className="flex flex-col gap-2">
+                      {permisosOpciones.map((perm) => (
+                        <label key={perm.value} className="inline-flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={editPermisos.includes(perm.value)}
+                            onChange={() => toggleEditPermiso(perm.value)}
+                            className="rounded border-slate-300"
+                          />
+                          {perm.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={closeEditModal} disabled={editSaving} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50">Cancelar</button>
+                <button type="button" onClick={handleEditSave} disabled={editSaving} className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ backgroundColor: "var(--color-primary)" }}>
+                  {editSaving ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {showModal && (
