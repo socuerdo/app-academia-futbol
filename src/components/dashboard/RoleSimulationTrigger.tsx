@@ -3,7 +3,8 @@
 import { useRoleSimulation } from "@/hooks/useRoleSimulation";
 import { ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const SIMULATION_ROLES = [
   {
@@ -32,8 +33,11 @@ interface RoleSimulationTriggerProps {
 
 export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { simulateRole } = useRoleSimulation();
+
+  useEffect(() => { setMounted(true); }, []);
 
   function handleSelect(selected: (typeof SIMULATION_ROLES)[number]) {
     simulateRole(selected.value, rol, "/dashboard");
@@ -53,13 +57,13 @@ export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
         Cambiar rol a...
       </button>
 
-      {showModal && (
+      {showModal && mounted && createPortal(
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl max-w-sm w-full"
+            className="bg-white rounded-xl shadow-xl max-w-sm w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-slate-200">
@@ -91,7 +95,8 @@ export function RoleSimulationTrigger({ rol }: RoleSimulationTriggerProps) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
