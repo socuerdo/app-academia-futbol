@@ -29,6 +29,7 @@ export function CancheroDashboard({
   const [turnosEscuela, setTurnosEscuela] = useState<TurnoEscuela[]>(initialTurnosEscuela);
   const [showModal, setShowModal] = useState(false);
   const [editingTurno, setEditingTurno] = useState<TurnoAlquiler | null>(null);
+  const [modalPreset, setModalPreset] = useState<{ cancha: string; hora: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -63,6 +64,11 @@ export function CancheroDashboard({
     );
     setShowModal(false);
     setEditingTurno(null);
+    setModalPreset(null);
+  }
+
+  function handleTurnoActualizado(turno: TurnoAlquiler) {
+    setTurnosAlquiler((prev) => prev.map((t) => (t.id === turno.id ? turno : t)));
   }
 
   function handleTurnoEliminado(id: string) {
@@ -81,11 +87,19 @@ export function CancheroDashboard({
 
   function openNuevoModal() {
     setEditingTurno(null);
+    setModalPreset(null);
+    setShowModal(true);
+  }
+
+  function openNuevoModalPreset(cancha: string, hora: string) {
+    setEditingTurno(null);
+    setModalPreset({ cancha, hora });
     setShowModal(true);
   }
 
   function openEditModal(turno: TurnoAlquiler) {
     setEditingTurno(turno);
+    setModalPreset(null);
     setShowModal(true);
   }
 
@@ -146,6 +160,8 @@ export function CancheroDashboard({
             turnosAlquiler={turnosAlquiler}
             turnosEscuela={turnosEscuela}
             now={now}
+            onNuevaReserva={openNuevoModalPreset}
+            onEditar={openEditModal}
           />
         )}
         {tab === "horarios" && (
@@ -155,6 +171,7 @@ export function CancheroDashboard({
             onFechaChange={handleFechaChange}
             onEditar={openEditModal}
             onEliminado={handleTurnoEliminado}
+            onActualizado={handleTurnoActualizado}
           />
         )}
         {tab === "cobros" && (
@@ -179,8 +196,9 @@ export function CancheroDashboard({
         <NuevaReservaModal
           fecha={fecha}
           turno={editingTurno}
+          preset={modalPreset}
           onGuardado={handleTurnoGuardado}
-          onClose={() => { setShowModal(false); setEditingTurno(null); }}
+          onClose={() => { setShowModal(false); setEditingTurno(null); setModalPreset(null); }}
         />
       )}
     </div>

@@ -3,8 +3,14 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import type { TurnoAlquiler } from "@/lib/canchas";
-import { eliminarTurnoAlquiler } from "../actions";
+import { eliminarTurnoAlquiler, actualizarTurnoAlquiler } from "../actions";
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
+
+const NEXT_ESTADO: Record<string, TurnoAlquiler["estado"]> = {
+  pendiente: "parcial",
+  parcial: "pagado",
+  pagado: "pendiente",
+};
 
 interface HorariosTabProps {
   fecha: string;
@@ -12,6 +18,7 @@ interface HorariosTabProps {
   onFechaChange: (f: string) => void;
   onEditar: (turno: TurnoAlquiler) => void;
   onEliminado: (id: string) => void;
+  onActualizado: (turno: TurnoAlquiler) => void;
 }
 
 const ESTADO_STYLES: Record<string, string> = {
@@ -26,10 +33,19 @@ const ESTADO_LABEL: Record<string, string> = {
   pendiente: "Pendiente",
 };
 
-export function HorariosTab({ fecha, turnosAlquiler, onFechaChange, onEditar, onEliminado }: HorariosTabProps) {
+export function HorariosTab({ fecha, turnosAlquiler, onFechaChange, onEditar, onEliminado, onActualizado }: HorariosTabProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleToggleEstado(t: TurnoAlquiler) {
+    setTogglingId(t.id);
+    const nextEstado = NEXT_ESTADO[t.estado] ?? "pendiente";
+    const res = await actualizarTurnoAlquiler(t.id, { estado: nextEstado });
+    setTogglingId(null);
+    if (res.data) onActualizado(res.data);
+  }
 
   async function handleEliminar(id: string) {
     setDeletingId(id);
@@ -75,9 +91,15 @@ export function HorariosTab({ fecha, turnosAlquiler, onFechaChange, onEditar, on
                     <span className="font-mono font-semibold text-slate-800">{t.hora}</span>
                     <span className="font-bold text-slate-800">{t.cancha}</span>
                   </div>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${ESTADO_STYLES[t.estado] ?? ESTADO_STYLES.pendiente}`}>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleEstado(t)}
+                    disabled={togglingId === t.id}
+                    title="Cambiar estado"
+                    className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold transition-opacity disabled:opacity-50 ${ESTADO_STYLES[t.estado] ?? ESTADO_STYLES.pendiente}`}
+                  >
                     {ESTADO_LABEL[t.estado] ?? t.estado}
-                  </span>
+                  </button>
                 </div>
                 <p className="text-sm text-slate-700">{t.equipo1 ?? "—"} vs {t.equipo2 ?? "—"}</p>
                 <div className="flex gap-4 mt-1 text-xs text-slate-500">
@@ -139,9 +161,15 @@ export function HorariosTab({ fecha, turnosAlquiler, onFechaChange, onEditar, on
                     </td>
                     <td className="py-2 px-4 text-slate-500 max-w-[140px] truncate">{t.notas ?? "—"}</td>
                     <td className="py-2 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${ESTADO_STYLES[t.estado] ?? ESTADO_STYLES.pendiente}`}>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleEstado(t)}
+                        disabled={togglingId === t.id}
+                        title="Cambiar estado"
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold transition-opacity disabled:opacity-50 ${ESTADO_STYLES[t.estado] ?? ESTADO_STYLES.pendiente}`}
+                      >
                         {ESTADO_LABEL[t.estado] ?? t.estado}
-                      </span>
+                      </button>
                     </td>
                     <td className="py-2 px-2">
                       <div className="flex items-center gap-1">

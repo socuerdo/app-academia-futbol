@@ -8,6 +8,7 @@ import { crearTurnoAlquiler, actualizarTurnoAlquiler } from "../actions";
 interface NuevaReservaModalProps {
   fecha: string;
   turno: TurnoAlquiler | null;
+  preset?: { cancha: string; hora: string } | null;
   onGuardado: (turno: TurnoAlquiler, isNew: boolean) => void;
   onClose: () => void;
 }
@@ -24,13 +25,13 @@ type FormState = {
   notas: string;
 };
 
-export function NuevaReservaModal({ fecha, turno, onGuardado, onClose }: NuevaReservaModalProps) {
+export function NuevaReservaModal({ fecha, turno, preset, onGuardado, onClose }: NuevaReservaModalProps) {
   const isEditing = turno !== null;
 
   const [form, setForm] = useState<FormState>({
     fecha: turno?.fecha ?? fecha,
-    hora: turno?.hora ?? "08:00",
-    cancha: turno?.cancha ?? "C1",
+    hora: turno?.hora ?? preset?.hora ?? "08:00",
+    cancha: turno?.cancha ?? preset?.cancha ?? "C1",
     equipo1: turno?.equipo1 ?? "",
     equipo2: turno?.equipo2 ?? "",
     efectivo: turno?.efectivo?.toString() ?? "",
@@ -45,8 +46,8 @@ export function NuevaReservaModal({ fecha, turno, onGuardado, onClose }: NuevaRe
   useEffect(() => {
     setForm({
       fecha: turno?.fecha ?? fecha,
-      hora: turno?.hora ?? "08:00",
-      cancha: turno?.cancha ?? "C1",
+      hora: turno?.hora ?? preset?.hora ?? "08:00",
+      cancha: turno?.cancha ?? preset?.cancha ?? "C1",
       equipo1: turno?.equipo1 ?? "",
       equipo2: turno?.equipo2 ?? "",
       efectivo: turno?.efectivo?.toString() ?? "",
@@ -55,7 +56,7 @@ export function NuevaReservaModal({ fecha, turno, onGuardado, onClose }: NuevaRe
       notas: turno?.notas ?? "",
     });
     setError(null);
-  }, [turno, fecha]);
+  }, [turno, fecha, preset]);
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }));

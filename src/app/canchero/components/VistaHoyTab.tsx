@@ -7,6 +7,8 @@ interface VistaHoyTabProps {
   turnosAlquiler: TurnoAlquiler[];
   turnosEscuela: TurnoEscuela[];
   now: Date;
+  onNuevaReserva: (cancha: string, hora: string) => void;
+  onEditar: (turno: TurnoAlquiler) => void;
 }
 
 function getCurrentSlot(now: Date): string {
@@ -27,7 +29,7 @@ function getEscuelaSlot(now: Date): string {
   return `${now.getHours().toString().padStart(2, "0")}:00`;
 }
 
-export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now }: VistaHoyTabProps) {
+export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now, onNuevaReserva, onEditar }: VistaHoyTabProps) {
   const currentAlquilerSlot = getCurrentSlot(now);
   const currentEscuelaSlot = getEscuelaSlot(now);
 
@@ -105,10 +107,23 @@ export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now }: VistaHoyTabP
             );
           }
 
+          const isClickable = !!alquiler || (!alquiler && !escuela);
+          const CardEl = isClickable ? "button" : "div";
+          const cardProps = isClickable
+            ? {
+                type: "button" as const,
+                onClick: alquiler
+                  ? () => onEditar(alquiler)
+                  : () => onNuevaReserva(cancha.id, currentAlquilerSlot),
+                title: alquiler ? "Editar reserva" : "Nueva reserva",
+              }
+            : {};
+
           return (
-            <div
+            <CardEl
               key={cancha.id}
-              className="bg-white rounded-xl p-4 border-l-4 shadow-sm"
+              {...cardProps}
+              className={`w-full text-left bg-white rounded-xl p-4 border-l-4 shadow-sm transition-shadow ${isClickable ? "cursor-pointer hover:shadow-md" : ""}`}
               style={{ borderLeftColor: borderColor, borderTopColor: "#e2e8f0", borderRightColor: "#e2e8f0", borderBottomColor: "#e2e8f0", borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1 }}
             >
               <div className="flex items-start justify-between">
@@ -121,7 +136,7 @@ export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now }: VistaHoyTabP
                 </span>
               </div>
               {contenido}
-            </div>
+            </CardEl>
           );
         })}
       </div>
