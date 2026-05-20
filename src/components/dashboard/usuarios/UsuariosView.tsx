@@ -4,6 +4,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
+import { ImportarUsuariosView } from "./ImportarUsuariosView";
 
 type ProfileRow = {
   id: string;
@@ -49,6 +50,7 @@ export function UsuariosView({
   const [editCatDropdownOpen, setEditCatDropdownOpen] = useState(false);
   const editCatDropdownRef = useRef<HTMLDivElement | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [showImportar, setShowImportar] = useState(false);
 
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
 
@@ -212,7 +214,14 @@ export function UsuariosView({
       )}
 
       {clubId && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => { setShowImportar((v) => !v); }}
+            className="px-4 py-2 rounded-lg font-medium text-sm border border-slate-300 text-slate-700 hover:bg-slate-50"
+          >
+            Importar CSV
+          </button>
           <button
             type="button"
             onClick={() => setShowModal(true)}
@@ -222,6 +231,13 @@ export function UsuariosView({
             Nuevo usuario
           </button>
         </div>
+      )}
+
+      {showImportar && (
+        <ImportarUsuariosView
+          onClose={() => setShowImportar(false)}
+          onImportado={() => router.refresh()}
+        />
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
