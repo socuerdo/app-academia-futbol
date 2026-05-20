@@ -51,8 +51,8 @@ export async function POST(request: Request) {
       club_id?: string;
     } = body;
 
-    const rolFinal: "profesor" | "secretaria" =
-      rolNuevo === "secretaria" ? "secretaria" : "profesor";
+    const rolFinal: "profesor" | "secretaria" | "canchero" =
+      rolNuevo === "secretaria" ? "secretaria" : rolNuevo === "canchero" ? "canchero" : "profesor";
 
     if (!email?.trim() || !password) {
       return NextResponse.json(
@@ -110,16 +110,18 @@ export async function POST(request: Request) {
     }
 
     const isSecretaria = rolFinal === "secretaria";
+    const isCanchero = rolFinal === "canchero";
+    const sinCategoriasPermisos = isSecretaria || isCanchero;
     const { error: profileError } = await supabaseAdmin.from("profiles").update({
       club_id: targetClubId,
       rol: rolFinal,
       nombre_completo: (nombre_completo?.trim() || email.trim()) as string,
-      categorias_asignadas: isSecretaria
+      categorias_asignadas: sinCategoriasPermisos
         ? []
         : Array.isArray(categorias_asignadas)
           ? categorias_asignadas
           : [],
-      permisos: isSecretaria
+      permisos: sinCategoriasPermisos
         ? []
         : Array.isArray(permisos)
           ? permisos
@@ -142,8 +144,8 @@ export async function POST(request: Request) {
         nombre_completo: nombre_completo?.trim() || userData.user.email,
         rol: rolFinal,
         club_id: targetClubId,
-        categorias_asignadas: isSecretaria ? [] : (categorias_asignadas ?? []),
-        permisos: isSecretaria ? [] : (permisos ?? []),
+        categorias_asignadas: sinCategoriasPermisos ? [] : (categorias_asignadas ?? []),
+        permisos: sinCategoriasPermisos ? [] : (permisos ?? []),
       },
     });
   } catch (e) {

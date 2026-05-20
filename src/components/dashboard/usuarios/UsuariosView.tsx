@@ -41,7 +41,7 @@ export function UsuariosView({
   const [selectedCategorias, setSelectedCategorias] = useState<string[]>([]);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef<HTMLDivElement | null>(null);
-  const [nuevoRol, setNuevoRol] = useState<"profesor" | "secretaria">("profesor");
+  const [nuevoRol, setNuevoRol] = useState<"profesor" | "secretaria" | "canchero">("profesor");
 
   // Estado para el modal de edición
   const [editingProfile, setEditingProfile] = useState<ProfileRow | null>(null);
@@ -174,8 +174,9 @@ export function UsuariosView({
     const password = (formData.get("password") as string | null) ?? "";
     const nombre_completo = (formData.get("nombre_completo") as string | null) ?? "";
     const isSecretaria = nuevoRol === "secretaria";
-    const categoriasAsignadas = isSecretaria ? [] : selectedCategorias;
-    const permisos = isSecretaria ? [] : (formData.getAll("permiso") as string[]);
+    const isCanchero = nuevoRol === "canchero";
+    const categoriasAsignadas = (isSecretaria || isCanchero) ? [] : selectedCategorias;
+    const permisos = (isSecretaria || isCanchero) ? [] : (formData.getAll("permiso") as string[]);
 
     try {
       const res = await fetch("/api/users/create", {
@@ -443,11 +444,12 @@ export function UsuariosView({
                 <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de usuario *</label>
                 <select
                   value={nuevoRol}
-                  onChange={(e) => setNuevoRol(e.target.value as "profesor" | "secretaria")}
+                  onChange={(e) => setNuevoRol(e.target.value as "profesor" | "secretaria" | "canchero")}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                 >
                   <option value="profesor">Profesor</option>
                   <option value="secretaria">Secretaría</option>
+                  <option value="canchero">Canchero</option>
                 </select>
               </div>
               <div>
@@ -465,6 +467,7 @@ export function UsuariosView({
               {nuevoRol === "profesor" && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Categorías asignadas</label>
+
                 {categorias.length === 0 ? (
                   <p className="text-xs text-slate-500">
                     No hay categorías activas. Creá una en Configuración → Categorías.

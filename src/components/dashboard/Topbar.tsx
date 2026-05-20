@@ -20,6 +20,7 @@ const rolLabels: Record<Rol, string> = {
   admin: "Admin",
   profesor: "Profesor",
   secretaria: "Secretaría",
+  canchero: "Canchero",
 };
 
 function formatSegment(segment: string): string {

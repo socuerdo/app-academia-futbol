@@ -9,6 +9,7 @@ const rolLabels: Record<Rol, string> = {
   admin: "Admin",
   profesor: "Profesor",
   secretaria: "Secretaría",
+  canchero: "Canchero",
 };
 
 interface PerfilViewProps {

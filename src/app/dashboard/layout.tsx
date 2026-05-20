@@ -29,9 +29,14 @@ export default async function DashboardLayout({
     (profile.rol !== "admin" &&
       profile.rol !== "profesor" &&
       profile.rol !== "superadmin" &&
-      profile.rol !== "secretaria")
+      profile.rol !== "secretaria" &&
+      profile.rol !== "canchero")
   ) {
     redirect("/login");
+  }
+
+  if (profile.rol === "canchero") {
+    redirect("/canchero");
   }
 
   if (!profile.club_id) {
