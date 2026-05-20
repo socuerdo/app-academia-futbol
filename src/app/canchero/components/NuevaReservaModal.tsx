@@ -93,13 +93,14 @@ export function NuevaReservaModal({ fecha, turno, onGuardado, onClose }: NuevaRe
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-4 bg-black/50"
       onClick={() => !saving && onClose()}
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-t-2xl sm:rounded-xl shadow-xl w-full sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="sm:hidden mx-auto w-10 h-1 bg-slate-300 rounded-full mt-3 mb-1" />
         <div className="p-4 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-slate-800">
             {isEditing ? "Editar reserva" : "Nueva reserva"}

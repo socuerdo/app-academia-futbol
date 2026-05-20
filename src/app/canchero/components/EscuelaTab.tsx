@@ -121,7 +121,7 @@ export function EscuelaTab({ fecha, turnosEscuela, onFechaChange, onGuardado, on
       {showForm && (
         <form onSubmit={handleSubmit} className="rounded-xl border border-slate-200 bg-white p-4 space-y-4">
           <h3 className="font-semibold text-slate-800">Nueva clase</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">Hora</label>
               <select
@@ -202,42 +202,76 @@ export function EscuelaTab({ fecha, turnosEscuela, onFechaChange, onGuardado, on
           <p className="text-slate-400 text-sm">No hay clases cargadas para este día.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 text-slate-600">
-                <th className="text-left py-2 px-4">Hora</th>
-                <th className="text-left py-2 px-4">Cancha</th>
-                <th className="text-left py-2 px-4">Clase</th>
-                <th className="text-left py-2 px-4">Tipo</th>
-                <th className="text-left py-2 px-4">Profesor</th>
-                <th className="w-12" />
-              </tr>
-            </thead>
-            <tbody>
-              {turnosEscuela.map((t) => (
-                <tr key={t.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="py-2 px-4 font-mono">{t.hora}</td>
-                  <td className="py-2 px-4 font-semibold">{t.cancha}</td>
-                  <td className="py-2 px-4">{t.equipo_clase ?? "—"}</td>
-                  <td className="py-2 px-4">{t.tipo ?? "—"}</td>
-                  <td className="py-2 px-4">{t.profesor ?? "—"}</td>
-                  <td className="py-2 px-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfirmId(t.id)}
-                      disabled={deletingId === t.id}
-                      className="p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-                      aria-label="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
+        <>
+          {/* Mobile cards */}
+          <div className="sm:hidden space-y-2">
+            {turnosEscuela.map((t) => (
+              <div key={t.id} className="bg-white rounded-xl border border-slate-200 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-mono font-semibold text-slate-800">{t.hora}</span>
+                      <span className="font-bold text-slate-800">{t.cancha}</span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Escuela</span>
+                    </div>
+                    <p className="text-sm text-slate-700">{t.equipo_clase ?? "—"}</p>
+                    <div className="flex gap-3 mt-0.5 text-xs text-slate-500">
+                      {t.tipo && <span>{t.tipo}</span>}
+                      {t.profesor && <span>{t.profesor}</span>}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmId(t.id)}
+                    disabled={deletingId === t.id}
+                    className="shrink-0 p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 text-slate-600">
+                  <th className="text-left py-2 px-4">Hora</th>
+                  <th className="text-left py-2 px-4">Cancha</th>
+                  <th className="text-left py-2 px-4">Clase</th>
+                  <th className="text-left py-2 px-4">Tipo</th>
+                  <th className="text-left py-2 px-4">Profesor</th>
+                  <th className="w-12" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {turnosEscuela.map((t) => (
+                  <tr key={t.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <td className="py-2 px-4 font-mono">{t.hora}</td>
+                    <td className="py-2 px-4 font-semibold">{t.cancha}</td>
+                    <td className="py-2 px-4">{t.equipo_clase ?? "—"}</td>
+                    <td className="py-2 px-4">{t.tipo ?? "—"}</td>
+                    <td className="py-2 px-4">{t.profesor ?? "—"}</td>
+                    <td className="py-2 px-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmId(t.id)}
+                        disabled={deletingId === t.id}
+                        className="p-1.5 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        aria-label="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {confirmId && (

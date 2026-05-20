@@ -96,16 +96,16 @@ export function CancheroDashboard({
     hour12: false,
   });
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "hoy", label: "Vista de hoy" },
-    { id: "horarios", label: "Horarios" },
-    { id: "cobros", label: "Cobros" },
-    { id: "escuela", label: "Escuela" },
+  const tabs: { id: Tab; label: string; short: string }[] = [
+    { id: "hoy", label: "Vista de hoy", short: "Hoy" },
+    { id: "horarios", label: "Horarios", short: "Horarios" },
+    { id: "cobros", label: "Cobros", short: "Cobros" },
+    { id: "escuela", label: "Escuela", short: "Escuela" },
   ];
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-4">
+      <div className="bg-white border-b border-slate-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-4">
           <span className="text-xl font-mono font-semibold text-slate-700">{timeStr}</span>
           {loading && (
@@ -115,7 +115,7 @@ export function CancheroDashboard({
         <button
           type="button"
           onClick={openNuevoModal}
-          className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+          className="w-full sm:w-auto px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
           style={{ backgroundColor: "#16a34a" }}
         >
           + Nueva reserva
@@ -134,7 +134,8 @@ export function CancheroDashboard({
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
             }`}
           >
-            {t.label}
+            <span className="sm:hidden">{t.short}</span>
+            <span className="hidden sm:inline">{t.label}</span>
           </button>
         ))}
       </div>

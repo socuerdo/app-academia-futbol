@@ -59,7 +59,7 @@ export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now }: VistaHoyTabP
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {CANCHAS.map((cancha) => {
           const alquiler = turnosAlquiler.find(
             (t) => t.cancha === cancha.id && t.hora === currentAlquilerSlot

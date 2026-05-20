@@ -25,7 +25,10 @@ export function RoleSimulationBanner() {
   return (
     <div className="shrink-0 bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2 text-sm flex-wrap">
-        <span className="text-amber-700 font-medium">Estás viendo como:</span>
+        <span className="text-amber-700 font-medium">
+          <span className="sm:hidden">Ves como:</span>
+          <span className="hidden sm:inline">Estás viendo como:</span>
+        </span>
         <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-semibold text-xs">
           {ROL_LABELS[simulatedRole] ?? simulatedRole}
         </span>
@@ -36,7 +39,8 @@ export function RoleSimulationBanner() {
         onClick={handleReturn}
         className="shrink-0 px-3 py-1 rounded-lg text-xs font-medium bg-amber-200 text-amber-800 hover:bg-amber-300 transition-colors"
       >
-        Volver a mi rol
+        <span className="sm:hidden">Salir</span>
+        <span className="hidden sm:inline">Volver a mi rol</span>
       </button>
     </div>
   );

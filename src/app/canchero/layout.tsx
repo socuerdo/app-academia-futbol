@@ -38,11 +38,11 @@ export default async function CancheroLayout({
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
       <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-lg font-bold text-slate-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-base sm:text-lg font-bold text-slate-800 truncate">
             {club?.nombre ?? "Club"}
           </span>
-          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+          <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
             Canchero
           </span>
         </div>
