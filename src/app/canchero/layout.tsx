@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CancheroSignOut } from "./components/CancheroSignOut";
+import { RoleSimulationBanner } from "@/components/ui/RoleSimulationBanner";
 
 export default async function CancheroLayout({
   children,
@@ -47,6 +48,7 @@ export default async function CancheroLayout({
         </div>
         <CancheroSignOut />
       </header>
+      <RoleSimulationBanner />
       <main className="flex-1 flex flex-col">
         {children}
       </main>

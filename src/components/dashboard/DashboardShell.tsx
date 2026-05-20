@@ -5,6 +5,7 @@ import type { MenuItem } from "@/types/dashboard";
 import { useCallback, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { RoleSimulationBanner } from "@/components/ui/RoleSimulationBanner";
 
 interface DashboardUser {
   id: string;
@@ -103,6 +104,7 @@ export function DashboardShell({
           onMenuClick={openMobile}
           cumpleaniosCount={cumpleaniosCount}
         />
+        <RoleSimulationBanner />
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </div>
 

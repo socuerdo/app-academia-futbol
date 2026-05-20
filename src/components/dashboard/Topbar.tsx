@@ -5,6 +5,7 @@ import { Bell, Cake, LogOut, Menu, Slash, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { RoleSimulationTrigger } from "./RoleSimulationTrigger";
 
 interface TopbarProps {
   userName: string;
@@ -161,6 +162,11 @@ export function Topbar({
                 <User className="w-4 h-4 text-slate-500" />
                 Mi perfil
               </Link>
+              {(rol === "admin" || rol === "superadmin") && (
+                <div className="border-t border-slate-100">
+                  <RoleSimulationTrigger rol={rol} />
+                </div>
+              )}
               <form action="/api/auth/signout" method="post" className="border-t border-slate-100">
                 <button
                   type="submit"
