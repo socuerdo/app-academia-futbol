@@ -11,6 +11,15 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Verificar secrets
+        run: |
+          if [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+            echo "ERROR: El secret SUPABASE_SERVICE_ROLE_KEY no está configurado en GitHub."
+            echo "Andá a Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          echo "Secrets OK."
+
       - name: Exportar tablas y subir backup
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -109,8 +118,12 @@ jobs:
               data=data,
               headers=headers,
           )
-          with request.urlopen(req) as resp:
-              objects = json.loads(resp.read())
+          try:
+              with request.urlopen(req) as resp:
+                  objects = json.loads(resp.read())
+          except error.HTTPError as e:
+              print(f"Error al listar backups (HTTP {e.code}): {e.read().decode()}")
+              sys.exit(1)
 
           to_delete = []
           for obj in objects:
@@ -134,7 +147,11 @@ jobs:
               headers=headers,
               method="DELETE",
           )
-          with request.urlopen(req) as resp:
-              result = json.loads(resp.read())
-          print(f"Eliminados ({len(to_delete)}): {to_delete}")
+          try:
+              with request.urlopen(req) as resp:
+                  result = json.loads(resp.read())
+              print(f"Eliminados ({len(to_delete)}): {to_delete}")
+          except error.HTTPError as e:
+              print(f"Error al eliminar backups (HTTP {e.code}): {e.read().decode()}")
+              sys.exit(1)
           PYEOF

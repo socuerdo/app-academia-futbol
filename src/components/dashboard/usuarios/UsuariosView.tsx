@@ -57,6 +57,7 @@ export function UsuariosView({
   const [changePasswordValue, setChangePasswordValue] = useState("");
   const [changePasswordSaving, setChangePasswordSaving] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState<string | null>(null);
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
 
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
 
@@ -143,8 +144,12 @@ export function UsuariosView({
       setChangePasswordError(data.error ?? "Error al cambiar contraseña");
       return;
     }
-    setChangingPasswordProfile(null);
-    setChangePasswordValue("");
+    setChangePasswordSuccess(true);
+    setTimeout(() => {
+      setChangingPasswordProfile(null);
+      setChangePasswordValue("");
+      setChangePasswordSuccess(false);
+    }, 1500);
   }
 
   async function handleEditSave() {
@@ -497,6 +502,9 @@ export function UsuariosView({
               </div>
               {changePasswordError && (
                 <p className="text-sm text-red-600">{changePasswordError}</p>
+              )}
+              {changePasswordSuccess && (
+                <p className="text-sm text-green-600 font-medium">Contraseña actualizada correctamente.</p>
               )}
               <div className="flex gap-2 pt-1">
                 <button

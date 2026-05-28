@@ -42,11 +42,15 @@ export async function PATCH(
         .eq("id", id)
         .single();
 
-      if (targetProfile?.rol === "superadmin") {
+      if (!targetProfile) {
+        return NextResponse.json({ error: "Usuario no encontrado." }, { status: 404 });
+      }
+
+      if (targetProfile.rol === "superadmin") {
         return NextResponse.json({ error: "No se puede cambiar la contraseña de un superadmin." }, { status: 403 });
       }
 
-      if (profile?.rol === "admin" && targetProfile?.club_id !== profile?.club_id) {
+      if (profile?.rol === "admin" && targetProfile.club_id !== profile?.club_id) {
         return NextResponse.json({ error: "Sin permiso." }, { status: 403 });
       }
 
