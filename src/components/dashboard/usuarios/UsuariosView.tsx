@@ -3,7 +3,7 @@
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pencil } from "lucide-react";
+import { KeyRound, Pencil } from "lucide-react";
 import { ImportarUsuariosView } from "./ImportarUsuariosView";
 
 type ProfileRow = {
@@ -51,6 +51,12 @@ export function UsuariosView({
   const editCatDropdownRef = useRef<HTMLDivElement | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [showImportar, setShowImportar] = useState(false);
+
+  // Estado para el modal de cambio de contraseña
+  const [changingPasswordProfile, setChangingPasswordProfile] = useState<ProfileRow | null>(null);
+  const [changePasswordValue, setChangePasswordValue] = useState("");
+  const [changePasswordSaving, setChangePasswordSaving] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState<string | null>(null);
 
   useEffect(() => setProfiles(initialProfiles), [initialProfiles]);
 
@@ -116,6 +122,29 @@ export function UsuariosView({
 
   function toggleEditPermiso(v: string) {
     setEditPermisos((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]);
+  }
+
+  async function handleChangePassword() {
+    if (!changingPasswordProfile) return;
+    if (changePasswordValue.length < 6) {
+      setChangePasswordError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    setChangePasswordSaving(true);
+    setChangePasswordError(null);
+    const res = await fetch(`/api/users/update/${encodeURIComponent(changingPasswordProfile.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: changePasswordValue }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setChangePasswordSaving(false);
+    if (!res.ok) {
+      setChangePasswordError(data.error ?? "Error al cambiar contraseña");
+      return;
+    }
+    setChangingPasswordProfile(null);
+    setChangePasswordValue("");
   }
 
   async function handleEditSave() {
@@ -292,16 +321,27 @@ export function UsuariosView({
                   </button>
                 </td>
                 <td className="py-2 px-2">
-                  {(p.rol === "profesor" || p.rol === "secretaria") && (
+                  <div className="flex items-center gap-1">
+                    {(p.rol === "profesor" || p.rol === "secretaria") && (
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(p)}
+                        className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        aria-label={`Editar ${p.nombre_completo || p.email}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => openEditModal(p)}
+                      onClick={() => { setChangingPasswordProfile(p); setChangePasswordValue(""); setChangePasswordError(null); }}
                       className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                      aria-label={`Editar ${p.nombre_completo || p.email}`}
+                      aria-label={`Cambiar contraseña de ${p.nombre_completo || p.email}`}
+                      title="Cambiar contraseña"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <KeyRound className="h-4 w-4" />
                     </button>
-                  )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -419,6 +459,62 @@ export function UsuariosView({
                 <button type="button" onClick={closeEditModal} disabled={editSaving} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50">Cancelar</button>
                 <button type="button" onClick={handleEditSave} disabled={editSaving} className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50" style={{ backgroundColor: "var(--color-primary)" }}>
                   {editSaving ? "Guardando..." : "Guardar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {changingPasswordProfile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => !changePasswordSaving && setChangingPasswordProfile(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-slate-800">Cambiar contraseña</h2>
+              <button type="button" onClick={() => setChangingPasswordProfile(null)} className="p-1 rounded text-slate-500 hover:bg-slate-100">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-slate-600">
+                {changingPasswordProfile.nombre_completo || changingPasswordProfile.email}
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nueva contraseña *</label>
+                <input
+                  type="password"
+                  value={changePasswordValue}
+                  onChange={(e) => setChangePasswordValue(e.target.value)}
+                  minLength={6}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                  autoFocus
+                />
+              </div>
+              {changePasswordError && (
+                <p className="text-sm text-red-600">{changePasswordError}</p>
+              )}
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setChangingPasswordProfile(null)}
+                  disabled={changePasswordSaving}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={changePasswordSaving || changePasswordValue.length < 6}
+                  className="px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50"
+                  style={{ backgroundColor: "var(--color-primary)" }}
+                >
+                  {changePasswordSaving ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </div>

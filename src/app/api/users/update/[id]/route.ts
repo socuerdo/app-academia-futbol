@@ -1,3 +1,4 @@
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -27,7 +28,33 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { activo, categorias_asignadas, permisos } = body;
+    const { activo, categorias_asignadas, permisos, password } = body;
+
+    // Cambio de contraseña
+    if (typeof password === "string") {
+      if (password.length < 6) {
+        return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres." }, { status: 400 });
+      }
+
+      const { data: targetProfile } = await supabase
+        .from("profiles")
+        .select("rol, club_id")
+        .eq("id", id)
+        .single();
+
+      if (targetProfile?.rol === "superadmin") {
+        return NextResponse.json({ error: "No se puede cambiar la contraseña de un superadmin." }, { status: 403 });
+      }
+
+      if (profile?.rol === "admin" && targetProfile?.club_id !== profile?.club_id) {
+        return NextResponse.json({ error: "Sin permiso." }, { status: 403 });
+      }
+
+      const admin = createAdminClient();
+      const { error: pwError } = await admin.auth.admin.updateUserById(id, { password });
+      if (pwError) return NextResponse.json({ error: pwError.message }, { status: 400 });
+      return NextResponse.json({ ok: true });
+    }
 
     const updates: Record<string, unknown> = {};
     if (typeof activo === "boolean") updates.activo = activo;
