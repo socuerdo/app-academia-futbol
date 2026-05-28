@@ -11,69 +11,104 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Instalar cliente PostgreSQL
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Exportar y subir backup
+      - name: Exportar tablas y subir backup
         env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          set -e
-          SUPABASE_URL="https://pdkxensiphkbfxzcundb.supabase.co"
-          TIMESTAMP=$(date +%Y-%m-%d)
-          BACKUP_FILE="backup_${TIMESTAMP}.sql.gz"
+          python3 - <<'PYEOF'
+          import json, gzip, io, os, sys
+          from urllib import request, error
+          from datetime import datetime, timezone
 
-          echo "==> Exportando esquema public..."
-          pg_dump \
-            --host=aws-0-sa-east-1.pooler.supabase.com \
-            --port=5432 \
-            --username=postgres.pdkxensiphkbfxzcundb \
-            --dbname=postgres \
-            --schema=public \
-            --no-owner \
-            --no-acl \
-          | gzip > "${BACKUP_FILE}"
+          SUPABASE_URL = "https://pdkxensiphkbfxzcundb.supabase.co"
+          KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
-          SIZE=$(du -sh "${BACKUP_FILE}" | cut -f1)
-          echo "==> Backup generado: ${BACKUP_FILE} (${SIZE})"
+          TABLES = [
+              "clubs", "profiles", "sedes", "jugadores", "asistencias",
+              "categorias", "tipos_evaluacion", "evaluaciones", "cuotas",
+              "audit_log", "turnos_alquiler", "turnos_escuela",
+          ]
 
-          echo "==> Subiendo a Supabase Storage..."
-          HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" -X POST \
-            "${SUPABASE_URL}/storage/v1/object/backups/${BACKUP_FILE}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Content-Type: application/gzip" \
-            --data-binary @"${BACKUP_FILE}")
+          def get_table(table):
+              req = request.Request(
+                  f"{SUPABASE_URL}/rest/v1/{table}?select=*&limit=100000",
+                  headers={
+                      "Authorization": f"Bearer {KEY}",
+                      "apikey": KEY,
+                      "Accept": "application/json",
+                  },
+              )
+              with request.urlopen(req) as resp:
+                  return json.loads(resp.read())
 
-          echo "HTTP status: ${HTTP_STATUS}"
-          cat response.txt
+          print("==> Exportando tablas...")
+          backup = {}
+          total_rows = 0
+          for table in TABLES:
+              rows = get_table(table)
+              backup[table] = rows
+              total_rows += len(rows)
+              print(f"    {table}: {len(rows)} filas")
 
-          if [[ "$HTTP_STATUS" != "200" ]]; then
-            echo "Error al subir backup"
-            exit 1
-          fi
-          echo "==> Backup subido correctamente: ${BACKUP_FILE}"
+          print(f"    Total: {total_rows} filas")
+
+          # Comprimir
+          buf = io.BytesIO()
+          with gzip.GzipFile(fileobj=buf, mode="wb") as gz:
+              gz.write(json.dumps(backup, ensure_ascii=False, default=str).encode("utf-8"))
+          compressed = buf.getvalue()
+
+          timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+          filename = f"backup_{timestamp}.json.gz"
+          size_kb = len(compressed) / 1024
+          print(f"==> Comprimido: {filename} ({size_kb:.1f} KB)")
+
+          # Subir a Supabase Storage
+          print("==> Subiendo a Supabase Storage...")
+          upload_req = request.Request(
+              f"{SUPABASE_URL}/storage/v1/object/backups/{filename}",
+              data=compressed,
+              headers={
+                  "Authorization": f"Bearer {KEY}",
+                  "Content-Type": "application/gzip",
+              },
+              method="POST",
+          )
+          try:
+              with request.urlopen(upload_req) as resp:
+                  result = json.loads(resp.read())
+              print(f"==> Backup subido correctamente: {filename}")
+              print(f"    Key: {result.get('Key', result)}")
+          except error.HTTPError as e:
+              body = e.read().decode()
+              print(f"Error al subir (HTTP {e.code}): {body}")
+              sys.exit(1)
+          PYEOF
 
       - name: Eliminar backups de más de 60 días
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          python3 - <<'EOF'
+          python3 - <<'PYEOF'
           import json, os, sys
           from datetime import datetime, timedelta, timezone
-          from urllib import request
+          from urllib import request, error
 
-          url = "https://pdkxensiphkbfxzcundb.supabase.co"
-          key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+          SUPABASE_URL = "https://pdkxensiphkbfxzcundb.supabase.co"
+          KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
           cutoff = datetime.now(timezone.utc) - timedelta(days=60)
 
           headers = {
-              "Authorization": f"Bearer {key}",
+              "Authorization": f"Bearer {KEY}",
               "Content-Type": "application/json",
           }
 
           data = json.dumps({"limit": 200, "offset": 0, "prefix": ""}).encode()
-          req = request.Request(f"{url}/storage/v1/object/list/backups", data=data, headers=headers)
+          req = request.Request(
+              f"{SUPABASE_URL}/storage/v1/object/list/backups",
+              data=data,
+              headers=headers,
+          )
           with request.urlopen(req) as resp:
               objects = json.loads(resp.read())
 
@@ -81,7 +116,7 @@ jobs:
           for obj in objects:
               name = obj.get("name", "")
               try:
-                  date_str = name.removeprefix("backup_").removesuffix(".sql.gz")
+                  date_str = name.removeprefix("backup_").removesuffix(".json.gz")
                   file_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
                   if file_date < cutoff:
                       to_delete.append(name)
@@ -94,7 +129,7 @@ jobs:
 
           data = json.dumps({"prefixes": to_delete}).encode()
           req = request.Request(
-              f"{url}/storage/v1/object/backups",
+              f"{SUPABASE_URL}/storage/v1/object/backups",
               data=data,
               headers=headers,
               method="DELETE",
@@ -102,4 +137,4 @@ jobs:
           with request.urlopen(req) as resp:
               result = json.loads(resp.read())
           print(f"Eliminados ({len(to_delete)}): {to_delete}")
-          EOF
+          PYEOF
