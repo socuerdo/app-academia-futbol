@@ -56,6 +56,12 @@ export default async function ClubDetallePage({
         >
           ← Volver a clubes
         </Link>
+        <Link
+          href={`/superadmin/usuarios?club=${id}`}
+          className="ml-auto px-4 py-2 rounded-lg text-white text-sm font-medium bg-slate-800 hover:bg-slate-700"
+        >
+          Gestionar usuarios
+        </Link>
       </div>
 
       <h1 className="text-2xl font-bold text-slate-800">{club.nombre}</h1>

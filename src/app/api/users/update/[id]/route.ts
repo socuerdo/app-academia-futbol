@@ -28,7 +28,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { activo, categorias_asignadas, permisos, password } = body;
+    const { activo, categorias_asignadas, permisos, password, nombre_completo, rol: rolNuevo, club_id: clubIdNuevo } = body;
 
     // Cambio de contraseña
     if (typeof password === "string") {
@@ -64,6 +64,19 @@ export async function PATCH(
     if (typeof activo === "boolean") updates.activo = activo;
     if (Array.isArray(categorias_asignadas)) updates.categorias_asignadas = categorias_asignadas;
     if (Array.isArray(permisos)) updates.permisos = permisos;
+
+    // Campos exclusivos de superadmin
+    if (profile?.rol === "superadmin") {
+      if (typeof nombre_completo === "string" && nombre_completo.trim()) {
+        updates.nombre_completo = nombre_completo.trim();
+      }
+      if (typeof rolNuevo === "string" && rolNuevo !== "superadmin") {
+        updates.rol = rolNuevo;
+      }
+      if (typeof clubIdNuevo === "string") {
+        updates.club_id = clubIdNuevo || null;
+      }
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nada que actualizar." }, { status: 400 });

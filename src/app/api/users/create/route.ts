@@ -51,8 +51,13 @@ export async function POST(request: Request) {
       club_id?: string;
     } = body;
 
-    const rolFinal: "profesor" | "secretaria" | "canchero" =
-      rolNuevo === "secretaria" ? "secretaria" : rolNuevo === "canchero" ? "canchero" : "profesor";
+    type RolCreable = "profesor" | "secretaria" | "canchero" | "admin";
+    const rolesPermitidos: RolCreable[] = rol === "superadmin"
+      ? ["profesor", "secretaria", "canchero", "admin"]
+      : ["profesor", "secretaria", "canchero"];
+    const rolFinal: RolCreable = rolesPermitidos.includes(rolNuevo as RolCreable)
+      ? (rolNuevo as RolCreable)
+      : "profesor";
 
     if (!email?.trim() || !password) {
       return NextResponse.json(
@@ -111,7 +116,8 @@ export async function POST(request: Request) {
 
     const isSecretaria = rolFinal === "secretaria";
     const isCanchero = rolFinal === "canchero";
-    const sinCategoriasPermisos = isSecretaria || isCanchero;
+    const isAdmin = rolFinal === "admin";
+    const sinCategoriasPermisos = isSecretaria || isCanchero || isAdmin;
     const { error: profileError } = await supabaseAdmin.from("profiles").update({
       club_id: targetClubId,
       rol: rolFinal,
