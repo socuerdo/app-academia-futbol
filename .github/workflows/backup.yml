@@ -1,0 +1,109 @@
+name: Backup semanal de base de datos
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Domingos 3am UTC
+  workflow_dispatch:      # Permite disparo manual desde GitHub
+
+env:
+  SUPABASE_URL: https://pdkxensiphkbfxzcundb.supabase.co
+  # Tablas del esquema public: clubs, profiles, sedes, jugadores, asistencias,
+  # categorias, tipos_evaluacion, evaluaciones, cuotas, audit_log,
+  # turnos_alquiler, turnos_escuela
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Instalar cliente PostgreSQL
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Exportar esquema public
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d)
+          echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
+          echo "BACKUP_FILE=backup_${TIMESTAMP}.sql.gz" >> $GITHUB_ENV
+
+          # Usa el session pooler (IPv4) para compatibilidad con GitHub Actions
+          pg_dump \
+            --host=aws-0-sa-east-1.pooler.supabase.com \
+            --port=5432 \
+            --username=postgres.pdkxensiphkbfxzcundb \
+            --dbname=postgres \
+            --schema=public \
+            --no-owner \
+            --no-acl \
+          | gzip > backup_${TIMESTAMP}.sql.gz
+
+          SIZE=$(du -sh backup_${TIMESTAMP}.sql.gz | cut -f1)
+          echo "Backup generado: backup_${TIMESTAMP}.sql.gz (${SIZE})"
+
+      - name: Subir a Supabase Storage
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            "${SUPABASE_URL}/storage/v1/object/backups/${BACKUP_FILE}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary @${BACKUP_FILE})
+
+          echo "HTTP status: ${HTTP_STATUS}"
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "Error al subir backup (status ${HTTP_STATUS})"
+            exit 1
+          fi
+          echo "Backup subido correctamente: ${BACKUP_FILE}"
+
+      - name: Eliminar backups de más de 60 días
+        run: |
+          python3 - <<'EOF'
+          import json, os, sys
+          from datetime import datetime, timedelta, timezone
+          from urllib import request, error
+
+          url = os.environ["SUPABASE_URL"]
+          key = "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+          cutoff = datetime.now(timezone.utc) - timedelta(days=60)
+
+          headers = {
+              "Authorization": f"Bearer {key}",
+              "Content-Type": "application/json",
+          }
+
+          # Listar objetos en el bucket
+          data = json.dumps({"limit": 200, "offset": 0, "prefix": ""}).encode()
+          req = request.Request(f"{url}/storage/v1/object/list/backups", data=data, headers=headers)
+          with request.urlopen(req) as resp:
+              objects = json.loads(resp.read())
+
+          to_delete = []
+          for obj in objects:
+              name = obj.get("name", "")
+              # Formato esperado: backup_YYYY-MM-DD.sql.gz
+              try:
+                  date_str = name.removeprefix("backup_").removesuffix(".sql.gz")
+                  file_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                  if file_date < cutoff:
+                      to_delete.append(name)
+              except Exception:
+                  pass
+
+          if not to_delete:
+              print("No hay backups viejos para eliminar.")
+              sys.exit(0)
+
+          # Borrar en lote
+          data = json.dumps({"prefixes": to_delete}).encode()
+          req = request.Request(
+              f"{url}/storage/v1/object/backups",
+              data=data,
+              headers=headers,
+              method="DELETE",
+          )
+          with request.urlopen(req) as resp:
+              result = json.loads(resp.read())
+          print(f"Eliminados ({len(to_delete)}): {to_delete}")
+          EOF
