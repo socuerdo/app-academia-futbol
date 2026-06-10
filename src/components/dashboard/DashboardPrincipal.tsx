@@ -26,7 +26,7 @@ interface JugadorBaja {
   apellido: string;
   categoria: string;
   dni: string;
-  pct: number;
+  faltas: number;
 }
 
 interface JugadorCumpleanios {
@@ -258,7 +258,7 @@ export function DashboardPrincipal({
       {jugadoresBajaAsistencia.length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <h2 className="px-4 py-3 text-sm font-semibold text-slate-800 border-b border-slate-100">
-            Jugadores con asistencia &lt; 70% en el mes
+            Jugadores con 2+ faltas en el mes
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -268,7 +268,7 @@ export function DashboardPrincipal({
                   <th className="text-left py-2 px-4">Nombre</th>
                   <th className="text-left py-2 px-4">Categoría</th>
                   <th className="text-left py-2 px-4 hidden sm:table-cell">DNI</th>
-                  <th className="text-right py-2 px-4">% mes</th>
+                  <th className="text-right py-2 px-4">Faltas</th>
                   <th className="text-right py-2 px-4">Acción</th>
                 </tr>
               </thead>
@@ -286,22 +286,14 @@ export function DashboardPrincipal({
                     <td className="py-2 px-4 hidden sm:table-cell">{j.dni}</td>
                     <td className="py-2 px-4">
                       <div className="flex items-center justify-end gap-2">
-                        <div className="w-24 h-2 rounded-full bg-slate-200 overflow-hidden">
-                          <div
-                            className={`h-full ${
-                              j.pct < 50 ? "bg-rose-500" : j.pct < 70 ? "bg-amber-500" : "bg-emerald-500"
-                            }`}
-                            style={{ width: `${Math.max(0, Math.min(100, j.pct))}%` }}
-                          />
-                        </div>
                         <span
                           className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            j.pct < 50
+                            j.faltas >= 4
                               ? "bg-rose-100 text-rose-700"
                               : "bg-amber-100 text-amber-700"
                           }`}
                         >
-                          {j.pct}%
+                          {j.faltas} {j.faltas === 1 ? "falta" : "faltas"}
                         </span>
                       </div>
                     </td>

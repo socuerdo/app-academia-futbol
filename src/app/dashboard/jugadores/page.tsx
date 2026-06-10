@@ -21,7 +21,7 @@ export default async function JugadoresPage() {
     supabase
       .from("jugadores")
       .select(
-        "id, club_id, sede_id, dni, apellido, nombre, sexo, categoria, numero_camiseta, fecha_nacimiento, numero_carnet, fecha_vencimiento_carnet, foto_url, activo, sede:sedes(id, nombre)"
+        "id, club_id, sede_id, dni, apellido, nombre, sexo, categoria, numero_camiseta, fecha_nacimiento, fecha_inscripcion, telefono, telefono_emergencia, numero_carnet, fecha_vencimiento_carnet, foto_url, activo, sede:sedes(id, nombre)"
       )
       .eq("club_id", profile.club_id)
       .order("apellido"),

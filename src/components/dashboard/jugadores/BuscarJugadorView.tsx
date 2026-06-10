@@ -293,6 +293,10 @@ export function BuscarJugadorView({
                   <input name="telefono" type="tel" defaultValue={editing.telefono ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Tel. emergencia</label>
+                  <input name="telefono_emergencia" type="tel" defaultValue={editing.telefono_emergencia ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Contacto de emergencia" />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Nº carnet</label>
                   <input name="numero_carnet" type="text" defaultValue={editing.numero_carnet ?? ""} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
                 </div>

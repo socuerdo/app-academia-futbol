@@ -63,6 +63,7 @@ export interface Jugador {
   fecha_nacimiento: string | null;
   fecha_inscripcion: string | null;
   telefono: string | null;
+  telefono_emergencia: string | null;
   numero_carnet: string | null;
   fecha_vencimiento_carnet: string | null;
   foto_url: string | null;

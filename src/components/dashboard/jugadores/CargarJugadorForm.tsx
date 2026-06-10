@@ -87,6 +87,10 @@ export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFor
               <label htmlFor="telefono" className="block text-sm font-medium text-slate-700 mb-1">Teléfono de contacto</label>
               <input id="telefono" name="telefono" type="tel" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" placeholder="Ej: 011 15-1234-5678" />
             </div>
+            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
+              <label htmlFor="telefono_emergencia" className="block text-sm font-medium text-slate-700 mb-1">Teléfono de emergencia</label>
+              <input id="telefono_emergencia" name="telefono_emergencia" type="tel" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" placeholder="Contacto de emergencia" />
+            </div>
             <div className="space-y-1 md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
               <label htmlFor="foto" className="block text-sm font-medium text-slate-700 mb-1">Foto de perfil</label>
               <input

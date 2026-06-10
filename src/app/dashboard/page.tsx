@@ -41,7 +41,7 @@ export default async function DashboardPage() {
         .eq("presente", true),
       supabase
         .from("asistencias")
-        .select("jugador_id")
+        .select("jugador_id, fecha")
         .eq("club_id", clubId)
         .eq("presente", true)
         .gte("fecha", inicioMes.toISOString().slice(0, 10))
@@ -61,25 +61,27 @@ export default async function DashboardPage() {
     .eq("club_id", clubId)
     .eq("activo", true);
 
+  const FALTAS_ALERTA = 2;
   const jugadoresConBajaAsistencia: Array<{
     id: string;
     nombre: string;
     apellido: string;
     categoria: string;
     dni: string;
-    pct: number;
+    faltas: number;
   }> = [];
   if (jugadoresConAsistencia && asistenciasMes) {
+    const clasesRealizadas = new Set(asistenciasMes.map((a) => a.fecha)).size;
     const presentesPorJugador = asistenciasMes.reduce<Record<string, number>>((acc, a) => {
       acc[a.jugador_id] = (acc[a.jugador_id] || 0) + 1;
       return acc;
     }, {});
     for (const j of jugadoresConAsistencia) {
       const presentes = presentesPorJugador[j.id] ?? 0;
-      const pct = hoyDia > 0 ? Math.round((presentes / hoyDia) * 100) : 0;
-      if (pct < 70) jugadoresConBajaAsistencia.push({ ...j, pct });
+      const faltas = Math.max(0, clasesRealizadas - presentes);
+      if (faltas >= FALTAS_ALERTA) jugadoresConBajaAsistencia.push({ ...j, faltas });
     }
-    jugadoresConBajaAsistencia.sort((a, b) => a.pct - b.pct);
+    jugadoresConBajaAsistencia.sort((a, b) => b.faltas - a.faltas);
   }
 
   const cuotasImpagasSet = await getJugadoresConCuotaImpaga(supabase, clubId);
