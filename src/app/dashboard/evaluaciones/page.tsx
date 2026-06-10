@@ -232,6 +232,7 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
         total={total}
         page={page}
         pageSize={pageSize}
+        isAdmin={isAdmin}
       />
     );
   }

@@ -1,4 +1,5 @@
 import { DownloadEvaluacionPDFButton } from "@/components/dashboard/evaluaciones/DownloadEvaluacionPDFButton";
+import { EliminarEvaluacionButton } from "@/components/dashboard/evaluaciones/EliminarEvaluacionButton";
 import { RadarEvaluacionChart } from "@/components/dashboard/evaluaciones/RadarEvaluacionChart";
 import { badgePromedioClass, ESCALA_EVALUACION } from "@/lib/evaluaciones/escala";
 import type { EvaluacionPDFData } from "@/lib/export-evaluacion-pdf";
@@ -162,6 +163,12 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
             >
               Editar
             </Link>
+          )}
+          {isAdmin && (
+            <EliminarEvaluacionButton
+              id={row.id}
+              redirectTo="/dashboard/evaluaciones"
+            />
           )}
           {puedeDescargarPDF && <DownloadEvaluacionPDFButton data={pdfData} />}
           <Link href="/dashboard/evaluaciones" className="text-sm text-slate-600 hover:underline">

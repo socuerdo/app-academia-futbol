@@ -1,5 +1,6 @@
 "use client";
 
+import { eliminarEvaluacion } from "@/app/dashboard/evaluaciones/actions";
 import { Pagination } from "@/components/ui/Pagination";
 import { badgePromedioClass } from "@/lib/evaluaciones/escala";
 import Link from "next/link";
@@ -32,6 +33,7 @@ interface EvaluacionesListViewProps {
   total: number;
   page: number;
   pageSize: number;
+  isAdmin?: boolean;
 }
 
 export function EvaluacionesListView({
@@ -43,10 +45,26 @@ export function EvaluacionesListView({
   total,
   page,
   pageSize,
+  isAdmin = false,
 }: EvaluacionesListViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+
+  const handleEliminar = useCallback(
+    (id: string) => {
+      if (!confirm("¿Eliminar esta evaluación? Esta acción no se puede deshacer.")) return;
+      startTransition(async () => {
+        const res = await eliminarEvaluacion(id);
+        if (!res.ok) {
+          alert(res.error);
+          return;
+        }
+        router.refresh();
+      });
+    },
+    [router]
+  );
 
   const defaults = useMemo(
     () => ({
@@ -274,6 +292,23 @@ export function EvaluacionesListView({
                       >
                         Ver
                       </Link>
+                      {isAdmin && (
+                        <Link
+                          href={`/dashboard/evaluaciones/${row.id}/editar`}
+                          className="text-slate-600 text-xs font-medium mr-2"
+                        >
+                          Editar
+                        </Link>
+                      )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleEliminar(row.id)}
+                          disabled={pending}
+                          className="text-red-500 hover:text-red-700 text-xs font-medium mr-2 disabled:opacity-50"
+                        >
+                          Eliminar
+                        </button>
+                      )}
                       <Link
                         href={`/dashboard/evaluaciones/historial/${row.jugador_id}`}
                         className="text-slate-600 text-xs"
