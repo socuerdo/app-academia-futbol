@@ -14,6 +14,9 @@ interface CargarJugadorFormProps {
   onSuccess?: () => void;
 }
 
+const inputCls = "w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none";
+const labelCls = "block text-sm font-medium text-slate-700 mb-1";
+
 export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFormProps) {
   const router = useRouter();
   const { categorias, isLoading } = useCategorias(clubId);
@@ -62,37 +65,37 @@ export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFor
             <h2 className="text-sm font-semibold text-slate-700">Datos personales</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="dni" className="block text-sm font-medium text-slate-700 mb-1">DNI *</label>
-              <input id="dni" name="dni" type="text" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="dni" className={labelCls}>DNI *</label>
+              <input id="dni" name="dni" type="text" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="apellido" className="block text-sm font-medium text-slate-700 mb-1">Apellido *</label>
-              <input id="apellido" name="apellido" type="text" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="apellido" className={labelCls}>Apellido *</label>
+              <input id="apellido" name="apellido" type="text" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="nombre" className="block text-sm font-medium text-slate-700 mb-1">Nombre *</label>
-              <input id="nombre" name="nombre" type="text" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="nombre" className={labelCls}>Nombre *</label>
+              <input id="nombre" name="nombre" type="text" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="sexo" className="block text-sm font-medium text-slate-700 mb-1">Sexo *</label>
-              <select id="sexo" name="sexo" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none">
+            <div>
+              <label htmlFor="sexo" className={labelCls}>Sexo *</label>
+              <select id="sexo" name="sexo" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
                 <option value="">Seleccionar</option>
                 <option value="M">Masculino</option>
                 <option value="F">Femenino</option>
                 <option value="Otro">Otro</option>
               </select>
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="telefono" className="block text-sm font-medium text-slate-700 mb-1">Teléfono de contacto</label>
-              <input id="telefono" name="telefono" type="tel" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" placeholder="Ej: 011 15-1234-5678" />
+            <div>
+              <label htmlFor="telefono" className={labelCls}>Teléfono de contacto</label>
+              <input id="telefono" name="telefono" type="tel" className={inputCls} placeholder="Ej: 011 15-1234-5678" style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="telefono_emergencia" className="block text-sm font-medium text-slate-700 mb-1">Teléfono de emergencia</label>
-              <input id="telefono_emergencia" name="telefono_emergencia" type="tel" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" placeholder="Contacto de emergencia" />
+            <div>
+              <label htmlFor="telefono_emergencia" className={labelCls}>Teléfono de emergencia</label>
+              <input id="telefono_emergencia" name="telefono_emergencia" type="tel" className={inputCls} placeholder="Contacto de emergencia" style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="foto" className="block text-sm font-medium text-slate-700 mb-1">Foto de perfil</label>
+            <div className="md:col-span-2">
+              <label htmlFor="foto" className={labelCls}>Foto de perfil</label>
               <input
                 id="foto"
                 name="foto"
@@ -110,9 +113,9 @@ export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFor
             <h2 className="text-sm font-semibold text-slate-700">Club y categoría</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="categoria" className="block text-sm font-medium text-slate-700 mb-1">Categoría *</label>
-              <select id="categoria" name="categoria" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none">
+            <div>
+              <label htmlFor="categoria" className={labelCls}>Categoría *</label>
+              <select id="categoria" name="categoria" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
                 <option value="">Seleccionar</option>
                 {categorias.map((c) => (
                   <option key={c.id} value={c.nombre}>
@@ -127,9 +130,9 @@ export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFor
                 </p>
               )}
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="sede_id" className="block text-sm font-medium text-slate-700 mb-1">Sede *</label>
-              <select id="sede_id" name="sede_id" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none">
+            <div>
+              <label htmlFor="sede_id" className={labelCls}>Sede *</label>
+              <select id="sede_id" name="sede_id" required className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}>
                 <option value="">Seleccionar</option>
                 {sedes.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -141,25 +144,25 @@ export function CargarJugadorForm({ clubId, sedes, onSuccess }: CargarJugadorFor
                 <p className="text-amber-600 text-xs mt-1">Cargá sedes en Administración → Cargar sedes.</p>
               )}
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="numero_camiseta" className="block text-sm font-medium text-slate-700 mb-1">Nº camiseta</label>
-              <input id="numero_camiseta" name="numero_camiseta" type="number" min={1} max={99} className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="numero_camiseta" className={labelCls}>Nº camiseta</label>
+              <input id="numero_camiseta" name="numero_camiseta" type="number" min={1} max={99} className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="fecha_nacimiento" className="block text-sm font-medium text-slate-700 mb-1">Fecha de nacimiento</label>
-              <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="fecha_nacimiento" className={labelCls}>Fecha de nacimiento</label>
+              <input id="fecha_nacimiento" name="fecha_nacimiento" type="date" className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="fecha_inscripcion" className="block text-sm font-medium text-slate-700 mb-1">Fecha de inscripción *</label>
-              <input id="fecha_inscripcion" name="fecha_inscripcion" type="date" required className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" defaultValue={new Date().toISOString().slice(0, 10)} />
+            <div>
+              <label htmlFor="fecha_inscripcion" className={labelCls}>Fecha de inscripción *</label>
+              <input id="fecha_inscripcion" name="fecha_inscripcion" type="date" required className={inputCls} defaultValue={new Date().toISOString().slice(0, 10)} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="numero_carnet" className="block text-sm font-medium text-slate-700 mb-1">Nº carnet</label>
-              <input id="numero_carnet" name="numero_carnet" type="text" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="numero_carnet" className={labelCls}>Nº carnet</label>
+              <input id="numero_carnet" name="numero_carnet" type="text" className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
-            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 focus-within:outline focus-within:outline-2 focus-within:outline-offset-1" style={{ outlineColor: "var(--color-primary)" }}>
-              <label htmlFor="fecha_vencimiento_carnet" className="block text-sm font-medium text-slate-700 mb-1">Vencimiento carnet</label>
-              <input id="fecha_vencimiento_carnet" name="fecha_vencimiento_carnet" type="date" className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none" />
+            <div>
+              <label htmlFor="fecha_vencimiento_carnet" className={labelCls}>Vencimiento carnet</label>
+              <input id="fecha_vencimiento_carnet" name="fecha_vencimiento_carnet" type="date" className={inputCls} style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }} />
             </div>
           </div>
         </section>

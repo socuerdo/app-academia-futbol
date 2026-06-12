@@ -26,6 +26,8 @@ type JugadorRow = {
   categoria: string;
   numero_camiseta?: number | null;
   fecha_nacimiento?: string | null;
+  telefono?: string | null;
+  telefono_emergencia?: string | null;
   numero_carnet?: string | null;
   fecha_vencimiento_carnet?: string | null;
   foto_url?: string | null;
@@ -162,6 +164,8 @@ export function JugadoresUnificadosView({
                 ? Number(formData.get("numero_camiseta"))
                 : null,
               fecha_nacimiento: (formData.get("fecha_nacimiento") as string) || null,
+              telefono: (formData.get("telefono") as string) || null,
+              telefono_emergencia: (formData.get("telefono_emergencia") as string) || null,
               numero_carnet: (formData.get("numero_carnet") as string) || null,
               fecha_vencimiento_carnet:
                 (formData.get("fecha_vencimiento_carnet") as string) || null,
@@ -479,6 +483,30 @@ export function JugadoresUnificadosView({
                     name="fecha_nacimiento"
                     type="date"
                     defaultValue={editingJugador.fecha_nacimiento ?? ""}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Teléfono de contacto
+                  </label>
+                  <input
+                    name="telefono"
+                    type="tel"
+                    defaultValue={editingJugador.telefono ?? ""}
+                    placeholder="Ej: 011 15-1234-5678"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Teléfono de emergencia
+                  </label>
+                  <input
+                    name="telefono_emergencia"
+                    type="tel"
+                    defaultValue={editingJugador.telefono_emergencia ?? ""}
+                    placeholder="Contacto de emergencia"
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                   />
                 </div>
