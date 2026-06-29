@@ -46,3 +46,17 @@ export function periodosUltimos(n: number, hasta: string = periodoActual()): str
   }
   return result;
 }
+
+export function periodosProximos(n: number, desde: string = periodoActual()): string[] {
+  if (!esPeriodoValido(desde)) return [];
+  const [yStr, mStr] = desde.split("-");
+  let y = Number(yStr);
+  let m = Number(mStr);
+  const result: string[] = [];
+  for (let i = 0; i < n; i++) {
+    m += 1;
+    if (m === 13) { m = 1; y += 1; }
+    result.push(`${y}-${String(m).padStart(2, "0")}`);
+  }
+  return result;
+}

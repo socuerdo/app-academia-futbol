@@ -56,7 +56,7 @@ export function JugadoresUnificadosView({
 }: JugadoresUnificadosViewProps) {
   const router = useRouter();
   const { categorias } = useCategorias(clubId);
-  const deudaSet = new Set(jugadoresConDeuda);
+  const deudaSet = useMemo(() => new Set(jugadoresConDeuda), [jugadoresConDeuda]);
   const esAdmin =
     rol === "admin" ||
     rol === "superadmin" ||
@@ -68,6 +68,8 @@ export function JugadoresUnificadosView({
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [filtroSede, setFiltroSede] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("activos");
+  const [filtroSexo, setFiltroSexo] = useState("");
+  const [filtroDeuda, setFiltroDeuda] = useState("");
 
   const [editingJugador, setEditingJugador] = useState<JugadorRow | null>(null);
   const [showNuevo, setShowNuevo] = useState(false);
@@ -94,6 +96,9 @@ export function JugadoresUnificadosView({
       if (filtroEstado === "inactivos" && j.activo) return false;
       if (filtroCategoria && j.categoria !== filtroCategoria) return false;
       if (filtroSede && j.sede?.id !== filtroSede) return false;
+      if (filtroSexo && j.sexo !== filtroSexo) return false;
+      if (filtroDeuda === "con" && !deudaSet.has(j.id)) return false;
+      if (filtroDeuda === "sin" && deudaSet.has(j.id)) return false;
       if (query.trim()) {
         const q = query.toLowerCase();
         return (
@@ -104,14 +109,52 @@ export function JugadoresUnificadosView({
       }
       return true;
     });
-  }, [jugadores, query, filtroCategoria, filtroSede, filtroEstado]);
+  }, [jugadores, query, filtroCategoria, filtroSede, filtroEstado, filtroSexo, filtroDeuda, deudaSet]);
 
   const { paged, page, pageSize, setPage, setPageSize, total } =
     usePagination(filtered);
 
   useEffect(() => {
     setPage(1);
-  }, [query, filtroCategoria, filtroSede, filtroEstado, setPage]);
+  }, [query, filtroCategoria, filtroSede, filtroEstado, filtroSexo, filtroDeuda, setPage]);
+
+  function descargarCSV() {
+    const headers = [
+      "Apellido", "Nombre", "DNI", "Sexo", "Categoría", "Sede",
+      "Nº Camiseta", "F. Nacimiento", "Teléfono", "Tel. Emergencia",
+      "Nº Carnet", "Venc. Carnet", "Estado", "Deuda cuota",
+    ];
+    const sexoLabel = (s: string) =>
+      s === "M" ? "Masculino" : s === "F" ? "Femenino" : "Otro";
+    const rows = filtered.map((j) => [
+      j.apellido,
+      j.nombre,
+      j.dni,
+      sexoLabel(j.sexo),
+      j.categoria,
+      j.sede?.nombre ?? "",
+      j.numero_camiseta ?? "",
+      j.fecha_nacimiento ?? "",
+      j.telefono ?? "",
+      j.telefono_emergencia ?? "",
+      j.numero_carnet ?? "",
+      j.fecha_vencimiento_carnet ?? "",
+      j.activo ? "Activo" : "Inactivo",
+      deudaSet.has(j.id) ? "Sí" : "No",
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      )
+      .join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `jugadores_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleToggle(j: JugadorRow) {
     const next = !j.activo;
@@ -237,6 +280,36 @@ export function JugadoresUnificadosView({
           <option value="inactivos">Inactivos</option>
           <option value="todos">Todos</option>
         </select>
+        <select
+          value={filtroSexo}
+          onChange={(e) => setFiltroSexo(e.target.value)}
+          className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 outline-none text-sm"
+          style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
+        >
+          <option value="">Todos los sexos</option>
+          <option value="M">Masculino</option>
+          <option value="F">Femenino</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <select
+          value={filtroDeuda}
+          onChange={(e) => setFiltroDeuda(e.target.value)}
+          className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 outline-none text-sm"
+          style={{ ["--tw-ring-color" as string]: "var(--color-primary)" }}
+        >
+          <option value="">Toda la deuda</option>
+          <option value="con">Con deuda</option>
+          <option value="sin">Sin deuda</option>
+        </select>
+        <button
+          type="button"
+          onClick={descargarCSV}
+          disabled={filtered.length === 0}
+          className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-40"
+          title={`Descargar ${filtered.length} jugadores como CSV`}
+        >
+          ↓ Descargar reporte
+        </button>
         {esAdmin && (
           <>
             <button

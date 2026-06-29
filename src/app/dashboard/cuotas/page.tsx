@@ -3,6 +3,7 @@ import { MorosidadView, type FilaMorosidad } from "@/components/dashboard/cuotas
 import {
   esPeriodoValido,
   periodoActual,
+  periodosProximos,
   periodosUltimos,
 } from "@/lib/cuotas/periodo";
 import { createClient } from "@/lib/supabase/server";
@@ -89,7 +90,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
 
   const sedesData = sedes ?? [];
   const categoriasData = (categorias ?? []).map((c) => c.nombre as string);
-  const periodoOpciones = periodosUltimos(12);
+  const periodoOpciones = [...periodosProximos(1), ...periodosUltimos(12)];
 
   let content: React.ReactNode;
 
