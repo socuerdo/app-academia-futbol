@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { periodoActual } from "@/lib/cuotas/periodo";
+import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export type HistorialEntry = {
@@ -99,7 +100,7 @@ export async function setEstadoCuota(input: {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, rol")
+    .select("club_id, rol, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { ok: false, error: "Sin club" };
@@ -119,12 +120,20 @@ export async function setEstadoCuota(input: {
 
   const { data: jugador } = await supabase
     .from("jugadores")
-    .select("id, club_id")
+    .select("id, club_id, apellido, nombre")
     .eq("id", input.jugador_id)
     .single();
   if (!jugador || jugador.club_id !== profile.club_id) {
     return { ok: false, error: "Jugador no encontrado" };
   }
+
+  const { data: cuotaAnterior } = await supabase
+    .from("cuotas")
+    .select("estado, monto")
+    .eq("club_id", profile.club_id)
+    .eq("jugador_id", input.jugador_id)
+    .eq("periodo", input.periodo)
+    .maybeSingle();
 
   const fecha_pago = input.estado === "pagado" ? new Date().toISOString() : null;
 
@@ -145,6 +154,24 @@ export async function setEstadoCuota(input: {
     );
 
   if (error) return { ok: false, error: error.message };
+
+  const cambios: Record<string, unknown> = {
+    estado: { anterior: cuotaAnterior?.estado ?? "pendiente", nuevo: input.estado },
+  };
+  if ((cuotaAnterior?.monto ?? null) !== (input.monto ?? null)) {
+    cambios.monto = { anterior: cuotaAnterior?.monto ?? null, nuevo: input.monto ?? null };
+  }
+
+  await registrarAccion(supabase, {
+    clubId: profile.club_id,
+    usuarioId: user.id,
+    usuarioNombre: profile.nombre_completo,
+    accion: "editar",
+    entidad: "cuota",
+    entidadId: input.jugador_id,
+    entidadDescripcion: `${jugador.apellido}, ${jugador.nombre} · ${input.periodo}`,
+    cambios,
+  });
 
   revalidatePath("/dashboard/cuotas");
   revalidatePath("/dashboard/cuotas/morosidad");

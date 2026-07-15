@@ -222,6 +222,7 @@ export async function toggleActivoJugador(jugadorId: string, activo: boolean): P
     entidad: "jugador",
     entidadId: jugadorId,
     entidadDescripcion: jugador ? `${jugador.apellido}, ${jugador.nombre} (DNI ${jugador.dni})` : undefined,
+    cambios: { activo: { anterior: !activo, nuevo: activo } },
   });
 
   revalidatePath("/dashboard");

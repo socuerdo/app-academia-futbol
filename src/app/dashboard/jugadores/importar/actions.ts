@@ -162,9 +162,17 @@ export async function asignarCategoriaBatch(
     .single();
   if (!profile?.club_id) return { asignados: 0, error: "Sin club asignado" };
 
+  const categoriaNueva = categoria.trim();
+
+  const { data: antes } = await supabase
+    .from("jugadores")
+    .select("id, apellido, nombre, categoria")
+    .eq("club_id", profile.club_id)
+    .in("id", jugadorIds);
+
   const { error, count } = await supabase
     .from("jugadores")
-    .update({ categoria: categoria.trim() })
+    .update({ categoria: categoriaNueva })
     .eq("club_id", profile.club_id)
     .in("id", jugadorIds);
 
@@ -172,14 +180,21 @@ export async function asignarCategoriaBatch(
 
   const asignados = count ?? jugadorIds.length;
 
+  const cambios: Record<string, unknown> = {};
+  (antes ?? []).forEach((j) => {
+    if (j.categoria !== categoriaNueva) {
+      cambios[`${j.apellido}, ${j.nombre}`] = { anterior: j.categoria, nuevo: categoriaNueva };
+    }
+  });
+
   await registrarAccion(supabase, {
     clubId: profile.club_id,
     usuarioId: user.id,
     usuarioNombre: profile.nombre_completo,
     accion: "asignar_categoria",
     entidad: "jugador",
-    entidadDescripcion: `Asignación masiva de categoría "${categoria}" a ${asignados} jugadores`,
-    cambios: { categoria, jugadorIds },
+    entidadDescripcion: `Asignación masiva de categoría "${categoriaNueva}" a ${asignados} jugadores`,
+    cambios: Object.keys(cambios).length ? cambios : undefined,
   });
 
   revalidatePath("/dashboard/jugadores");

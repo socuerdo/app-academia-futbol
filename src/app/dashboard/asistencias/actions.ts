@@ -41,6 +41,21 @@ export async function guardarAsistenciasBatch(
     };
   }
 
+  const jugadorIds = asistencias.map((a) => a.jugador_id);
+
+  const [{ data: existentes }, { data: jugadoresInfo }] = await Promise.all([
+    supabase
+      .from("asistencias")
+      .select("jugador_id, presente, observacion")
+      .eq("fecha", fecha)
+      .in("jugador_id", jugadorIds),
+    supabase.from("jugadores").select("id, apellido, nombre").in("id", jugadorIds),
+  ]);
+  const existentesMap = new Map((existentes ?? []).map((e) => [e.jugador_id, e]));
+  const nombresMap = new Map(
+    (jugadoresInfo ?? []).map((j) => [j.id, `${j.apellido}, ${j.nombre}`])
+  );
+
   const rows = asistencias.map((a) => ({
     club_id: profile.club_id,
     jugador_id: a.jugador_id,
@@ -59,6 +74,22 @@ export async function guardarAsistenciasBatch(
 
   if (error) return { error: error.message };
 
+  const labelAsistencia = (presente: boolean, observacion: string | null) =>
+    `${presente ? "Presente" : "Ausente"}${observacion ? ` (${observacion})` : ""}`;
+
+  const cambios: Record<string, unknown> = {};
+  asistencias.forEach((a) => {
+    const ex = existentesMap.get(a.jugador_id);
+    if (!ex) return;
+    const observacionNueva = a.observacion?.trim() || null;
+    if (ex.presente === a.presente && (ex.observacion ?? null) === observacionNueva) return;
+    const nombre = nombresMap.get(a.jugador_id) ?? a.jugador_id;
+    cambios[nombre] = {
+      anterior: labelAsistencia(ex.presente, ex.observacion),
+      nuevo: labelAsistencia(a.presente, observacionNueva),
+    };
+  });
+
   const presentes = asistencias.filter((a) => a.presente).length;
   await registrarAccion(supabase, {
     clubId: profile.club_id,
@@ -67,7 +98,7 @@ export async function guardarAsistenciasBatch(
     accion: "guardar_asistencias",
     entidad: "asistencia",
     entidadDescripcion: `${categoria} · ${fecha} · ${presentes}/${asistencias.length} presentes`,
-    cambios: { fecha, categoria, sedeId, presentes, total: asistencias.length },
+    cambios: Object.keys(cambios).length ? cambios : undefined,
   });
 
   revalidatePath("/dashboard");
