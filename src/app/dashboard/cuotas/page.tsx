@@ -35,10 +35,8 @@ export default async function CuotasPage({ searchParams }: PageProps) {
     .single();
   if (!profile?.club_id) redirect("/login");
 
-  const canCobrar =
-    profile.rol === "admin" ||
-    profile.rol === "superadmin" ||
-    profile.rol === "secretaria";
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const canCobrar = isAdmin || profile.rol === "secretaria";
   const canVer =
     canCobrar || profile.rol === "profesor";
 
@@ -142,6 +140,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
         sedeSel={sedeSel}
         categoriaSel={categoriaSel}
         periodoOpciones={periodoOpciones}
+        isAdmin={isAdmin}
       />
     );
 

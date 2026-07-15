@@ -27,6 +27,7 @@ interface CobrarCuotasViewProps {
   sedeSel: string;
   categoriaSel: string;
   periodoOpciones: string[];
+  isAdmin: boolean;
 }
 
 function fechaCorta(iso: string): string {
@@ -43,6 +44,7 @@ export function CobrarCuotasView({
   sedeSel,
   categoriaSel,
   periodoOpciones,
+  isAdmin,
 }: CobrarCuotasViewProps) {
   const router = useRouter();
   const [filas, setFilas] = useState<FilaCuota[]>(initialFilas);
@@ -57,6 +59,7 @@ export function CobrarCuotasView({
   const [localCategoria, setLocalCategoria] = useState(categoriaSel);
 
   const hayFiltrosActivos = sedeSel !== "" || categoriaSel !== "" || periodoSel !== periodoActual();
+  const periodoBloqueado = !isAdmin && periodoSel < periodoActual();
 
   const filasFiltradas = useMemo(() => {
     if (!busqueda.trim()) return filas;
@@ -125,6 +128,12 @@ export function CobrarCuotasView({
     <div className="space-y-4">
       {error && (
         <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
+      )}
+
+      {periodoBloqueado && (
+        <div className="p-3 rounded-lg text-sm bg-amber-50 border border-amber-200 text-amber-800">
+          Este período ya cerró y no se pueden modificar cuotas. Contactá a un administrador si necesitás corregir algo.
+        </div>
       )}
 
       <div className="space-y-3">
@@ -248,7 +257,7 @@ export function CobrarCuotasView({
                       type="button"
                       role="switch"
                       aria-checked={pagado}
-                      disabled={updatingId === f.jugador_id}
+                      disabled={updatingId === f.jugador_id || periodoBloqueado}
                       onClick={() => toggleEstado(f)}
                       className="relative inline-flex h-6 w-11 cursor-pointer rounded-full transition-colors disabled:opacity-50"
                       style={{ backgroundColor: pagado ? "var(--color-primary)" : "#cbd5e1" }}

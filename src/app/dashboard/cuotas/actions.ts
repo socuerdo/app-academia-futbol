@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { periodoActual } from "@/lib/cuotas/periodo";
 import { revalidatePath } from "next/cache";
 
 export type HistorialEntry = {
@@ -107,6 +108,13 @@ export async function setEstadoCuota(input: {
   const isSecretaria = profile.rol === "secretaria";
   if (!isAdmin && !isSecretaria) {
     return { ok: false, error: "Sin permiso" };
+  }
+
+  if (!isAdmin && input.periodo < periodoActual()) {
+    return {
+      ok: false,
+      error: "No se pueden modificar cuotas de períodos pasados. Contactá a un administrador.",
+    };
   }
 
   const { data: jugador } = await supabase

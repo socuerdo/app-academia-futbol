@@ -24,13 +24,21 @@ export async function guardarAsistenciasBatch(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("club_id, nombre_completo")
+    .select("club_id, rol, nombre_completo")
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) return { error: "Sin club asignado" };
 
   if (!fecha || !sedeId || !categoria || asistencias.length === 0) {
     return { error: "Faltan fecha, sede, categoría o lista de asistencias." };
+  }
+
+  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (!isAdmin && fecha < hoy) {
+    return {
+      error: "No se pueden cargar ni modificar asistencias de fechas pasadas. Contactá a un administrador.",
+    };
   }
 
   const rows = asistencias.map((a) => ({

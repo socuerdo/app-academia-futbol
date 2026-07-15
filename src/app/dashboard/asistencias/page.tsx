@@ -143,6 +143,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
         initialJugadores={jugadores}
         asistenciasExistentes={asistenciasExistentes}
         jugadoresConDeuda={Array.from(deudaSet)}
+        isAdmin={isAdmin}
       />
     );
 
