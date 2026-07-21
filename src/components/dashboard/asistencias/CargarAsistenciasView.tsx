@@ -1,6 +1,7 @@
 "use client";
 
 import { guardarAsistenciasBatch } from "@/app/dashboard/asistencias/actions";
+import { hoyISO } from "@/lib/fecha";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -44,7 +45,7 @@ export function CargarAsistenciasView({
   isAdmin,
 }: CargarAsistenciasViewProps) {
   const deudaSet = new Set(jugadoresConDeuda);
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = hoyISO();
   const router = useRouter();
   const [sedeId, setSedeId] = useState(initialSedeId);
   const [categoria, setCategoria] = useState(initialCategoria);

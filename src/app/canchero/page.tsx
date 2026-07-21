@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { CancheroDashboard } from "./CancheroDashboard";
 import type { TurnoAlquiler, TurnoEscuela } from "@/lib/canchas";
+import { hoyISO } from "@/lib/fecha";
 
 export default async function CancheroPage() {
   const supabase = await createClient();
@@ -20,7 +21,7 @@ export default async function CancheroPage() {
     redirect("/login");
   }
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const hoy = hoyISO();
 
   const [alquilerResult, escuelaResult] = await Promise.all([
     supabase

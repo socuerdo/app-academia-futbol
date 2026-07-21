@@ -1,6 +1,6 @@
 import { DashboardPrincipal } from "@/components/dashboard/DashboardPrincipal";
 import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
-import { diasHastaCumpleanios } from "@/lib/fecha";
+import { diasHastaCumpleanios, hoyISO } from "@/lib/fecha";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -19,12 +19,11 @@ export default async function DashboardPage() {
   if (!profile?.club_id) redirect("/login");
 
   const clubId = profile.club_id;
-  const hoy = new Date().toISOString().slice(0, 10);
-  const inicioMes = new Date();
-  inicioMes.setDate(1);
-  const finMes = new Date(inicioMes.getFullYear(), inicioMes.getMonth() + 1, 0);
-  const diasEnMes = finMes.getDate();
-  const hoyDia = new Date().getDate();
+  const hoy = hoyISO();
+  const [hoyAnio, hoyMes, hoyDiaStr] = hoy.split("-").map(Number);
+  const inicioMesISO = `${hoyAnio}-${String(hoyMes).padStart(2, "0")}-01`;
+  const diasEnMes = new Date(hoyAnio, hoyMes, 0).getDate();
+  const hoyDia = hoyDiaStr;
 
   const [{ count: jugadoresActivos }, { count: presentesHoy }, { data: asistenciasMes }] =
     await Promise.all([
@@ -44,7 +43,7 @@ export default async function DashboardPage() {
         .select("jugador_id, fecha")
         .eq("club_id", clubId)
         .eq("presente", true)
-        .gte("fecha", inicioMes.toISOString().slice(0, 10))
+        .gte("fecha", inicioMesISO)
         .lte("fecha", hoy),
     ]);
 

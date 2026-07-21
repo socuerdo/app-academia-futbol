@@ -3,6 +3,18 @@ const MESES = [
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
 
+const TIMEZONE_CLUB = "America/Argentina/Buenos_Aires";
+
+/**
+ * Fecha de "hoy" en la zona horaria del club (YYYY-MM-DD), no en UTC.
+ * `new Date().toISOString()` usa UTC: en Argentina (UTC-3), entre las 21:00
+ * y las 23:59 ya es "mañana" en UTC, lo que bloqueaba de noche la carga de
+ * asistencias/cuotas del día en curso al compararla como fecha pasada.
+ */
+export function hoyISO(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE_CLUB }).format(new Date());
+}
+
 export function formatFecha(date: string | null | undefined): string {
   if (!date) return "-";
   const parts = date.split("-");
