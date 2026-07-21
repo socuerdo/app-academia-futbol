@@ -1,8 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-export type LoginState = { error: string | null; redirectTo: string | null };
+export type LoginState = { error: string | null };
 
 export async function loginAction(
   _prevState: LoginState,
@@ -13,7 +14,7 @@ export async function loginAction(
   const redirectTo = String(formData.get("redirectTo") ?? "") || "/dashboard";
 
   if (!email || !password) {
-    return { error: "Completá email y contraseña.", redirectTo: null };
+    return { error: "Completá email y contraseña." };
   }
 
   const supabase = await createClient();
@@ -21,19 +22,13 @@ export async function loginAction(
 
   if (error) {
     if (error.message.includes("Invalid login credentials")) {
-      return { error: "Email o contraseña incorrectos.", redirectTo: null };
+      return { error: "Email o contraseña incorrectos." };
     }
     if (error.message.includes("Email not confirmed")) {
-      return {
-        error: "Confirmá tu email antes de iniciar sesión. Revisá tu bandeja de entrada.",
-        redirectTo: null,
-      };
+      return { error: "Confirmá tu email antes de iniciar sesión. Revisá tu bandeja de entrada." };
     }
-    return { error: error.message, redirectTo: null };
+    return { error: error.message };
   }
 
-  // Navegación dura desde el cliente (ver useEffect en page.tsx): las cookies
-  // de sesión ya quedaron seteadas en la respuesta de este mismo action, así
-  // que no depende de que el router de Next aplique el redirect embebido.
-  return { error: null, redirectTo };
+  redirect(redirectTo);
 }
