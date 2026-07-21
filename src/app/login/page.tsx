@@ -1,25 +1,50 @@
 "use client";
 
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState, useEffect } from "react";
-import { loginAction, type LoginState } from "./actions";
-
-const initialState: LoginState = { error: null, redirectTo: null };
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function LoginContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const inactivo = searchParams.get("inactivo") === "1";
   const suspended = searchParams.get("suspended") === "1";
 
-  const [state, formAction, isPending] = useActionState(loginAction, initialState);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (state.redirectTo) {
-      window.location.href = state.redirectTo;
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (signInError) {
+      if (signInError.message.includes("Invalid login credentials")) {
+        setError("Email o contraseña incorrectos.");
+      } else if (signInError.message.includes("Email not confirmed")) {
+        setError("Confirmá tu email antes de iniciar sesión. Revisá tu bandeja de entrada.");
+      } else {
+        setError(signInError.message);
+      }
+      return;
     }
-  }, [state.redirectTo]);
+
+    router.push(redirectTo);
+    router.refresh();
+  };
 
   return (
     <main
@@ -60,17 +85,16 @@ function LoginContent() {
           </div>
         )}
 
-        {state.error && (
+        {error && (
           <div
             className="mb-4 p-3 rounded-lg text-sm"
             style={{ backgroundColor: "#fde8e8", color: "#c0392b" }}
           >
-            {state.error}
+            {error}
           </div>
         )}
 
-        <form action={formAction} className="space-y-4">
-          <input type="hidden" name="redirectTo" value={redirectTo} />
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -80,8 +104,9 @@ function LoginContent() {
             </label>
             <input
               id="email"
-              name="email"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
@@ -97,8 +122,9 @@ function LoginContent() {
             </label>
             <input
               id="password"
-              name="password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
@@ -107,11 +133,11 @@ function LoginContent() {
           </div>
           <button
             type="submit"
-            disabled={isPending || !!state.redirectTo}
+            disabled={loading}
             className="w-full py-2.5 rounded-lg font-medium text-white transition disabled:opacity-60"
             style={{ backgroundColor: "#c0392b" }}
           >
-            {isPending || state.redirectTo ? "Entrando..." : "Entrar"}
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
