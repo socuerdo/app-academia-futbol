@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState } from "react";
+import { Suspense, useActionState, useEffect } from "react";
 import { loginAction, type LoginState } from "./actions";
 
-const initialState: LoginState = { error: null };
+const initialState: LoginState = { error: null, redirectTo: null };
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -14,6 +14,12 @@ function LoginContent() {
   const suspended = searchParams.get("suspended") === "1";
 
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
+
+  useEffect(() => {
+    if (state.redirectTo) {
+      window.location.href = state.redirectTo;
+    }
+  }, [state.redirectTo]);
 
   return (
     <main
@@ -101,11 +107,11 @@ function LoginContent() {
           </div>
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !!state.redirectTo}
             className="w-full py-2.5 rounded-lg font-medium text-white transition disabled:opacity-60"
             style={{ backgroundColor: "#c0392b" }}
           >
-            {isPending ? "Entrando..." : "Entrar"}
+            {isPending || state.redirectTo ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
