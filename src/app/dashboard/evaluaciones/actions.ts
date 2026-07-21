@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -39,7 +39,7 @@ export async function crearEvaluacion(
     .single();
 
   if (!profile?.club_id) return { ok: false, error: "Sin club" };
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   if (!isAdmin && profile.rol !== "profesor") {
     return { ok: false, error: "Sin permiso" };
   }
@@ -107,7 +107,7 @@ export async function actualizarEvaluacion(
     return { ok: false, error: "No encontrada" };
   }
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const tienePermisoEditar = tienePermiso(profile.permisos, PERMISO.EVALUACIONES_EDITAR);
   const puedeEditar =
     isAdmin || (row.evaluador_id === user.id && tienePermisoEditar);
@@ -202,8 +202,7 @@ export async function regenerarTokenPublico(
   }
 
   const puede =
-    profile.rol === "admin" ||
-    profile.rol === "superadmin" ||
+    esAdminOAuditor(profile.rol) ||
     row.evaluador_id === user.id;
   if (!puede) return { ok: false, error: "Sin permiso" };
 

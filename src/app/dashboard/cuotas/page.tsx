@@ -7,6 +7,7 @@ import {
   periodosUltimos,
 } from "@/lib/cuotas/periodo";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -35,7 +36,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
     .single();
   if (!profile?.club_id) redirect("/login");
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const canCobrar = isAdmin || profile.rol === "secretaria";
   const canVer =
     canCobrar || profile.rol === "profesor";

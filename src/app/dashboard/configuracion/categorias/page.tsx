@@ -1,5 +1,6 @@
 import { CategoriasView } from "@/components/dashboard/configuracion/CategoriasView";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { redirect } from "next/navigation";
 
 export default async function CategoriasPage() {
@@ -15,7 +16,7 @@ export default async function CategoriasPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || (profile.rol !== "admin" && profile.rol !== "superadmin")) {
+  if (!profile || !esAdminOAuditor(profile.rol)) {
     redirect("/login");
   }
 

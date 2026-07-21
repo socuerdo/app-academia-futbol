@@ -5,6 +5,7 @@
  */
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
       .select("club_id, rol")
       .eq("id", user.id)
       .single();
-    if (profile?.rol !== "admin" && profile?.rol !== "superadmin") {
+    if (!profile || !esAdminOAuditor(profile.rol)) {
       return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
     }
 
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Faltan archivo o club_id" }, { status: 400 });
     }
 
-    if (profile.rol === "admin" && profile.club_id !== clubId) {
+    if ((profile.rol === "admin" || profile.rol === "auditor") && profile.club_id !== clubId) {
       return NextResponse.json({ error: "Sin permiso para este club" }, { status: 403 });
     }
 

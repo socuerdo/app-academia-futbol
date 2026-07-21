@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { periodoActual } from "@/lib/cuotas/periodo";
 import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
+import { esAdminOAuditor } from "@/lib/permisos";
 
 export type HistorialEntry = {
   periodo: string;
@@ -105,7 +106,7 @@ export async function setEstadoCuota(input: {
     .single();
   if (!profile?.club_id) return { ok: false, error: "Sin club" };
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const isSecretaria = profile.rol === "secretaria";
   if (!isAdmin && !isSecretaria) {
     return { ok: false, error: "Sin permiso" };

@@ -4,7 +4,7 @@ import {
 } from "@/components/dashboard/evaluaciones/EvaluacionesListView";
 import { NuevaEvaluacionView } from "@/components/dashboard/evaluaciones/NuevaEvaluacionView";
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/lib/pagination";
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import type { TipoEvaluacion } from "@/types/database";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
     .single();
   if (!profile?.club_id) redirect("/login");
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const isProfesor = profile.rol === "profesor";
   const canCrear =
     isAdmin ||

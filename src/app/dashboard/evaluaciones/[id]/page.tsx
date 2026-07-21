@@ -3,7 +3,7 @@ import { EliminarEvaluacionButton } from "@/components/dashboard/evaluaciones/El
 import { RadarEvaluacionChart } from "@/components/dashboard/evaluaciones/RadarEvaluacionChart";
 import { badgePromedioClass, ESCALA_EVALUACION } from "@/lib/evaluaciones/escala";
 import type { EvaluacionPDFData } from "@/lib/export-evaluacion-pdf";
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -48,7 +48,7 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
 
   if (!profile?.club_id) redirect("/login");
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const puedeDescargarPDF =
     isAdmin || tienePermiso(profile.permisos, PERMISO.EVALUACIONES_DESCARGAR);
   const tienePermisoEditar = tienePermiso(profile.permisos, PERMISO.EVALUACIONES_EDITAR);

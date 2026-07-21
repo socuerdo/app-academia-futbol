@@ -1,5 +1,6 @@
 import { ConfiguracionView } from "@/components/dashboard/configuracion/ConfiguracionView";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { redirect } from "next/navigation";
 
 export default async function ConfiguracionPage() {
@@ -27,7 +28,7 @@ export default async function ConfiguracionPage() {
     club = data;
   }
 
-  if (!club && profile.rol === "admin") {
+  if (!club && esAdminOAuditor(profile.rol)) {
     return (
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuración</h1>

@@ -1,4 +1,4 @@
-export type Rol = "superadmin" | "admin" | "profesor" | "secretaria" | "canchero";
+export type Rol = "superadmin" | "admin" | "auditor" | "profesor" | "secretaria" | "canchero";
 
 export type EstadoCuota = "pagado" | "pendiente";
 

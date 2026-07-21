@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       .eq("id", currentUser.id)
       .single();
 
-    if (profile?.rol !== "admin" && profile?.rol !== "superadmin") {
+    if (!profile || !esAdminOAuditor(profile.rol)) {
       return NextResponse.json(
         { error: "Solo administradores pueden importar usuarios." },
         { status: 403 }

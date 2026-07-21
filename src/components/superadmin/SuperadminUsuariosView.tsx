@@ -18,6 +18,7 @@ export type UserRow = {
 export type ClubOption = { id: string; nombre: string };
 
 const ROL_LABELS: Record<string, string> = {
+  auditor: "Auditor",
   admin: "Admin",
   profesor: "Profesor",
   secretaria: "Secretaría",
@@ -25,13 +26,14 @@ const ROL_LABELS: Record<string, string> = {
 };
 
 const ROL_COLORS: Record<string, string> = {
+  auditor: "bg-rose-100 text-rose-800",
   admin: "bg-purple-100 text-purple-800",
   profesor: "bg-blue-100 text-blue-800",
   secretaria: "bg-amber-100 text-amber-800",
   canchero: "bg-emerald-100 text-emerald-800",
 };
 
-const ROLES_CREABLES = ["admin", "profesor", "secretaria", "canchero"] as const;
+const ROLES_CREABLES = ["auditor", "admin", "profesor", "secretaria", "canchero"] as const;
 
 interface Props {
   users: UserRow[];

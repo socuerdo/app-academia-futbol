@@ -1,5 +1,6 @@
 import { HistorialView } from "@/components/dashboard/historial/HistorialView";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { redirect } from "next/navigation";
 
 interface PageProps {
@@ -26,7 +27,7 @@ export default async function HistorialPage({ searchParams }: PageProps) {
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) redirect("/login");
-  if (profile.rol !== "admin" && profile.rol !== "superadmin") {
+  if (!esAdminOAuditor(profile.rol)) {
     redirect("/dashboard");
   }
 

@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     const rol = profile?.rol;
     const userClubId = profile?.club_id;
 
-    if (rol !== "admin" && rol !== "superadmin") {
+    if (!esAdminOAuditor(rol)) {
       return NextResponse.json(
         { error: "Solo administradores pueden crear usuarios." },
         { status: 403 }
@@ -51,9 +52,9 @@ export async function POST(request: Request) {
       club_id?: string;
     } = body;
 
-    type RolCreable = "profesor" | "secretaria" | "canchero" | "admin";
+    type RolCreable = "profesor" | "secretaria" | "canchero" | "admin" | "auditor";
     const rolesPermitidos: RolCreable[] = rol === "superadmin"
-      ? ["profesor", "secretaria", "canchero", "admin"]
+      ? ["profesor", "secretaria", "canchero", "admin", "auditor"]
       : ["profesor", "secretaria", "canchero"];
     const rolFinal: RolCreable = rolesPermitidos.includes(rolNuevo as RolCreable)
       ? (rolNuevo as RolCreable)
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (rol === "admin" && userClubId !== targetClubId) {
+    if ((rol === "admin" || rol === "auditor") && userClubId !== targetClubId) {
       return NextResponse.json(
         { error: "Solo podés crear usuarios de tu club." },
         { status: 403 }
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
 
     const isSecretaria = rolFinal === "secretaria";
     const isCanchero = rolFinal === "canchero";
-    const isAdmin = rolFinal === "admin";
+    const isAdmin = rolFinal === "admin" || rolFinal === "auditor";
     const sinCategoriasPermisos = isSecretaria || isCanchero || isAdmin;
     const { error: profileError } = await supabaseAdmin.from("profiles").update({
       club_id: targetClubId,

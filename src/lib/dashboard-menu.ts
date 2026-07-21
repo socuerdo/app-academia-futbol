@@ -1,4 +1,4 @@
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import type { Rol } from "@/types/database";
 import type { MenuItem } from "@/types/dashboard";
 
@@ -6,7 +6,7 @@ export function getDashboardMenuItems(
   rol: Rol,
   permisos: string[] = []
 ): MenuItem[] {
-  const isAdmin = rol === "admin" || rol === "superadmin";
+  const isAdmin = esAdminOAuditor(rol);
   const isProfesor = rol === "profesor";
   const isSecretaria = rol === "secretaria";
   const canCrearEvaluaciones =

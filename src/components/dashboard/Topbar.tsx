@@ -1,6 +1,7 @@
 "use client";
 
 import type { Rol } from "@/types/database";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { Bell, Cake, LogOut, Menu, Slash, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +21,7 @@ interface TopbarProps {
 const rolLabels: Record<Rol, string> = {
   superadmin: "Superadmin",
   admin: "Admin",
+  auditor: "Auditor",
   profesor: "Profesor",
   secretaria: "Secretaría",
   canchero: "Canchero",
@@ -164,7 +166,7 @@ export function Topbar({
                 <User className="w-4 h-4 text-slate-500" />
                 Mi perfil
               </Link>
-              {(rol === "admin" || rol === "superadmin") && (
+              {esAdminOAuditor(rol) && (
                 <div className="border-t border-slate-100">
                   <RoleSimulationTrigger onOpen={() => { setMenuOpen(false); setRoleModalOpen(true); }} />
                 </div>

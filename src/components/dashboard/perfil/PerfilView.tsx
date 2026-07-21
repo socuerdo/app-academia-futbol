@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 const rolLabels: Record<Rol, string> = {
   superadmin: "Superadmin",
   admin: "Admin",
+  auditor: "Auditor",
   profesor: "Profesor",
   secretaria: "Secretaría",
   canchero: "Canchero",

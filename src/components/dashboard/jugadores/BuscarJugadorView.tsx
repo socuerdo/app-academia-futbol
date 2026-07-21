@@ -4,6 +4,7 @@ import { actualizarJugador, eliminarJugador } from "@/app/dashboard/jugadores/ac
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { createClient } from "@/lib/supabase/client";
+import { esAdminOAuditor } from "@/lib/permisos";
 import type { Jugador } from "@/types/database";
 import type { Sede } from "@/types/database";
 import { useCategorias } from "@/hooks/useCategorias";
@@ -42,7 +43,7 @@ export function BuscarJugadorView({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const esAdmin = rol === "admin" || rol === "superadmin";
+  const esAdmin = esAdminOAuditor(rol);
 
   const { paged, page, pageSize, setPage, setPageSize, total } =
     usePagination(jugadores);

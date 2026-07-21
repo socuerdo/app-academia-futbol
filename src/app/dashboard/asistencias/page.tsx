@@ -3,6 +3,8 @@ import { ReporteJugadorView } from "@/components/dashboard/asistencias/ReporteJu
 import { ReportesAsistenciasView } from "@/components/dashboard/asistencias/ReportesAsistenciasView";
 import { ReporteTodosView } from "@/components/dashboard/asistencias/ReporteTodosView";
 import { getJugadoresConCuotaImpaga } from "@/lib/cuotas/jugadores-con-deuda";
+import { hoyISO } from "@/lib/fecha";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { PERMISO, tienePermiso } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -35,7 +37,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
     .single();
   if (!profile?.club_id) redirect("/login");
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const isSecretaria = profile.rol === "secretaria";
   const canDescargar =
     isAdmin ||
@@ -85,7 +87,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
   if (tab === "cargar") {
     const sedeId = params.sede ?? "";
     const categoria = params.categoria ?? "";
-    const fecha = params.fecha ?? new Date().toISOString().slice(0, 10);
+    const fecha = params.fecha ?? hoyISO();
 
     let jugadores: Array<{
       id: string;

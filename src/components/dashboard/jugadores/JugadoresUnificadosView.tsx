@@ -5,7 +5,7 @@ import {
   eliminarJugador,
   toggleActivoJugador,
 } from "@/app/dashboard/jugadores/actions";
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { CargarJugadorForm } from "@/components/dashboard/jugadores/CargarJugadorForm";
 import { ImportarJugadoresView } from "@/components/dashboard/jugadores/ImportarJugadoresView";
 import { Pagination } from "@/components/ui/Pagination";
@@ -58,8 +58,7 @@ export function JugadoresUnificadosView({
   const { categorias } = useCategorias(clubId);
   const deudaSet = useMemo(() => new Set(jugadoresConDeuda), [jugadoresConDeuda]);
   const esAdmin =
-    rol === "admin" ||
-    rol === "superadmin" ||
+    esAdminOAuditor(rol) ||
     rol === "secretaria" ||
     tienePermiso(permisos, PERMISO.JUGADORES_EDITAR);
 

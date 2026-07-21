@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { esAdminOAuditor } from "@/lib/permisos";
 
 interface Stats {
   jugadoresActivos: number;
@@ -117,7 +118,7 @@ const accesosSecretaria = [
 ];
 
 function getAccesos(rol: Rol) {
-  if (rol === "admin" || rol === "superadmin") return accesosAdmin;
+  if (esAdminOAuditor(rol)) return accesosAdmin;
   if (rol === "secretaria") return accesosSecretaria;
   return accesosProfesor;
 }

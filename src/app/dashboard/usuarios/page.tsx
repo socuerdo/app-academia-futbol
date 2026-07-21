@@ -1,5 +1,5 @@
 import { UsuariosView } from "@/components/dashboard/usuarios/UsuariosView";
-import { PERMISOS_PROFESOR } from "@/lib/permisos";
+import { PERMISOS_PROFESOR, esAdminOAuditor } from "@/lib/permisos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -22,9 +22,9 @@ export default async function UsuariosPage() {
   let query = supabase
     .from("profiles")
     .select("id, rol, nombre_completo, categorias_asignadas, permisos, activo")
-    .in("rol", ["admin", "profesor", "secretaria"]);
+    .in("rol", ["admin", "auditor", "profesor", "secretaria"]);
 
-  if (profile?.rol === "admin") {
+  if (esAdminOAuditor(profile?.rol) && profile?.rol !== "superadmin") {
     query = query.eq("club_id", clubId);
   } else {
     query = query.not("club_id", "is", null);

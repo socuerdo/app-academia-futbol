@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -22,7 +23,7 @@ export async function PATCH(
       .eq("id", currentUser.id)
       .single();
 
-    if (profile?.rol !== "admin" && profile?.rol !== "superadmin") {
+    if (!esAdminOAuditor(profile?.rol)) {
       return NextResponse.json({ error: "Sin permiso." }, { status: 403 });
     }
 
@@ -50,7 +51,7 @@ export async function PATCH(
         return NextResponse.json({ error: "No se puede cambiar la contraseña de un superadmin." }, { status: 403 });
       }
 
-      if (profile?.rol === "admin" && targetProfile.club_id !== profile?.club_id) {
+      if ((profile?.rol === "admin" || profile?.rol === "auditor") && targetProfile.club_id !== profile?.club_id) {
         return NextResponse.json({ error: "Sin permiso." }, { status: 403 });
       }
 
@@ -84,7 +85,7 @@ export async function PATCH(
 
     let query = supabase.from("profiles").update(updates).eq("id", id);
 
-    if (profile?.rol === "admin") {
+    if (profile?.rol === "admin" || profile?.rol === "auditor") {
       query = query.eq("club_id", profile.club_id);
     }
 

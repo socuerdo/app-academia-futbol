@@ -1,6 +1,7 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getDashboardMenuItems } from "@/lib/dashboard-menu";
 import { diasHastaCumpleanios } from "@/lib/fecha";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -67,7 +68,7 @@ export default async function DashboardLayout({
 
   const cookieStore = await cookies();
   const simulatedRoleCookie = cookieStore.get("simulated_role")?.value as Rol | undefined;
-  const isPrivileged = profile.rol === "admin" || profile.rol === "superadmin";
+  const isPrivileged = esAdminOAuditor(profile.rol);
   const effectiveRol: Rol =
     isPrivileged &&
     simulatedRoleCookie &&

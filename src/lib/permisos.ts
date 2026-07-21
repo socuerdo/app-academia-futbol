@@ -30,3 +30,12 @@ export function tienePermiso(
 ): boolean {
   return Array.isArray(permisos) && permisos.includes(permiso);
 }
+
+/**
+ * El rol "auditor" tiene el mismo acceso completo que "admin" (incluida la
+ * autorización de cambios retroactivos en cuotas/asistencias), pero está por
+ * encima en jerarquía. "superadmin" es el rol de plataforma (todos los clubes).
+ */
+export function esAdminOAuditor(rol: string | null | undefined): boolean {
+  return rol === "admin" || rol === "auditor" || rol === "superadmin";
+}

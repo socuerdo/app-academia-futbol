@@ -1,5 +1,5 @@
 import { NuevaEvaluacionView } from "@/components/dashboard/evaluaciones/NuevaEvaluacionView";
-import { PERMISO, tienePermiso } from "@/lib/permisos";
+import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { createClient } from "@/lib/supabase/server";
 import type { Evaluacion, Jugador, TipoEvaluacion } from "@/types/database";
 import { notFound, redirect } from "next/navigation";
@@ -34,7 +34,7 @@ export default async function EditarEvaluacionPage({ params }: PageProps) {
 
   const evaluacion = row as Evaluacion;
 
-  const isAdmin = profile.rol === "admin" || profile.rol === "superadmin";
+  const isAdmin = esAdminOAuditor(profile.rol);
   const tienePermisoEditar = tienePermiso(profile.permisos, PERMISO.EVALUACIONES_EDITAR);
   const puedeEditar =
     isAdmin || (evaluacion.evaluador_id === user.id && tienePermisoEditar);
