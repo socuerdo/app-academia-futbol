@@ -157,10 +157,7 @@ export async function eliminarEvaluacion(
     .eq("id", user.id)
     .single();
 
-  if (
-    !profile?.club_id ||
-    (profile.rol !== "admin" && profile.rol !== "superadmin")
-  ) {
+  if (!profile?.club_id || !esAdminOAuditor(profile.rol)) {
     return { ok: false, error: "Solo administradores pueden eliminar" };
   }
 

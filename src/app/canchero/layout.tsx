@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { redirect } from "next/navigation";
 import { CancheroSignOut } from "./components/CancheroSignOut";
 import { RoleSimulationBanner } from "@/components/ui/RoleSimulationBanner";
@@ -21,7 +22,7 @@ export default async function CancheroLayout({
     .eq("id", user.id)
     .single();
 
-  if (!profile || (profile.rol !== "canchero" && profile.rol !== "admin" && profile.rol !== "superadmin")) {
+  if (!profile || (profile.rol !== "canchero" && !esAdminOAuditor(profile.rol))) {
     redirect("/login");
   }
 

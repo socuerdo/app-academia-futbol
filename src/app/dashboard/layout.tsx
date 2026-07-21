@@ -29,14 +29,8 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (
-    !profile ||
-    (profile.rol !== "admin" &&
-      profile.rol !== "profesor" &&
-      profile.rol !== "superadmin" &&
-      profile.rol !== "secretaria" &&
-      profile.rol !== "canchero")
-  ) {
+  const ROLES_VALIDOS: Rol[] = ["admin", "auditor", "profesor", "superadmin", "secretaria", "canchero"];
+  if (!profile || !ROLES_VALIDOS.includes(profile.rol as Rol)) {
     redirect("/login");
   }
 

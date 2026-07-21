@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CancheroDashboard } from "./CancheroDashboard";
 import type { TurnoAlquiler, TurnoEscuela } from "@/lib/canchas";
 import { hoyISO } from "@/lib/fecha";
+import { esAdminOAuditor } from "@/lib/permisos";
 
 export default async function CancheroPage() {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export default async function CancheroPage() {
     .single();
 
   if (!profile?.club_id) redirect("/login");
-  if (profile.rol !== "canchero" && profile.rol !== "admin" && profile.rol !== "superadmin") {
+  if (profile.rol !== "canchero" && !esAdminOAuditor(profile.rol)) {
     redirect("/login");
   }
 

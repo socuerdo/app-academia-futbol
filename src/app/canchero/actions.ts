@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { esAdminOAuditor } from "@/lib/permisos";
 import type { TurnoAlquiler, TurnoEscuela } from "@/lib/canchas";
 
 async function getProfileAndClub() {
@@ -13,7 +14,7 @@ async function getProfileAndClub() {
     .eq("id", user.id)
     .single();
   if (!profile?.club_id) throw new Error("Sin club asignado");
-  if (profile.rol !== "canchero" && profile.rol !== "admin" && profile.rol !== "superadmin") {
+  if (profile.rol !== "canchero" && !esAdminOAuditor(profile.rol)) {
     throw new Error("Sin permiso");
   }
   return { supabase, clubId: profile.club_id as string };

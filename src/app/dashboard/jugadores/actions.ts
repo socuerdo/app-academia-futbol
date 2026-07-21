@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { registrarAccion } from "@/lib/audit";
+import { esAdminOAuditor } from "@/lib/permisos";
 import { revalidatePath } from "next/cache";
 
 function parseDate(v: FormDataEntryValue | null): string | null {
@@ -244,7 +245,7 @@ export async function eliminarJugador(jugadorId: string): Promise<{ error?: stri
     .single();
 
   if (!profile?.club_id) return { error: "Sin club asignado" };
-  if (profile.rol !== "admin" && profile.rol !== "superadmin") {
+  if (!esAdminOAuditor(profile.rol)) {
     return { error: "Solo administradores pueden eliminar jugadores" };
   }
 
