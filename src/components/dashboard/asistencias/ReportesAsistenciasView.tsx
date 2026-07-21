@@ -2,7 +2,8 @@
 
 import { Pagination } from "@/components/ui/Pagination";
 import { usePagination } from "@/hooks/usePagination";
-import { exportReporteExcel, exportReportePDF, type FilaReporte } from "@/lib/export-report";
+import { exportReporteExcel, exportReportePDF, getReportePDFFile, type FilaReporte } from "@/lib/export-report";
+import { WhatsAppShareButton } from "@/components/ui/WhatsAppShareButton";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -188,6 +189,7 @@ export function ReportesAsistenciasView({
             >
               Exportar PDF
             </button>
+            <WhatsAppShareButton getFile={() => getReportePDFFile(filasVisibles)} mensaje="Reporte de asistencias" />
           </div>
         </>
       )}

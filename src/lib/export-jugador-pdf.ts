@@ -3,7 +3,7 @@ import { autoTable } from "jspdf-autotable";
 
 export type FilaAsistencia = { fecha: string; presente: boolean; observacion?: string | null };
 
-export function exportJugadorPDF(
+function construirJugadorPDF(
   apellido: string,
   nombre: string,
   categoria: string,
@@ -12,7 +12,7 @@ export function exportJugadorPDF(
   ausencias: number,
   porcentaje: number,
   detalle: FilaAsistencia[]
-) {
+): jsPDF {
   const doc = new jsPDF({ unit: "pt" });
   doc.setFontSize(16);
   doc.text(`Reporte de asistencia - ${apellido}, ${nombre}`, 14, 20);
@@ -32,5 +32,37 @@ export function exportJugadorPDF(
     headStyles: { fillColor: [44, 62, 80] },
   });
 
-  doc.save(`asistencia-${apellido}-${nombre}.pdf`.replace(/\s/g, "-"));
+  return doc;
+}
+
+function nombreArchivoJugador(apellido: string, nombre: string): string {
+  return `asistencia-${apellido}-${nombre}.pdf`.replace(/\s/g, "-");
+}
+
+export function exportJugadorPDF(
+  apellido: string,
+  nombre: string,
+  categoria: string,
+  sede: string,
+  presencias: number,
+  ausencias: number,
+  porcentaje: number,
+  detalle: FilaAsistencia[]
+) {
+  const doc = construirJugadorPDF(apellido, nombre, categoria, sede, presencias, ausencias, porcentaje, detalle);
+  doc.save(nombreArchivoJugador(apellido, nombre));
+}
+
+export function getJugadorPDFFile(
+  apellido: string,
+  nombre: string,
+  categoria: string,
+  sede: string,
+  presencias: number,
+  ausencias: number,
+  porcentaje: number,
+  detalle: FilaAsistencia[]
+): File {
+  const doc = construirJugadorPDF(apellido, nombre, categoria, sede, presencias, ausencias, porcentaje, detalle);
+  return new File([doc.output("blob")], nombreArchivoJugador(apellido, nombre), { type: "application/pdf" });
 }

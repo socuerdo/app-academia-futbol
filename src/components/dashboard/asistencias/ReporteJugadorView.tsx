@@ -1,7 +1,8 @@
 "use client";
 
-import { exportJugadorPDF } from "@/lib/export-jugador-pdf";
+import { exportJugadorPDF, getJugadorPDFFile } from "@/lib/export-jugador-pdf";
 import { formatFecha } from "@/lib/fecha";
+import { WhatsAppShareButton } from "@/components/ui/WhatsAppShareButton";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -129,14 +130,22 @@ export function ReporteJugadorView({
               <p className="font-semibold text-slate-800">{porcentaje}%</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => exportJugadorPDF(jugador.apellido, jugador.nombre, jugador.categoria, jugador.sede?.nombre ?? "-", presencias, ausencias, porcentaje, detalle)}
-            className="mt-4 px-4 py-2 rounded-lg text-white font-medium text-sm"
-            style={{ backgroundColor: "var(--color-primary)" }}
-          >
-            Exportar PDF
-          </button>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <button
+              type="button"
+              onClick={() => exportJugadorPDF(jugador.apellido, jugador.nombre, jugador.categoria, jugador.sede?.nombre ?? "-", presencias, ausencias, porcentaje, detalle)}
+              className="px-4 py-2 rounded-lg text-white font-medium text-sm"
+              style={{ backgroundColor: "var(--color-primary)" }}
+            >
+              Exportar PDF
+            </button>
+            <WhatsAppShareButton
+              getFile={() =>
+                getJugadorPDFFile(jugador.apellido, jugador.nombre, jugador.categoria, jugador.sede?.nombre ?? "-", presencias, ausencias, porcentaje, detalle)
+              }
+              mensaje={`Reporte de asistencia - ${jugador.apellido}, ${jugador.nombre}`}
+            />
+          </div>
         </div>
       </div>
 

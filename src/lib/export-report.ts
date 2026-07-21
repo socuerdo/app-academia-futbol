@@ -52,7 +52,7 @@ export async function exportReporteExcel(filas: FilaReporte[], nombreArchivo = "
   descargarExcel(buffer as ArrayBuffer, nombreArchivo);
 }
 
-export function exportReportePDF(filas: FilaReporte[], titulo = "Reporte de asistencias") {
+function construirReportePDF(filas: FilaReporte[], titulo: string): jsPDF {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
   doc.setFontSize(14);
   doc.text(titulo, 14, 15);
@@ -71,7 +71,16 @@ export function exportReportePDF(filas: FilaReporte[], titulo = "Reporte de asis
     styles: { fontSize: 9 },
     headStyles: { fillColor: [44, 62, 80] },
   });
-  doc.save("reporte-asistencias.pdf");
+  return doc;
+}
+
+export function exportReportePDF(filas: FilaReporte[], titulo = "Reporte de asistencias") {
+  construirReportePDF(filas, titulo).save("reporte-asistencias.pdf");
+}
+
+export function getReportePDFFile(filas: FilaReporte[], titulo = "Reporte de asistencias"): File {
+  const doc = construirReportePDF(filas, titulo);
+  return new File([doc.output("blob")], "reporte-asistencias.pdf", { type: "application/pdf" });
 }
 
 export type FilaReporteTodos = {
@@ -109,7 +118,7 @@ export async function exportReporteTodosExcel(
   descargarExcel(buffer as ArrayBuffer, nombreArchivo);
 }
 
-export function exportReporteTodosPDF(filas: FilaReporteTodos[], titulo = "Reporte todos los jugadores") {
+function construirReporteTodosPDF(filas: FilaReporteTodos[], titulo: string): jsPDF {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
   doc.setFontSize(14);
   doc.text(titulo, 14, 15);
@@ -126,5 +135,14 @@ export function exportReporteTodosPDF(filas: FilaReporteTodos[], titulo = "Repor
     styles: { fontSize: 9 },
     headStyles: { fillColor: [44, 62, 80] },
   });
-  doc.save("reporte-todos-jugadores.pdf");
+  return doc;
+}
+
+export function exportReporteTodosPDF(filas: FilaReporteTodos[], titulo = "Reporte todos los jugadores") {
+  construirReporteTodosPDF(filas, titulo).save("reporte-todos-jugadores.pdf");
+}
+
+export function getReporteTodosPDFFile(filas: FilaReporteTodos[], titulo = "Reporte todos los jugadores"): File {
+  const doc = construirReporteTodosPDF(filas, titulo);
+  return new File([doc.output("blob")], "reporte-todos-jugadores.pdf", { type: "application/pdf" });
 }

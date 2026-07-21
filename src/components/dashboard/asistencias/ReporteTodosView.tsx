@@ -5,8 +5,10 @@ import { usePagination } from "@/hooks/usePagination";
 import {
   exportReporteTodosExcel,
   exportReporteTodosPDF,
+  getReporteTodosPDFFile,
   type FilaReporteTodos,
 } from "@/lib/export-report";
+import { WhatsAppShareButton } from "@/components/ui/WhatsAppShareButton";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -165,6 +167,7 @@ export function ReporteTodosView({
             >
               Exportar PDF
             </button>
+            <WhatsAppShareButton getFile={() => getReporteTodosPDFFile(filasVisibles)} mensaje="Reporte de jugadores" />
           </div>
         </>
       )}
