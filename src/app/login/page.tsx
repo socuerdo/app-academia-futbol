@@ -2,11 +2,10 @@
 
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 function LoginContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const inactivo = searchParams.get("inactivo") === "1";
@@ -42,8 +41,10 @@ function LoginContent() {
       return;
     }
 
-    router.push(redirectTo);
-    router.refresh();
+    // Navegación completa (no router.push) para evitar que el router cache
+    // del cliente reutilice una respuesta ya cacheada de /dashboard con el
+    // redirect a /login de antes de autenticarse.
+    window.location.href = redirectTo;
   };
 
   return (
