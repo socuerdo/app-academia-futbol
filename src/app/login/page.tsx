@@ -1,9 +1,11 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useActionState } from "react";
+import { loginAction, type LoginState } from "./actions";
+
+const initialState: LoginState = { error: null };
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -11,41 +13,7 @@ function LoginContent() {
   const inactivo = searchParams.get("inactivo") === "1";
   const suspended = searchParams.get("suspended") === "1";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const supabase = createClient();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signInError) {
-      if (signInError.message.includes("Invalid login credentials")) {
-        setError("Email o contraseña incorrectos.");
-      } else if (signInError.message.includes("Email not confirmed")) {
-        setError("Confirmá tu email antes de iniciar sesión. Revisá tu bandeja de entrada.");
-      } else {
-        setError(signInError.message);
-      }
-      return;
-    }
-
-    // Navegación completa (no router.push) para evitar que el router cache
-    // del cliente reutilice una respuesta ya cacheada de /dashboard con el
-    // redirect a /login de antes de autenticarse.
-    window.location.href = redirectTo;
-  };
+  const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   return (
     <main
@@ -86,16 +54,17 @@ function LoginContent() {
           </div>
         )}
 
-        {error && (
+        {state.error && (
           <div
             className="mb-4 p-3 rounded-lg text-sm"
             style={{ backgroundColor: "#fde8e8", color: "#c0392b" }}
           >
-            {error}
+            {state.error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="redirectTo" value={redirectTo} />
           <div>
             <label
               htmlFor="email"
@@ -105,9 +74,8 @@ function LoginContent() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
@@ -123,9 +91,8 @@ function LoginContent() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
               className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
@@ -134,11 +101,11 @@ function LoginContent() {
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={isPending}
             className="w-full py-2.5 rounded-lg font-medium text-white transition disabled:opacity-60"
             style={{ backgroundColor: "#c0392b" }}
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {isPending ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
