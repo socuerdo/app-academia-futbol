@@ -85,7 +85,8 @@ export default async function DashboardPage() {
 
   const cuotasImpagasSet = await getJugadoresConCuotaImpaga(supabase, clubId);
 
-  const DIAS_CUMPLEANIOS = 14;
+  const DIAS_CUMPLEANIOS_ADELANTE = 14;
+  const DIAS_CUMPLEANIOS_ATRAS = 7;
   const hoyDate = new Date();
   const proxCumpleanios = (jugadoresConAsistencia ?? [])
     .filter((j) => j.fecha_nacimiento)
@@ -97,7 +98,7 @@ export default async function DashboardPage() {
       fecha_nacimiento: j.fecha_nacimiento as string,
       dias: diasHastaCumpleanios(j.fecha_nacimiento as string, hoyDate),
     }))
-    .filter((j) => j.dias <= DIAS_CUMPLEANIOS)
+    .filter((j) => j.dias >= -DIAS_CUMPLEANIOS_ATRAS && j.dias <= DIAS_CUMPLEANIOS_ADELANTE)
     .sort((a, b) => a.dias - b.dias);
 
   const stats = {

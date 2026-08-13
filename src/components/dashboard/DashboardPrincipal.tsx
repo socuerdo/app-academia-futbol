@@ -128,6 +128,8 @@ const MESES_CORTOS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct
 function labelDias(dias: number): string {
   if (dias === 0) return "Hoy";
   if (dias === 1) return "Mañana";
+  if (dias === -1) return "Ayer";
+  if (dias < 0) return `Hace ${Math.abs(dias)} días`;
   return `En ${dias} días`;
 }
 
@@ -218,7 +220,7 @@ export function DashboardPrincipal({
         <div className="rounded-xl border border-orange-200 bg-orange-50 shadow-sm overflow-hidden">
           <h2 className="px-4 py-3 text-sm font-semibold text-orange-800 border-b border-orange-100 flex items-center gap-2">
             <Cake className="h-4 w-4" aria-hidden />
-            Próximos cumpleaños (14 días)
+            Cumpleaños (últimos 7 días y próximos 14)
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -242,7 +244,11 @@ export function DashboardPrincipal({
                       <td className="py-2 px-4 text-slate-600">{dia} de {mes}</td>
                       <td className="py-2 px-4">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${
-                          j.dias === 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-700"
+                          j.dias === 0
+                            ? "bg-orange-500 text-white"
+                            : j.dias < 0
+                              ? "bg-slate-100 text-slate-500"
+                              : "bg-orange-100 text-orange-700"
                         }`}>
                           {labelDias(j.dias)}
                         </span>

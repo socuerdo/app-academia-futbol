@@ -24,13 +24,22 @@ export function formatFecha(date: string | null | undefined): string {
   return `${day} de ${MESES[month - 1]} de ${year}`;
 }
 
-/** Devuelve los días hasta el próximo cumpleaños (0 = hoy, -1 = ya pasó este año) */
+/**
+ * Días a la ocurrencia más cercana del cumpleaños (0 = hoy, negativo = ya
+ * pasó hace esa cantidad de días, positivo = falta esa cantidad de días).
+ * Compara contra el cumple del año pasado, este año y el que viene, y se
+ * queda con el más cercano a "hoy" para que un cumple de fin de diciembre
+ * siga contando como "reciente" a principios de enero.
+ */
 export function diasHastaCumpleanios(fechaNacimiento: string, hoy: Date = new Date()): number {
   const parts = fechaNacimiento.split("-");
-  if (parts.length < 3) return -1;
+  if (parts.length < 3) return Infinity;
   const mes = Number(parts[1]);
   const dia = Number(parts[2]);
-  const cumple = new Date(hoy.getFullYear(), mes - 1, dia);
-  if (cumple < hoy) cumple.setFullYear(hoy.getFullYear() + 1);
-  return Math.round((cumple.getTime() - new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).getTime()) / 86400000);
+  const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  const diffs = [-1, 0, 1].map((offset) => {
+    const cumple = new Date(hoy.getFullYear() + offset, mes - 1, dia);
+    return Math.round((cumple.getTime() - hoyMidnight.getTime()) / 86400000);
+  });
+  return diffs.reduce((mejor, d) => (Math.abs(d) < Math.abs(mejor) ? d : mejor));
 }

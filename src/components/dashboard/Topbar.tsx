@@ -101,8 +101,8 @@ export function Topbar({
           <a
             href="/dashboard"
             className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-            aria-label={`${cumpleaniosCount} cumpleaños próximos`}
-            title={`${cumpleaniosCount} cumpleaños en los próximos 14 días`}
+            aria-label={`${cumpleaniosCount} cumpleaños recientes o próximos`}
+            title={`${cumpleaniosCount} cumpleaños en los últimos 7 días o próximos 14 días`}
           >
             <Cake className="w-5 h-5" />
             <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">

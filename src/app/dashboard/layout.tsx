@@ -81,9 +81,11 @@ export default async function DashboardLayout({
     .not("fecha_nacimiento", "is", null);
 
   const hoyLayout = new Date();
-  const cumpleaniosCount = (jugadoresNac ?? []).filter(
-    (j) => j.fecha_nacimiento && diasHastaCumpleanios(j.fecha_nacimiento, hoyLayout) <= 14
-  ).length;
+  const cumpleaniosCount = (jugadoresNac ?? []).filter((j) => {
+    if (!j.fecha_nacimiento) return false;
+    const dias = diasHastaCumpleanios(j.fecha_nacimiento, hoyLayout);
+    return dias >= -7 && dias <= 14;
+  }).length;
 
   return (
     <DashboardShell
