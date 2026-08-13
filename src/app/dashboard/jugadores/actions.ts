@@ -144,27 +144,69 @@ export async function actualizarJugador(
     return { error: "Completá apellido, nombre, sexo, categoría y sede." };
   }
 
+  // El DNI solo se toca si el formulario lo trae; así los formularios que no lo
+  // incluyen siguen funcionando igual.
+  const dni = formData.has("dni") ? String(formData.get("dni") ?? "").trim() : jugador.dni;
+  if (!dni) return { error: "El DNI no puede quedar vacío." };
+  if (dni !== jugador.dni) {
+    const { data: existente } = await supabase
+      .from("jugadores")
+      .select("id")
+      .eq("club_id", profile.club_id)
+      .eq("dni", dni)
+      .neq("id", jugadorId)
+      .maybeSingle();
+    if (existente) return { error: "Ya existe otro jugador con ese DNI en el club." };
+  }
+
+  // Solo se actualizan los campos opcionales que el formulario realmente envía:
+  // si no vienen, se dejan como están en vez de borrarlos.
+  const opcionales: Record<string, unknown> = {};
+  if (formData.has("numero_camiseta")) {
+    opcionales.numero_camiseta = parseIntOrNull(formData.get("numero_camiseta"));
+  }
+  if (formData.has("fecha_nacimiento")) {
+    opcionales.fecha_nacimiento = parseDate(formData.get("fecha_nacimiento"));
+  }
+  if (formData.has("fecha_inscripcion")) {
+    opcionales.fecha_inscripcion = parseDate(formData.get("fecha_inscripcion"));
+  }
+  if (formData.has("telefono")) {
+    opcionales.telefono = String(formData.get("telefono") ?? "").trim() || null;
+  }
+  if (formData.has("telefono_emergencia")) {
+    opcionales.telefono_emergencia =
+      String(formData.get("telefono_emergencia") ?? "").trim() || null;
+  }
+  if (formData.has("numero_carnet")) {
+    opcionales.numero_carnet = parseDate(formData.get("numero_carnet"));
+  }
+  if (formData.has("fecha_vencimiento_carnet")) {
+    opcionales.fecha_vencimiento_carnet = parseDate(
+      formData.get("fecha_vencimiento_carnet")
+    );
+  }
+
   const { error } = await supabase
     .from("jugadores")
     .update({
+      dni,
       apellido,
       nombre,
       sexo,
       categoria,
       sede_id: sedeId,
-      numero_camiseta: parseIntOrNull(formData.get("numero_camiseta")),
-      fecha_nacimiento: parseDate(formData.get("fecha_nacimiento")),
-      fecha_inscripcion: parseDate(formData.get("fecha_inscripcion")),
-      telefono: String(formData.get("telefono") ?? "").trim() || null,
-      telefono_emergencia: String(formData.get("telefono_emergencia") ?? "").trim() || null,
-      numero_carnet: parseDate(formData.get("numero_carnet")),
-      fecha_vencimiento_carnet: parseDate(formData.get("fecha_vencimiento_carnet")),
+      ...opcionales,
     })
     .eq("id", jugadorId);
 
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.code === "23505") return { error: "Ya existe otro jugador con ese DNI en el club." };
+    return { error: error.message };
+  }
 
   const cambios: Record<string, unknown> = {};
+  if (jugador.dni !== dni) cambios.dni = { anterior: jugador.dni, nuevo: dni };
   if (jugador.apellido !== apellido) cambios.apellido = { anterior: jugador.apellido, nuevo: apellido };
   if (jugador.nombre !== nombre) cambios.nombre = { anterior: jugador.nombre, nuevo: nombre };
   if (jugador.sexo !== sexo) cambios.sexo = { anterior: jugador.sexo, nuevo: sexo };
@@ -178,10 +220,11 @@ export async function actualizarJugador(
     accion: "editar",
     entidad: "jugador",
     entidadId: jugadorId,
-    entidadDescripcion: `${jugador.apellido}, ${jugador.nombre} (DNI ${jugador.dni})`,
+    entidadDescripcion: `${apellido}, ${nombre} (DNI ${dni})`,
     cambios: Object.keys(cambios).length ? cambios : undefined,
   });
 
+  revalidatePath("/dashboard/jugadores");
   revalidatePath("/dashboard/jugadores/buscar");
   return {};
 }

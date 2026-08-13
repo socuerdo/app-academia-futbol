@@ -7,7 +7,9 @@ import {
 } from "@/app/dashboard/jugadores/actions";
 import { PERMISO, tienePermiso, esAdminOAuditor } from "@/lib/permisos";
 import { CargarJugadorForm } from "@/components/dashboard/jugadores/CargarJugadorForm";
+import { FotoJugadorField } from "@/components/dashboard/jugadores/FotoJugadorField";
 import { ImportarJugadoresView } from "@/components/dashboard/jugadores/ImportarJugadoresView";
+import { quitarFotoJugador, subirFotoJugador } from "@/lib/foto-jugador";
 import { Pagination } from "@/components/ui/Pagination";
 import { useCategorias } from "@/hooks/useCategorias";
 import { usePagination } from "@/hooks/usePagination";
@@ -71,6 +73,8 @@ export function JugadoresUnificadosView({
   const [filtroDeuda, setFiltroDeuda] = useState("");
 
   const [editingJugador, setEditingJugador] = useState<JugadorRow | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [quitarFoto, setQuitarFoto] = useState(false);
   const [showNuevo, setShowNuevo] = useState(false);
   const [showImportar, setShowImportar] = useState(false);
 
@@ -175,6 +179,8 @@ export function JugadoresUnificadosView({
     setEditingJugador(j);
     setConfirmDelete(false);
     setError(null);
+    setFotoFile(null);
+    setQuitarFoto(false);
   }
 
   async function handleSaveEdit(e: React.FormEvent<HTMLFormElement>) {
@@ -184,11 +190,34 @@ export function JugadoresUnificadosView({
     setSaving(true);
     const formData = new FormData(e.currentTarget);
     const result = await actualizarJugador(editingJugador.id, formData);
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       setError(result.error);
       return;
     }
+
+    // La foto va por API route aparte: los server actions no aceptan archivos
+    // grandes (límite de 1MB en el body).
+    let nuevaFotoUrl = editingJugador.foto_url ?? null;
+    if (fotoFile) {
+      const res = await subirFotoJugador(editingJugador.id, fotoFile);
+      if (res.error) {
+        setSaving(false);
+        setError(`Se guardaron los datos, pero la foto no: ${res.error}`);
+        return;
+      }
+      nuevaFotoUrl = res.url ?? null;
+    } else if (quitarFoto) {
+      const res = await quitarFotoJugador(editingJugador.id);
+      if (res.error) {
+        setSaving(false);
+        setError(`Se guardaron los datos, pero la foto no: ${res.error}`);
+        return;
+      }
+      nuevaFotoUrl = null;
+    }
+    setSaving(false);
+
     const nuevoSedeId = formData.get("sede_id") as string;
     const nuevaSede = sedes.find((s) => s.id === nuevoSedeId);
     setJugadores((prev) =>
@@ -196,6 +225,8 @@ export function JugadoresUnificadosView({
         x.id === editingJugador.id
           ? {
               ...x,
+              dni: formData.get("dni") as string,
+              foto_url: nuevaFotoUrl,
               apellido: formData.get("apellido") as string,
               nombre: formData.get("nombre") as string,
               sexo: formData.get("sexo") as string,
@@ -462,7 +493,29 @@ export function JugadoresUnificadosView({
               {error && (
                 <div className="p-2 rounded text-sm bg-red-50 text-red-700">{error}</div>
               )}
+
+              <FotoJugadorField
+                fotoUrl={editingJugador.foto_url ?? null}
+                inicial={editingJugador.apellido[0] || "?"}
+                file={fotoFile}
+                quitar={quitarFoto}
+                onFileChange={setFotoFile}
+                onQuitarChange={setQuitarFoto}
+                disabled={saving}
+              />
+
               <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    DNI *
+                  </label>
+                  <input
+                    name="dni"
+                    defaultValue={editingJugador.dni}
+                    required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Apellido *

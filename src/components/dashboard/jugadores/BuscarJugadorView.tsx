@@ -1,7 +1,9 @@
 "use client";
 
 import { actualizarJugador, eliminarJugador } from "@/app/dashboard/jugadores/actions";
+import { FotoJugadorField } from "@/components/dashboard/jugadores/FotoJugadorField";
 import { Pagination } from "@/components/ui/Pagination";
+import { quitarFotoJugador, subirFotoJugador } from "@/lib/foto-jugador";
 import { usePagination } from "@/hooks/usePagination";
 import { createClient } from "@/lib/supabase/client";
 import { esAdminOAuditor } from "@/lib/permisos";
@@ -42,6 +44,8 @@ export function BuscarJugadorView({
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [quitarFoto, setQuitarFoto] = useState(false);
 
   const esAdmin = esAdminOAuditor(rol);
 
@@ -82,6 +86,8 @@ export function BuscarJugadorView({
     setEditing(j);
     setConfirmDelete(false);
     setError(null);
+    setFotoFile(null);
+    setQuitarFoto(false);
   }
 
   async function handleEliminar() {
@@ -107,11 +113,31 @@ export function BuscarJugadorView({
     setSaving(true);
     const formData = new FormData(e.currentTarget);
     const result = await actualizarJugador(editing.id, formData);
-    setSaving(false);
     if (result.error) {
+      setSaving(false);
       setError(result.error);
       return;
     }
+
+    // La foto va por API route aparte: los server actions no aceptan archivos
+    // grandes (límite de 1MB en el body).
+    if (fotoFile) {
+      const res = await subirFotoJugador(editing.id, fotoFile);
+      if (res.error) {
+        setSaving(false);
+        setError(`Se guardaron los datos, pero la foto no: ${res.error}`);
+        return;
+      }
+    } else if (quitarFoto) {
+      const res = await quitarFotoJugador(editing.id);
+      if (res.error) {
+        setSaving(false);
+        setError(`Se guardaron los datos, pero la foto no: ${res.error}`);
+        return;
+      }
+    }
+
+    setSaving(false);
     setEditing(null);
     search(query.trim());
     router.refresh();
@@ -244,7 +270,22 @@ export function BuscarJugadorView({
                 <div className="p-2 rounded text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>
               )}
               <input type="hidden" name="id" value={editing.id} />
+
+              <FotoJugadorField
+                fotoUrl={editing.foto_url ?? null}
+                inicial={editing.apellido[0] || "?"}
+                file={fotoFile}
+                quitar={quitarFoto}
+                onFileChange={setFotoFile}
+                onQuitarChange={setQuitarFoto}
+                disabled={saving}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">DNI *</label>
+                  <input name="dni" defaultValue={editing.dni} required className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Apellido *</label>
                   <input name="apellido" defaultValue={editing.apellido} required className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
