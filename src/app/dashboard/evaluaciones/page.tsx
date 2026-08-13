@@ -41,6 +41,8 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
   const canCrear =
     isAdmin ||
     (isProfesor && tienePermiso(profile.permisos, PERMISO.EVALUACIONES_CREAR));
+  const puedeDescargar =
+    isAdmin || tienePermiso(profile.permisos, PERMISO.EVALUACIONES_DESCARGAR);
 
   const sp = await searchParams;
   const tab = sp.tab ?? "lista";
@@ -233,6 +235,7 @@ export default async function EvaluacionesPage({ searchParams }: PageProps) {
         page={page}
         pageSize={pageSize}
         isAdmin={isAdmin}
+        puedeDescargar={puedeDescargar}
       />
     );
   }

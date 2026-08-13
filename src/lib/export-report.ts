@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import ExcelJS from "exceljs";
+import type { FilaReporteEvaluacion } from "@/app/dashboard/evaluaciones/actions";
 
 export type FilaReporte = {
   jugador: string;
@@ -145,4 +146,51 @@ export function exportReporteTodosPDF(filas: FilaReporteTodos[], titulo = "Repor
 export function getReporteTodosPDFFile(filas: FilaReporteTodos[], titulo = "Reporte todos los jugadores"): File {
   const doc = construirReporteTodosPDF(filas, titulo);
   return new File([doc.output("blob")], "reporte-todos-jugadores.pdf", { type: "application/pdf" });
+}
+
+function construirReporteEvaluacionesPDF(filas: FilaReporteEvaluacion[], titulo: string): jsPDF {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
+  doc.setFontSize(14);
+  doc.text(titulo, 14, 15);
+  autoTable(doc, {
+    startY: 22,
+    head: [[
+      "Jugador",
+      "Categoría",
+      "Tipo",
+      "Fecha",
+      "Temporada",
+      "Evaluador",
+      "Físico",
+      "Técnico",
+      "Táctico",
+      "Social",
+      "Emocional",
+      "Promedio",
+    ]],
+    body: filas.map((f) => [
+      `${f.apellido}, ${f.nombre}`,
+      f.categoria,
+      f.tipo_nombre ?? "—",
+      f.fecha,
+      f.temporada ?? "—",
+      f.evaluador_nombre ?? "—",
+      f.fisico.toFixed(1),
+      f.tecnico.toFixed(1),
+      f.tactico.toFixed(1),
+      f.social.toFixed(1),
+      f.emocional.toFixed(1),
+      f.promedio.toFixed(2),
+    ]),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [44, 62, 80] },
+  });
+  return doc;
+}
+
+export function exportReporteEvaluacionesPDF(
+  filas: FilaReporteEvaluacion[],
+  titulo = "Reporte de evaluaciones"
+) {
+  construirReporteEvaluacionesPDF(filas, titulo).save("reporte-evaluaciones.pdf");
 }

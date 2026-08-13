@@ -23,6 +23,150 @@ export type EvaluacionInput = {
   observaciones_generales: string | null;
 };
 
+export type FiltrosReporteEvaluaciones = {
+  categoria?: string;
+  tipo?: string;
+  jugador?: string;
+  temporada?: string;
+};
+
+export type FilaReporteEvaluacion = {
+  apellido: string;
+  nombre: string;
+  categoria: string;
+  tipo_nombre: string | null;
+  fecha: string;
+  temporada: string | null;
+  evaluador_nombre: string | null;
+  fisico: number;
+  tecnico: number;
+  tactico: number;
+  social: number;
+  emocional: number;
+  promedio: number;
+};
+
+const MAX_FILAS_REPORTE = 2000;
+
+/**
+ * Trae todas las evaluaciones que matchean los filtros (sin paginar) para
+ * armar el PDF. La lista de pantalla está paginada, así que no alcanza con
+ * exportar lo que se ve.
+ */
+export async function obtenerEvaluacionesParaReporte(
+  filtros: FiltrosReporteEvaluaciones
+): Promise<
+  | { ok: true; filas: FilaReporteEvaluacion[]; truncado: boolean }
+  | { ok: false; error: string }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("club_id, rol, permisos")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.club_id) return { ok: false, error: "Sin club" };
+
+  const puedeDescargar =
+    esAdminOAuditor(profile.rol) ||
+    tienePermiso(profile.permisos, PERMISO.EVALUACIONES_DESCARGAR);
+  if (!puedeDescargar) {
+    return { ok: false, error: "Sin permiso para descargar el reporte" };
+  }
+
+  const categoria = filtros.categoria?.trim() || "";
+  let jugadorIdsEnCategoria: string[] | null = null;
+  if (categoria) {
+    const { data: jugs } = await supabase
+      .from("jugadores")
+      .select("id")
+      .eq("club_id", profile.club_id)
+      .eq("categoria", categoria);
+    jugadorIdsEnCategoria = (jugs ?? []).map((j) => j.id);
+    if (jugadorIdsEnCategoria.length === 0) {
+      return { ok: true, filas: [], truncado: false };
+    }
+  }
+
+  let query = supabase
+    .from("evaluaciones")
+    .select(
+      `id, fecha, temporada, puntaje_promedio, evaluador_id,
+       puntaje_fisico, puntaje_tecnico, puntaje_tactico, puntaje_social, puntaje_emocional,
+       jugadores (nombre, apellido, categoria),
+       tipos_evaluacion (nombre)`
+    )
+    .eq("club_id", profile.club_id)
+    .order("fecha", { ascending: false })
+    .limit(MAX_FILAS_REPORTE + 1);
+
+  if (filtros.tipo?.trim()) query = query.eq("tipo_evaluacion_id", filtros.tipo.trim());
+  if (filtros.jugador?.trim()) query = query.eq("jugador_id", filtros.jugador.trim());
+  if (filtros.temporada?.trim()) query = query.eq("temporada", filtros.temporada.trim());
+  if (jugadorIdsEnCategoria) query = query.in("jugador_id", jugadorIdsEnCategoria);
+
+  const { data: rows, error } = await query;
+  if (error) return { ok: false, error: error.message };
+
+  const truncado = (rows ?? []).length > MAX_FILAS_REPORTE;
+  const acotadas = (rows ?? []).slice(0, MAX_FILAS_REPORTE);
+
+  const evaluadorIds = [
+    ...new Set(acotadas.map((r) => r.evaluador_id).filter(Boolean)),
+  ] as string[];
+  let evaluadorMap = new Map<string, string>();
+  if (evaluadorIds.length > 0) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id, nombre_completo")
+      .in("id", evaluadorIds);
+    evaluadorMap = new Map(
+      (profs ?? []).map((p) => [p.id, p.nombre_completo?.trim() || "—"])
+    );
+  }
+
+  type JugadorJoin = { nombre: string; apellido: string; categoria: string };
+  const unir = <T,>(v: T | T[] | null | undefined): T | null =>
+    v == null ? null : Array.isArray(v) ? (v[0] ?? null) : v;
+
+  const filas: FilaReporteEvaluacion[] = acotadas.map((r) => {
+    const jug = unir(r.jugadores as JugadorJoin | JugadorJoin[] | null);
+    const tipo = unir(r.tipos_evaluacion as { nombre: string } | { nombre: string }[] | null);
+    return {
+      apellido: jug?.apellido ?? "—",
+      nombre: jug?.nombre ?? "",
+      categoria: jug?.categoria ?? "—",
+      tipo_nombre: tipo?.nombre ?? null,
+      fecha: r.fecha,
+      temporada: r.temporada,
+      evaluador_nombre: r.evaluador_id
+        ? (evaluadorMap.get(r.evaluador_id) ?? null)
+        : null,
+      fisico: r.puntaje_fisico ?? 0,
+      tecnico: r.puntaje_tecnico ?? 0,
+      tactico: r.puntaje_tactico ?? 0,
+      social: r.puntaje_social ?? 0,
+      emocional: r.puntaje_emocional ?? 0,
+      promedio: r.puntaje_promedio ?? 0,
+    };
+  });
+
+  filas.sort(
+    (a, b) =>
+      a.categoria.localeCompare(b.categoria, "es") ||
+      a.apellido.localeCompare(b.apellido, "es") ||
+      a.nombre.localeCompare(b.nombre, "es") ||
+      b.fecha.localeCompare(a.fecha)
+  );
+
+  return { ok: true, filas, truncado };
+}
+
 export async function crearEvaluacion(
   input: EvaluacionInput
 ): Promise<{ ok: true; id: string; token_publico: string } | { ok: false; error: string }> {

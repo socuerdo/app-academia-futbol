@@ -1,11 +1,15 @@
 "use client";
 
-import { eliminarEvaluacion } from "@/app/dashboard/evaluaciones/actions";
+import {
+  eliminarEvaluacion,
+  obtenerEvaluacionesParaReporte,
+} from "@/app/dashboard/evaluaciones/actions";
 import { Pagination } from "@/components/ui/Pagination";
 import { badgePromedioClass } from "@/lib/evaluaciones/escala";
+import { exportReporteEvaluacionesPDF } from "@/lib/export-report";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 
 export type FilaEvaluacion = {
   id: string;
@@ -34,6 +38,7 @@ interface EvaluacionesListViewProps {
   page: number;
   pageSize: number;
   isAdmin?: boolean;
+  puedeDescargar?: boolean;
 }
 
 export function EvaluacionesListView({
@@ -46,10 +51,12 @@ export function EvaluacionesListView({
   page,
   pageSize,
   isAdmin = false,
+  puedeDescargar = false,
 }: EvaluacionesListViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const [descargando, setDescargando] = useState(false);
 
   const handleEliminar = useCallback(
     (id: string) => {
@@ -126,6 +133,27 @@ export function EvaluacionesListView({
     },
     [router, buildUrl]
   );
+
+  const handleDescargarPDF = useCallback(async () => {
+    setDescargando(true);
+    try {
+      const res = await obtenerEvaluacionesParaReporte(defaults);
+      if (!res.ok) {
+        alert(res.error);
+        return;
+      }
+      if (res.filas.length === 0) {
+        alert("No hay evaluaciones con estos filtros para exportar.");
+        return;
+      }
+      exportReporteEvaluacionesPDF(res.filas);
+      if (res.truncado) {
+        alert("El reporte tiene muchas evaluaciones: se exportaron solo las primeras 2000.");
+      }
+    } finally {
+      setDescargando(false);
+    }
+  }, [defaults]);
 
   return (
     <div className="space-y-6">
@@ -207,6 +235,19 @@ export function EvaluacionesListView({
           </button>
         </div>
       </form>
+
+      {puedeDescargar && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleDescargarPDF}
+            disabled={descargando}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {descargando ? "Generando..." : "Descargar reporte PDF"}
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full text-sm">
