@@ -1,7 +1,6 @@
 "use client";
 
 import { guardarAsistenciasBatch } from "@/app/dashboard/asistencias/actions";
-import { hoyISO } from "@/lib/fecha";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,7 +29,6 @@ interface CargarAsistenciasViewProps {
   initialJugadores: JugadorRow[];
   asistenciasExistentes: Record<string, { presente: boolean; observacion: string | null }>;
   jugadoresConDeuda?: string[];
-  isAdmin: boolean;
 }
 
 export function CargarAsistenciasView({
@@ -42,10 +40,8 @@ export function CargarAsistenciasView({
   initialJugadores,
   asistenciasExistentes,
   jugadoresConDeuda = [],
-  isAdmin,
 }: CargarAsistenciasViewProps) {
   const deudaSet = new Set(jugadoresConDeuda);
-  const hoy = hoyISO();
   const router = useRouter();
   const [sedeId, setSedeId] = useState(initialSedeId);
   const [categoria, setCategoria] = useState(initialCategoria);
@@ -131,7 +127,6 @@ export function CargarAsistenciasView({
   };
 
   const filtrosCompletos = sedeId && categoria;
-  const fechaBloqueada = !isAdmin && fecha !== "" && fecha < hoy;
 
   return (
     <>
@@ -173,7 +168,6 @@ export function CargarAsistenciasView({
                 type="date"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                min={isAdmin ? undefined : hoy}
                 className="w-full px-0 py-1 border-0 bg-transparent focus:ring-0 outline-none"
               />
             </div>
@@ -190,19 +184,12 @@ export function CargarAsistenciasView({
           <div className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>
         )}
 
-        {fechaBloqueada && (
-          <div className="p-3 rounded-lg text-sm bg-amber-50 border border-amber-200 text-amber-800">
-            Esta fecha ya pasó y no se pueden cargar ni modificar asistencias. Contactá a un administrador si necesitás corregir algo.
-          </div>
-        )}
-
         {jugadores.length > 0 && (
           <>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => marcarTodos(true)}
-                disabled={fechaBloqueada}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "var(--color-primary)" }}
                 aria-label="Marcar todos presentes"
@@ -213,7 +200,6 @@ export function CargarAsistenciasView({
               <button
                 type="button"
                 onClick={() => marcarTodos(false)}
-                disabled={fechaBloqueada}
                 className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Marcar todos ausentes"
               >
@@ -270,7 +256,6 @@ export function CargarAsistenciasView({
                                   aria-checked={presente}
                                   aria-label={`${j.apellido}, ${j.nombre}: ${presente ? "presente" : "ausente"}`}
                                   onClick={() => setPresente(j.id, !presente)}
-                                  disabled={fechaBloqueada}
                                   className="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
                                   style={{
                                     backgroundColor: presente ? "var(--color-primary)" : "#cbd5e1",
@@ -294,7 +279,6 @@ export function CargarAsistenciasView({
                               value={asistencias[j.id]?.observacion ?? ""}
                               onChange={(e) => setObservacion(j.id, e.target.value)}
                               placeholder="Opcional"
-                              disabled={fechaBloqueada}
                               className="w-full max-w-xs px-2 py-1.5 border border-slate-200 rounded text-slate-700 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                           </td>
@@ -319,7 +303,7 @@ export function CargarAsistenciasView({
           <button
             type="button"
             onClick={handleGuardar}
-            disabled={saving || fechaBloqueada}
+            disabled={saving}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium disabled:opacity-50 hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
             style={{ backgroundColor: "var(--color-primary)" }}
             aria-label={saving ? "Guardando asistencias" : "Guardar asistencias"}

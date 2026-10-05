@@ -3,8 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { registrarAccion } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
-import { hoyISO } from "@/lib/fecha";
-import { esAdminOAuditor } from "@/lib/permisos";
 
 export type AsistenciaInput = {
   jugador_id: string;
@@ -33,14 +31,6 @@ export async function guardarAsistenciasBatch(
 
   if (!fecha || !sedeId || !categoria || asistencias.length === 0) {
     return { error: "Faltan fecha, sede, categoría o lista de asistencias." };
-  }
-
-  const isAdmin = esAdminOAuditor(profile.rol);
-  const hoy = hoyISO();
-  if (!isAdmin && fecha < hoy) {
-    return {
-      error: "No se pueden cargar ni modificar asistencias de fechas pasadas. Contactá a un administrador.",
-    };
   }
 
   const jugadorIds = asistencias.map((a) => a.jugador_id);
