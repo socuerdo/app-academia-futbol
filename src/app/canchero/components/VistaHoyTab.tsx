@@ -123,15 +123,15 @@ export function VistaHoyTab({ turnosAlquiler, turnosEscuela, now, onNuevaReserva
             <CardEl
               key={cancha.id}
               {...cardProps}
-              className={`w-full text-left bg-white rounded-xl p-4 border-l-4 shadow-sm transition-shadow ${isClickable ? "cursor-pointer hover:shadow-md" : ""}`}
-              style={{ borderLeftColor: borderColor, borderTopColor: "#e2e8f0", borderRightColor: "#e2e8f0", borderBottomColor: "#e2e8f0", borderTopWidth: 1, borderRightWidth: 1, borderBottomWidth: 1 }}
+              className={`w-full text-left bg-white rounded-xl p-4 border border-slate-200 shadow-sm transition-shadow ${isClickable ? "cursor-pointer hover:shadow-md" : ""}`}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-2xl font-bold text-slate-800">{cancha.label}</p>
                   <p className="text-xs text-slate-400">{cancha.tipo}</p>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badgeColor}`}>
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${badgeColor}`}>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: borderColor }} aria-hidden />
                   {badgeText}
                 </span>
               </div>

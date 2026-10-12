@@ -147,19 +147,19 @@ export function DashboardPrincipal({
       <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="relative rounded-xl border border-slate-200 bg-blue-50 p-4 shadow-sm border-l-4 border-l-blue-500 hover:shadow-md transition-shadow duration-200">
+        <div className="relative rounded-xl border border-slate-200 bg-blue-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
           <Users className="h-9 w-9 text-blue-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">Jugadores activos</p>
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.jugadoresActivos}</p>
           <p className="text-xs text-slate-500 mt-1">Total habilitado para entrenar</p>
         </div>
-        <div className="relative rounded-xl border border-slate-200 bg-emerald-50 p-4 shadow-sm border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow duration-200">
+        <div className="relative rounded-xl border border-slate-200 bg-emerald-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
           <CheckCircle className="h-9 w-9 text-emerald-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">Presentes hoy</p>
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.presentesHoy}</p>
           <p className="text-xs text-slate-500 mt-1">Asistencia diaria registrada</p>
         </div>
-        <div className="relative rounded-xl border border-slate-200 bg-violet-50 p-4 shadow-sm border-l-4 border-l-violet-500 hover:shadow-md transition-shadow duration-200">
+        <div className="relative rounded-xl border border-slate-200 bg-violet-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
           <BarChart2 className="h-9 w-9 text-violet-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">% asistencia del mes</p>
           <p className="text-3xl font-black text-slate-900 mt-1">{stats.pctAsistenciaMes}%</p>
@@ -167,7 +167,7 @@ export function DashboardPrincipal({
         </div>
         <Link
           href="/dashboard/asistencias?tab=reporte"
-          className="relative rounded-xl border border-slate-200 bg-rose-50 p-4 shadow-sm border-l-4 border-l-rose-500 hover:shadow-md transition-shadow duration-200"
+          className="relative rounded-xl border border-slate-200 bg-rose-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
         >
           <AlertTriangle className="h-9 w-9 text-rose-400 absolute right-4 top-4" aria-hidden />
           <p className="text-sm font-medium text-slate-600">Alertas (&lt;70% mes)</p>
@@ -177,7 +177,7 @@ export function DashboardPrincipal({
         {canVerCuotas ? (
           <Link
             href="/dashboard/cuotas?tab=morosidad"
-            className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow duration-200"
+            className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
           >
             <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
             <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
@@ -185,7 +185,7 @@ export function DashboardPrincipal({
             <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
           </Link>
         ) : (
-          <div className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm border-l-4 border-l-amber-500">
+          <div className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm">
             <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
             <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
             <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>

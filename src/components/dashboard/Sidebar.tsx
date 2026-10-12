@@ -54,10 +54,10 @@ export function Sidebar({
 
   const linkClass = (href: string) => {
     const active = pathname === href;
-    return `group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium border-l-2 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+    return `group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
       active
-        ? "border-white text-white"
-        : "border-transparent text-white/85 hover:bg-white/10 hover:text-white"
+        ? "bg-white/15 text-white"
+        : "text-white/85 hover:bg-white/10 hover:text-white"
     }`;
   };
 
