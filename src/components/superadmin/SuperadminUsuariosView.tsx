@@ -1,6 +1,7 @@
 "use client";
 
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SwitchVisual } from "@/components/ui/SwitchVisual";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { KeyRound, Pencil } from "lucide-react";
@@ -206,12 +207,12 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar por nombre o email..."
-          className="px-3 py-2 border border-slate-300 rounded-lg text-sm w-56"
+          className="min-h-[44px] w-full px-3 py-2 border border-slate-300 rounded-lg text-base md:w-56 md:text-sm"
         />
         <select
           value={filtroClub}
           onChange={(e) => setFiltroClub(e.target.value)}
-          className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+          className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm"
         >
           <option value="">Todos los clubes</option>
           {clubs.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -219,7 +220,7 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
         <select
           value={filtroRol}
           onChange={(e) => setFiltroRol(e.target.value)}
-          className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+          className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm"
         >
           <option value="">Todos los roles</option>
           {ROLES_CREABLES.map((r) => <option key={r} value={r}>{ROL_LABELS[r]}</option>)}
@@ -228,18 +229,73 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
           <button
             type="button"
             onClick={() => { setShowCrear(true); setCrearError(null); setCrearRol("profesor"); setCrearClubId(""); }}
-            className="px-4 py-2 rounded-lg text-white font-medium text-sm bg-slate-800 hover:bg-slate-700"
+            className="px-4 min-h-[44px] rounded-lg text-white font-medium text-sm bg-slate-800 hover:bg-slate-700"
           >
             Nuevo usuario
           </button>
         </div>
       </div>
 
-      <p className="text-xs text-slate-500">{filtered.length} usuarios</p>
+      <p className="text-sm text-slate-600">{filtered.length} usuarios</p>
 
       {/* Tabla */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Celular: una tarjeta por usuario con todos sus datos y acciones */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {filtered.length === 0 && (
+            <li className="py-8 text-center text-slate-500">No se encontraron usuarios.</li>
+          )}
+          {filtered.map((u) => (
+            <li key={u.id} className="space-y-3 px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-800">{u.nombre_completo || "—"}</p>
+                  <p className="truncate text-xs text-slate-600">{u.email || "—"}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ROL_COLORS[u.rol] ?? "bg-slate-100 text-slate-700"}`}>
+                      {ROL_LABELS[u.rol] ?? u.rol}
+                    </span>
+                    <span className="text-xs text-slate-600">{u.club_nombre || "Sin club"}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={u.activo}
+                  aria-label={`${u.nombre_completo || u.email}: ${u.activo ? "activo" : "inactivo"}`}
+                  disabled={updatingId === u.id}
+                  onClick={() => setConfirmToggle(u)}
+                  className="flex min-h-[48px] w-[4.5rem] shrink-0 flex-col items-center gap-1 rounded-lg py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
+                >
+                  <SwitchVisual checked={u.activo} />
+                  <span className={`text-sm font-semibold ${u.activo ? "text-emerald-700" : "text-slate-600"}`}>
+                    {u.activo ? "Activo" : "Inactivo"}
+                  </span>
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => openEdit(u)}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <Pencil className="h-4 w-4" aria-hidden />
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setChangingPw(u); setPwValue(""); setPwError(null); setPwSuccess(false); }}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <KeyRound className="h-4 w-4" aria-hidden />
+                  Contraseña
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
@@ -273,15 +329,12 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
                       type="button"
                       role="switch"
                       aria-checked={u.activo}
+                      aria-label={`${u.nombre_completo || u.email}: ${u.activo ? "activo" : "inactivo"}`}
                       disabled={updatingId === u.id}
                       onClick={() => setConfirmToggle(u)}
-                      className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: u.activo ? "#1e293b" : "#cbd5e1" }}
+                      className="inline-flex items-center rounded-lg p-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${u.activo ? "translate-x-5" : "translate-x-0"}`}
-                        style={{ marginTop: 2 }}
-                      />
+                      <SwitchVisual checked={u.activo} />
                     </button>
                   </td>
                   <td className="py-2 px-2">
@@ -289,7 +342,7 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
                       <button
                         type="button"
                         onClick={() => openEdit(u)}
-                        className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="p-2.5 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                         title="Editar usuario"
                       >
                         <Pencil className="h-4 w-4" />
@@ -297,7 +350,7 @@ export function SuperadminUsuariosView({ users: initialUsers, clubs, initialClub
                       <button
                         type="button"
                         onClick={() => { setChangingPw(u); setPwValue(""); setPwError(null); setPwSuccess(false); }}
-                        className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="p-2.5 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                         title="Cambiar contraseña"
                       >
                         <KeyRound className="h-4 w-4" />

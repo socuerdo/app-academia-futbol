@@ -57,11 +57,66 @@ export function ClubesTable({ rows: initialRows }: { rows: ClubRow[] }) {
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
         placeholder="Buscar club o admin..."
-        className="w-full max-w-xs px-3 py-2 border border-slate-300 rounded-lg text-sm"
+        className="w-full max-w-xs min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm"
       />
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Celular: una tarjeta por club con sus datos y acciones */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {filtered.length === 0 && (
+            <li className="px-4 py-6 text-center text-sm text-slate-500">No se encontraron clubes.</li>
+          )}
+          {filtered.map((r) => (
+            <li key={r.id} className="space-y-2 px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium text-slate-800">{r.nombre}</p>
+                <span
+                  className={`inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                    r.activo ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {r.activo ? "Activo" : "Suspendido"}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">Admin: {r.adminPrincipal}</p>
+              <p className="text-xs text-slate-600">
+                {r.jugadores} jugadores · {r.usuarios} usuarios · Registro {r.fechaRegistro}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/superadmin/clubes/${r.id}`}
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                >
+                  Ver
+                </Link>
+                <Link
+                  href={`/superadmin/usuarios?club=${r.id}`}
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Usuarios
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => openEdit(r)}
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <Pencil className="h-4 w-4" aria-hidden />
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => handleToggle(r.id, r.activo)}
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {r.activo ? "Suspender" : "Activar"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 text-slate-600 font-medium">
               <tr>
@@ -109,7 +164,7 @@ export function ClubesTable({ rows: initialRows }: { rows: ClubRow[] }) {
                       <button
                         type="button"
                         onClick={() => openEdit(r)}
-                        className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="p-2 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                         title="Editar club"
                       >
                         <Pencil className="h-4 w-4" />
