@@ -57,11 +57,11 @@ export function MorosidadView({
 
   const hayFiltrosActivos = sedeSel !== "" || categoriaSel !== "" || periodoSel !== periodoActual();
 
-  function aplicarFiltros() {
+  function aplicarFiltros(periodo: string, sede: string, categoria: string) {
     const p = new URLSearchParams();
-    if (localPeriodo) p.set("periodo", localPeriodo);
-    if (localSede) p.set("sede", localSede);
-    if (localCategoria) p.set("categoria", localCategoria);
+    if (periodo) p.set("periodo", periodo);
+    if (sede) p.set("sede", sede);
+    if (categoria) p.set("categoria", categoria);
     p.set("tab", "morosidad");
     router.push(`/dashboard/cuotas?${p.toString()}`);
   }
@@ -75,7 +75,7 @@ export function MorosidadView({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-600">
         Jugadores con la cuota de {formatPeriodo(periodoSel)} sin pagar. La columna
         &quot;Atraso&quot; cuenta los últimos {ventanaMeses} meses.
       </p>
@@ -86,8 +86,11 @@ export function MorosidadView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Período</label>
             <select
               value={localPeriodo}
-              onChange={(e) => setLocalPeriodo(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalPeriodo(e.target.value);
+                aplicarFiltros(e.target.value, localSede, localCategoria);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               {periodoOpciones.map((p) => (
                 <option key={p} value={p}>
@@ -100,8 +103,11 @@ export function MorosidadView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
             <select
               value={localSede}
-              onChange={(e) => setLocalSede(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalSede(e.target.value);
+                aplicarFiltros(localPeriodo, e.target.value, localCategoria);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -115,8 +121,11 @@ export function MorosidadView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
             <select
               value={localCategoria}
-              onChange={(e) => setLocalCategoria(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalCategoria(e.target.value);
+                aplicarFiltros(localPeriodo, localSede, e.target.value);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -128,19 +137,11 @@ export function MorosidadView({
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <button
-            type="button"
-            onClick={aplicarFiltros}
-            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-            style={{ backgroundColor: "var(--color-primary)" }}
-          >
-            Buscar
-          </button>
           {hayFiltrosActivos && (
             <button
               type="button"
               onClick={quitarFiltros}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+              className="px-4 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Quitar filtros
             </button>
@@ -149,25 +150,25 @@ export function MorosidadView({
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm items-center">
-        <span className="text-xs text-slate-500 font-medium mr-1">Filtrar por sexo:</span>
+        <span className="text-sm text-slate-600 font-medium mr-1">Filtrar por sexo:</span>
         <button
           type="button"
           onClick={() => setFiltroSexo("")}
-          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-red-700 text-white" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
+          className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-red-700 text-white" : "bg-red-100 text-red-800 hover:bg-red-200"}`}
         >
           Todos: {filas.length}
         </button>
         <button
           type="button"
           onClick={() => setFiltroSexo(filtroSexo === "M" ? "" : "M")}
-          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
+          className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
         >
           Masculino: {filas.filter((f) => f.sexo === "M").length}
         </button>
         <button
           type="button"
           onClick={() => setFiltroSexo(filtroSexo === "F" ? "" : "F")}
-          className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
+          className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
         >
           Femenino: {filas.filter((f) => f.sexo === "F").length}
         </button>
@@ -175,7 +176,32 @@ export function MorosidadView({
 
       {filasVisibles.length > 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
-          <table className="w-full text-sm min-w-[600px]">
+          {/* Celular: una fila por jugador, sin scroll horizontal */}
+          <ul className="md:hidden divide-y divide-slate-100">
+            {paged.map((f) => (
+              <li key={f.jugador_id} className="flex items-center gap-3 px-4 py-3 min-h-[64px]">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-slate-800 truncate">
+                    {f.apellido}, {f.nombre}
+                  </p>
+                  <p className="text-xs text-slate-600 truncate">
+                    {f.categoria} · {f.sede_nombre}
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    Último pago: {f.ultimo_pago ? formatPeriodo(f.ultimo_pago) : "sin pagos"}
+                  </p>
+                </div>
+                <span className={`shrink-0 inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${severidadClass(f.meses_atraso)}`}>
+                  {f.meses_atraso} {f.meses_atraso === 1 ? "mes" : "meses"}
+                </span>
+              </li>
+            ))}
+            <li className="px-4 py-2 bg-slate-50 text-sm font-semibold text-slate-700">
+              Total: {filasVisibles.length}
+            </li>
+          </ul>
+
+          <table className="hidden md:table w-full text-sm">
             <thead>
               <tr className="bg-slate-50 text-slate-600">
                 <th className="text-left py-2 px-4">Apellido</th>
@@ -227,11 +253,11 @@ export function MorosidadView({
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
           {filas.length === 0 ? (
             <>
-              <p className="text-emerald-700 font-medium">¡Todos al día!</p>
-              <p className="text-emerald-600 text-sm mt-1">No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
+              <p className="text-emerald-800 font-medium">¡Todos al día!</p>
+              <p className="text-emerald-700 text-sm mt-1">No hay jugadores con la cuota de {formatPeriodo(periodoSel)} pendiente.</p>
             </>
           ) : (
-            <p className="text-emerald-700 font-medium">No hay jugadores {filtroSexo === "M" ? "masculinos" : "femeninos"} con deuda.</p>
+            <p className="text-emerald-800 font-medium">No hay jugadores {filtroSexo === "M" ? "masculinos" : "femeninos"} con deuda.</p>
           )}
         </div>
       )}

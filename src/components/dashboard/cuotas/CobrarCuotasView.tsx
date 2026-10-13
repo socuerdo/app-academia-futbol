@@ -54,7 +54,7 @@ export function CobrarCuotasView({
   const [busqueda, setBusqueda] = useState("");
   const [historialFila, setHistorialFila] = useState<FilaCuota | null>(null);
 
-  // Estado local de filtros (no navegan hasta que se presione Buscar)
+  // Estado local de los filtros: cada cambio navega y recarga los datos
   const [localPeriodo, setLocalPeriodo] = useState(periodoSel);
   const [localSede, setLocalSede] = useState(sedeSel);
   const [localCategoria, setLocalCategoria] = useState(categoriaSel);
@@ -79,11 +79,11 @@ export function CobrarCuotasView({
 
   const { paged, page, pageSize, setPage, setPageSize, total } = usePagination(filasFiltradas);
 
-  function aplicarFiltros() {
+  function aplicarFiltros(periodo: string, sede: string, categoria: string) {
     const p = new URLSearchParams();
-    if (localPeriodo) p.set("periodo", localPeriodo);
-    if (localSede) p.set("sede", localSede);
-    if (localCategoria) p.set("categoria", localCategoria);
+    if (periodo) p.set("periodo", periodo);
+    if (sede) p.set("sede", sede);
+    if (categoria) p.set("categoria", categoria);
     p.set("tab", "cobrar");
     router.push(`/dashboard/cuotas?${p.toString()}`);
   }
@@ -143,8 +143,11 @@ export function CobrarCuotasView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Período</label>
             <select
               value={localPeriodo}
-              onChange={(e) => setLocalPeriodo(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalPeriodo(e.target.value);
+                aplicarFiltros(e.target.value, localSede, localCategoria);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               {periodoOpciones.map((p) => (
                 <option key={p} value={p}>
@@ -157,8 +160,11 @@ export function CobrarCuotasView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
             <select
               value={localSede}
-              onChange={(e) => setLocalSede(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalSede(e.target.value);
+                aplicarFiltros(localPeriodo, e.target.value, localCategoria);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -172,8 +178,11 @@ export function CobrarCuotasView({
             <label className="block text-sm font-medium text-slate-700 mb-1">Categoría</label>
             <select
               value={localCategoria}
-              onChange={(e) => setLocalCategoria(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+              onChange={(e) => {
+                setLocalCategoria(e.target.value);
+                aplicarFiltros(localPeriodo, localSede, e.target.value);
+              }}
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg"
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -185,19 +194,11 @@ export function CobrarCuotasView({
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <button
-            type="button"
-            onClick={aplicarFiltros}
-            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-            style={{ backgroundColor: "var(--color-primary)" }}
-          >
-            Buscar
-          </button>
           {hayFiltrosActivos && (
             <button
               type="button"
               onClick={quitarFiltros}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+              className="px-4 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Quitar filtros
             </button>
