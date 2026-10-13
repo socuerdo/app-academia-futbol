@@ -3,6 +3,7 @@
 import { setEstadoCuota } from "@/app/dashboard/cuotas/actions";
 import { HistorialCuotasModal } from "@/components/dashboard/cuotas/HistorialCuotasModal";
 import { Pagination } from "@/components/ui/Pagination";
+import { SwitchVisual } from "@/components/ui/SwitchVisual";
 import { usePagination } from "@/hooks/usePagination";
 import { formatPeriodo, periodoActual } from "@/lib/cuotas/periodo";
 import { History } from "lucide-react";
@@ -127,7 +128,7 @@ export function CobrarCuotasView({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="p-3 rounded-lg text-sm bg-red-50 text-red-700">{error}</div>
+        <div role="alert" className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>
       )}
 
       {periodoBloqueado && (
@@ -228,7 +229,49 @@ export function CobrarCuotasView({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        {/* Celular: una fila por jugador, con el interruptor de pago a la derecha */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {paged.map((f) => {
+            const pagado = f.estado === "pagado";
+            return (
+              <li key={f.jugador_id} className="flex items-center gap-1 pl-4 pr-2 py-2 min-h-[64px]">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-slate-800 truncate">
+                    {f.apellido}, {f.nombre}
+                  </p>
+                  <p className="text-xs text-slate-600 truncate">
+                    {f.categoria} · {f.sede_nombre}
+                    {pagado && f.fecha_pago ? ` · Pagó el ${fechaCorta(f.fecha_pago)}` : ""}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={pagado}
+                  aria-label={`${f.apellido}, ${f.nombre}: cuota ${pagado ? "pagada" : "pendiente"}`}
+                  disabled={updatingId === f.jugador_id || periodoBloqueado}
+                  onClick={() => toggleEstado(f)}
+                  className="flex w-[4.75rem] shrink-0 flex-col items-center gap-1 rounded-lg py-1.5 min-h-[48px] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                >
+                  <SwitchVisual checked={pagado} />
+                  <span className={`text-sm font-semibold ${pagado ? "text-emerald-700" : "text-amber-700"}`}>
+                    {pagado ? "Pagada" : "Pendiente"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHistorialFila(f)}
+                  className="shrink-0 p-3 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                  aria-label={`Ver historial de ${f.apellido} ${f.nombre}`}
+                >
+                  <History className="h-5 w-5" aria-hidden />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <table className="hidden md:table w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-slate-600">
               <th className="text-left py-2 px-4">Apellido</th>
@@ -257,32 +300,27 @@ export function CobrarCuotasView({
                       type="button"
                       role="switch"
                       aria-checked={pagado}
+                      aria-label={`${f.apellido}, ${f.nombre}: cuota ${pagado ? "pagada" : "pendiente"}`}
                       disabled={updatingId === f.jugador_id || periodoBloqueado}
                       onClick={() => toggleEstado(f)}
-                      className="relative inline-flex h-6 w-11 cursor-pointer rounded-full transition-colors disabled:opacity-50"
-                      style={{ backgroundColor: pagado ? "var(--color-primary)" : "#cbd5e1" }}
+                      className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                       title={pagado ? "Marcar como pendiente" : "Marcar como pagada"}
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${pagado ? "translate-x-5" : "translate-x-1"}`}
-                        style={{ marginTop: 2 }}
-                      />
+                      <SwitchVisual checked={pagado} />
+                      <span className={`text-sm font-medium ${pagado ? "text-emerald-700" : "text-amber-700"}`}>
+                        {pagado ? "Pagada" : "Pendiente"}
+                      </span>
                     </button>
-                    <span
-                      className={`ml-2 text-xs font-medium ${pagado ? "text-emerald-700" : "text-amber-700"}`}
-                    >
-                      {pagado ? "Pagada" : "Pendiente"}
-                    </span>
                   </td>
                   <td className="py-2 px-4 text-center">
                     <button
                       type="button"
                       onClick={() => setHistorialFila(f)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      className="p-2.5 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                       title="Ver historial de cuotas"
                       aria-label={`Ver historial de ${f.apellido} ${f.nombre}`}
                     >
-                      <History className="h-4 w-4" />
+                      <History className="h-5 w-5" aria-hidden />
                     </button>
                   </td>
                 </tr>

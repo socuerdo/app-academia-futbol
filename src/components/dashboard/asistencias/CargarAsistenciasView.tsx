@@ -4,6 +4,7 @@ import { guardarAsistenciasBatch } from "@/app/dashboard/asistencias/actions";
 import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SwitchVisual } from "@/components/ui/SwitchVisual";
 import { Toast } from "@/components/ui/Toast";
 import { CheckCheck, Loader2, Save } from "lucide-react";
 
@@ -60,25 +61,6 @@ function BadgeCuota() {
       className="ml-2 inline-flex px-1.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 align-middle"
     >
       Cuota
-    </span>
-  );
-}
-
-/** Interruptor solo visual: el control accesible es el botón que lo contiene. */
-function EstadoSwitch({ presente }: { presente: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={`relative inline-flex h-7 w-12 shrink-0 rounded-full border-2 transition-colors duration-200 ${
-        presente ? "border-transparent" : "border-slate-500 bg-slate-200"
-      }`}
-      style={presente ? { backgroundColor: "var(--color-primary)" } : undefined}
-    >
-      <span
-        className={`pointer-events-none mt-0.5 inline-block h-5 w-5 rounded-full shadow transition duration-200 ${
-          presente ? "translate-x-[22px] bg-white" : "translate-x-[2px] bg-slate-500"
-        }`}
-      />
     </span>
   );
 }
@@ -284,7 +266,7 @@ export function CargarAsistenciasView({
                           {deudaSet.has(j.id) && <BadgeCuota />}
                         </span>
                         <span className="flex w-[4.5rem] shrink-0 flex-col items-center gap-1">
-                          <EstadoSwitch presente={presente} />
+                          <SwitchVisual checked={presente} />
                           <EstadoTexto presente={presente} />
                         </span>
                       </button>
@@ -335,7 +317,7 @@ export function CargarAsistenciasView({
                               onClick={() => setPresente(j.id, !presente)}
                               className="inline-flex flex-col items-center gap-1 rounded-lg px-3 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                             >
-                              <EstadoSwitch presente={presente} />
+                              <SwitchVisual checked={presente} />
                               <EstadoTexto presente={presente} />
                             </button>
                           </td>

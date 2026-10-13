@@ -10,6 +10,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { esAdminOAuditor } from "@/lib/permisos";
 
@@ -133,6 +134,53 @@ function labelDias(dias: number): string {
   return `En ${dias} días`;
 }
 
+const TONOS = {
+  blue: { bg: "bg-blue-50", icon: "text-blue-700" },
+  emerald: { bg: "bg-emerald-50", icon: "text-emerald-700" },
+  violet: { bg: "bg-violet-50", icon: "text-violet-700" },
+  rose: { bg: "bg-rose-50", icon: "text-rose-700" },
+  amber: { bg: "bg-amber-50", icon: "text-amber-700" },
+} as const;
+
+function StatCard({
+  tone,
+  Icon,
+  label,
+  value,
+  hint,
+  href,
+}: {
+  tone: keyof typeof TONOS;
+  Icon: LucideIcon;
+  label: string;
+  value: number | string;
+  hint: string;
+  href?: string;
+}) {
+  const t = TONOS[tone];
+  const contenido = (
+    <>
+      <p className="flex items-center gap-2 text-sm font-medium text-slate-700">
+        <Icon className={`h-4 w-4 shrink-0 ${t.icon}`} aria-hidden />
+        <span>{label}</span>
+      </p>
+      <p className="mt-1 text-3xl font-black text-slate-900">{value}</p>
+      <p className="mt-1 hidden text-xs text-slate-600 sm:block">{hint}</p>
+    </>
+  );
+  const className = `rounded-xl border border-slate-200 ${t.bg} p-3 sm:p-4 shadow-sm transition-shadow duration-200`;
+  return href ? (
+    <Link
+      href={href}
+      className={`${className} block hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300`}
+    >
+      {contenido}
+    </Link>
+  ) : (
+    <div className={className}>{contenido}</div>
+  );
+}
+
 export function DashboardPrincipal({
   stats,
   jugadoresBajaAsistencia,
@@ -146,54 +194,6 @@ export function DashboardPrincipal({
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="relative rounded-xl border border-slate-200 bg-blue-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <Users className="h-9 w-9 text-blue-400 absolute right-4 top-4" aria-hidden />
-          <p className="text-sm font-medium text-slate-600">Jugadores activos</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.jugadoresActivos}</p>
-          <p className="text-xs text-slate-500 mt-1">Total habilitado para entrenar</p>
-        </div>
-        <div className="relative rounded-xl border border-slate-200 bg-emerald-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <CheckCircle className="h-9 w-9 text-emerald-400 absolute right-4 top-4" aria-hidden />
-          <p className="text-sm font-medium text-slate-600">Presentes hoy</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.presentesHoy}</p>
-          <p className="text-xs text-slate-500 mt-1">Asistencia diaria registrada</p>
-        </div>
-        <div className="relative rounded-xl border border-slate-200 bg-violet-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <BarChart2 className="h-9 w-9 text-violet-400 absolute right-4 top-4" aria-hidden />
-          <p className="text-sm font-medium text-slate-600">% asistencia del mes</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.pctAsistenciaMes}%</p>
-          <p className="text-xs text-slate-500 mt-1">Promedio mensual del club</p>
-        </div>
-        <Link
-          href="/dashboard/asistencias?tab=reporte"
-          className="relative rounded-xl border border-slate-200 bg-rose-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-        >
-          <AlertTriangle className="h-9 w-9 text-rose-400 absolute right-4 top-4" aria-hidden />
-          <p className="text-sm font-medium text-slate-600">Alertas (&lt;70% mes)</p>
-          <p className="text-3xl font-black text-slate-900 mt-1">{stats.alertasBajaAsistencia}</p>
-          <p className="text-xs text-slate-500 mt-1">Jugadores para seguimiento</p>
-        </Link>
-        {canVerCuotas ? (
-          <Link
-            href="/dashboard/cuotas?tab=morosidad"
-            className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-          >
-            <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
-            <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
-            <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
-          </Link>
-        ) : (
-          <div className="relative rounded-xl border border-slate-200 bg-amber-50 p-4 shadow-sm">
-            <DollarSign className="h-9 w-9 text-amber-400 absolute right-4 top-4" aria-hidden />
-            <p className="text-sm font-medium text-slate-600">Cuotas impagas (mes)</p>
-            <p className="text-3xl font-black text-slate-900 mt-1">{stats.cuotasImpagas}</p>
-            <p className="text-xs text-slate-500 mt-1">Jugadores con deuda actual</p>
-          </div>
-        )}
-      </div>
-
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-800 mb-3">Accesos rápidos</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -201,7 +201,7 @@ export function DashboardPrincipal({
             <Link
               key={a.href}
               href={a.href}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex flex-col gap-1 hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 min-h-[44px] flex flex-col gap-1 hover:shadow-md hover:scale-[1.02] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
             >
               <span
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white"
@@ -210,10 +210,50 @@ export function DashboardPrincipal({
                 <a.Icon className="h-4 w-4" aria-hidden />
               </span>
               <span className="text-sm font-semibold text-slate-800">{a.label}</span>
-              <span className="text-xs text-slate-500 line-clamp-1">{a.desc}</span>
+              <span className="text-xs text-slate-600 line-clamp-1">{a.desc}</span>
             </Link>
           ))}
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <StatCard
+          tone="blue"
+          Icon={Users}
+          label="Jugadores activos"
+          value={stats.jugadoresActivos}
+          hint="Total habilitado para entrenar"
+        />
+        <StatCard
+          tone="emerald"
+          Icon={CheckCircle}
+          label="Presentes hoy"
+          value={stats.presentesHoy}
+          hint="Asistencia diaria registrada"
+        />
+        <StatCard
+          tone="violet"
+          Icon={BarChart2}
+          label="% asistencia del mes"
+          value={`${stats.pctAsistenciaMes}%`}
+          hint="Promedio mensual del club"
+        />
+        <StatCard
+          tone="rose"
+          Icon={AlertTriangle}
+          label="Alertas (<70% mes)"
+          value={stats.alertasBajaAsistencia}
+          hint="Jugadores para seguimiento"
+          href="/dashboard/asistencias?tab=reporte"
+        />
+        <StatCard
+          tone="amber"
+          Icon={DollarSign}
+          label="Cuotas impagas (mes)"
+          value={stats.cuotasImpagas}
+          hint="Jugadores con deuda actual"
+          href={canVerCuotas ? "/dashboard/cuotas?tab=morosidad" : undefined}
+        />
       </div>
 
       {proxCumpleanios.length > 0 && (
@@ -247,7 +287,7 @@ export function DashboardPrincipal({
                           j.dias === 0
                             ? "bg-orange-500 text-white"
                             : j.dias < 0
-                              ? "bg-slate-100 text-slate-500"
+                              ? "bg-slate-100 text-slate-600"
                               : "bg-orange-100 text-orange-700"
                         }`}>
                           {labelDias(j.dias)}
@@ -307,7 +347,7 @@ export function DashboardPrincipal({
                     <td className="py-2 px-4 text-right">
                       <Link
                         href={`/dashboard/asistencias?tab=jugador&jugador=${encodeURIComponent(j.id)}`}
-                        className="font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 rounded"
+                        className="inline-block py-2 font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 rounded"
                         style={{ color: "var(--color-primary)" }}
                       >
                         Ver reporte
