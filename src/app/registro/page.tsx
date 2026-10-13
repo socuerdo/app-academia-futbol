@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthShell } from "@/components/public/AuthShell";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -56,18 +57,9 @@ export default function RegistroPage() {
 
   if (success) {
     return (
-      <main
-        className="min-h-screen flex items-center justify-center p-6"
-        style={{ backgroundColor: "#2c3e50" }}
-      >
-        <div
-          className="w-full max-w-md rounded-xl shadow-xl p-8 text-center"
-          style={{
-            backgroundColor: "#fff",
-            borderTop: "4px solid #27ae60",
-          }}
-        >
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+      <AuthShell claim="Bienvenido al equipo.">
+        <div className="text-center">
+          <h1 className="font-display text-5xl font-extrabold uppercase italic leading-[0.95] tracking-tight text-slate-900 mb-3">
             Registro exitoso
           </h1>
           <p className="text-slate-600 mb-6">
@@ -76,32 +68,22 @@ export default function RegistroPage() {
           </p>
           <Link
             href="/login"
-            className="inline-block px-5 py-2.5 text-white rounded-lg font-medium"
+            className="inline-flex min-h-[48px] items-center px-6 text-white rounded-lg font-semibold"
             style={{ backgroundColor: "#c0392b" }}
           >
             Ir a iniciar sesión
           </Link>
         </div>
-      </main>
+      </AuthShell>
     );
   }
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{ backgroundColor: "#2c3e50" }}
-    >
-      <div
-        className="w-full max-w-md rounded-xl shadow-xl p-8"
-        style={{
-          backgroundColor: "#fff",
-          borderTop: "4px solid #c0392b",
-        }}
-      >
-        <h1 className="text-2xl font-bold text-slate-800 mb-1">
+    <AuthShell claim="Armá tu club.">
+        <h1 className="font-display text-5xl font-extrabold uppercase italic leading-[0.95] tracking-tight text-slate-900 mb-2">
           Registrar mi club
         </h1>
-        <p className="text-slate-500 text-sm mb-6">
+        <p className="text-slate-600 mb-6">
           Creá la cuenta de administrador para tu escuela de fútbol.
         </p>
 
@@ -128,7 +110,7 @@ export default function RegistroPage() {
               value={nombreClub}
               onChange={(e) => setNombreClub(e.target.value)}
               required
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
+              className="w-full min-h-[48px] px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#c0392b]/40 focus:border-[#c0392b] outline-none transition"
               placeholder="Ej: Academia San Martín"
             />
           </div>
@@ -144,7 +126,7 @@ export default function RegistroPage() {
               type="text"
               value={nombreCompleto}
               onChange={(e) => setNombreCompleto(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
+              className="w-full min-h-[48px] px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#c0392b]/40 focus:border-[#c0392b] outline-none transition"
               placeholder="Ej: Juan Pérez"
             />
           </div>
@@ -162,7 +144,7 @@ export default function RegistroPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
+              className="w-full min-h-[48px] px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#c0392b]/40 focus:border-[#c0392b] outline-none transition"
               placeholder="admin@miclub.com"
             />
           </div>
@@ -181,7 +163,7 @@ export default function RegistroPage() {
               required
               minLength={6}
               autoComplete="new-password"
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
+              className="w-full min-h-[48px] px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#c0392b]/40 focus:border-[#c0392b] outline-none transition"
               placeholder="Mínimo 6 caracteres"
             />
           </div>
@@ -200,21 +182,21 @@ export default function RegistroPage() {
               required
               minLength={6}
               autoComplete="new-password"
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none transition"
+              className="w-full min-h-[48px] px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#c0392b]/40 focus:border-[#c0392b] outline-none transition"
               placeholder="Repetí la contraseña"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg font-medium text-white transition disabled:opacity-60"
+            className="w-full min-h-[52px] rounded-lg font-display text-xl font-extrabold uppercase italic tracking-wide text-white transition hover:brightness-95 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c0392b] focus-visible:ring-offset-2"
             style={{ backgroundColor: "#c0392b" }}
           >
             {loading ? "Registrando..." : "Registrar club"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-600">
           ¿Ya tenés cuenta?{" "}
           <Link
             href="/login"
@@ -224,12 +206,11 @@ export default function RegistroPage() {
             Iniciar sesión
           </Link>
         </p>
-        <p className="mt-2 text-center text-sm text-slate-500">
+        <p className="mt-2 text-center text-sm text-slate-600">
           <Link href="/" className="font-medium text-slate-600 hover:underline">
             ← Volver al inicio
           </Link>
         </p>
-      </div>
-    </main>
+    </AuthShell>
   );
 }

@@ -1,28 +1,61 @@
 import Link from "next/link";
+import { PitchLines, RAYAS_CAMISETA } from "@/components/public/PitchLines";
+
+const MODULOS = ["Asistencias", "Cuotas", "Evaluaciones", "Jugadores"];
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">
-        Gestión de Asistencias
-      </h1>
-      <p className="text-slate-600 mb-8 text-center">
-        Sistema para escuelas de fútbol. Iniciá sesión o registrá tu club.
-      </p>
-      <div className="flex gap-4">
-        <Link
-          href="/login"
-          className="px-5 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition"
-        >
-          Iniciar sesión
-        </Link>
-        <Link
-          href="/registro"
-          className="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition"
-        >
-          Registrar club
-        </Link>
+    <main className="flex min-h-screen flex-col bg-[#c0392b] text-white">
+      <div
+        className="relative isolate flex flex-1 flex-col justify-center overflow-hidden px-6 py-16 sm:px-12 lg:px-20"
+        style={RAYAS_CAMISETA}
+      >
+        <PitchLines className="pointer-events-none absolute -right-32 top-1/2 -z-10 w-[44rem] -translate-y-1/2 text-white/20 lg:-right-16 lg:w-[64rem]" />
+
+        <h1 className="font-display text-[clamp(4rem,17vw,11rem)] font-extrabold uppercase italic leading-[0.84] tracking-tight">
+          <span className="hero-line block" style={{ "--i": 0 } as React.CSSProperties}>
+            App
+          </span>
+          <span className="hero-line block" style={{ "--i": 1 } as React.CSSProperties}>
+            Club
+          </span>
+          <span className="hero-line block" style={{ "--i": 2 } as React.CSSProperties}>
+            Deportivo
+          </span>
+        </h1>
+
+        <p className="mt-8 max-w-md text-lg font-medium text-white/95 sm:text-xl">
+          Asistencias, cuotas y evaluaciones de tu escuela de fútbol, en un solo lugar.
+        </p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/login"
+            className="inline-flex min-h-[52px] items-center rounded-lg bg-white px-8 text-base font-semibold text-[#c0392b] transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#c0392b]"
+          >
+            Iniciar sesión
+          </Link>
+          <Link
+            href="/registro"
+            className="inline-flex min-h-[52px] items-center rounded-lg border-2 border-white px-8 text-base font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#c0392b]"
+          >
+            Registrar club
+          </Link>
+        </div>
       </div>
+
+      <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-[#2c3e50] px-6 py-4 font-display text-sm font-bold uppercase italic tracking-wide text-white sm:gap-x-5 sm:px-12 sm:text-xl sm:tracking-wider lg:px-20">
+        {MODULOS.map((m, i) => (
+          <li key={m} className="flex items-center gap-3 sm:gap-5">
+            {i > 0 && (
+              <span aria-hidden className="text-white/50">
+                /
+              </span>
+            )}
+            {m}
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
