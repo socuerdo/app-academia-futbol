@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T12:00:00.000Z",
+  "title": "Design System: Gestión de Asistencias",
+  "extensions": {
+    "colorMeta": {
+      "club-primary": {
+        "role": "primary",
+        "displayName": "Rojo camiseta del club",
+        "canonical": "#c0392b",
+        "tonalRamp": ["#4a1510", "#6e1f17", "#93291e", "#c0392b", "#d45f52", "#e5958c", "#f3c9c4", "#fbeceb"]
+      },
+      "club-sidebar": {
+        "role": "secondary",
+        "displayName": "Azul medianoche del menú",
+        "canonical": "#2c3e50",
+        "tonalRamp": ["#0f1721", "#18222f", "#222f40", "#2c3e50", "#4a5d70", "#7a8a9a", "#b3bdc7", "#e6e9ed"]
+      },
+      "ink-strong": {
+        "role": "neutral",
+        "displayName": "Tinta fuerte",
+        "canonical": "#1e293b",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#cbd5e1", "#e2e8f0", "#f8fafc"]
+      },
+      "present": {
+        "role": "tertiary",
+        "displayName": "Verde presente",
+        "canonical": "#047857",
+        "tonalRamp": ["#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#6ee7b7", "#d1fae5", "#ecfdf5"]
+      },
+      "pending": {
+        "role": "tertiary",
+        "displayName": "Ámbar pendiente",
+        "canonical": "#b45309",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fcd34d", "#fef3c7", "#fffbeb"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Números grandes de las tarjetas de métricas." },
+      "headline": { "displayName": "Headline", "purpose": "Título de cada página." },
+      "title": { "displayName": "Title", "purpose": "Títulos de secciones y diálogos." },
+      "body": { "displayName": "Body", "purpose": "Tablas, listas, filtros y botones; tamaño dominante." },
+      "body-input-mobile": { "displayName": "Body input mobile", "purpose": "Campos de texto en celular, 16 px para evitar el zoom de iOS." },
+      "label": { "displayName": "Label", "purpose": "Chips, etiquetas y texto de apoyo." }
+    },
+    "shadows": [
+      { "name": "reposo", "value": "0 1px 2px rgba(0,0,0,0.05)", "purpose": "Tarjetas, tablas y secciones en reposo." },
+      { "name": "hover", "value": "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)", "purpose": "Tarjetas tocables al pasar el mouse." },
+      { "name": "flotante", "value": "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", "purpose": "Aviso de guardado (toast)." },
+      { "name": "modal", "value": "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)", "purpose": "Diálogos y menús desplegables." }
+    ],
+    "motion": [
+      { "name": "color-base", "value": "150ms ease", "purpose": "Transición global de color, fondo y borde." },
+      { "name": "control", "value": "200ms", "purpose": "Interruptores, hover de botones y tarjetas." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal en el color del club; 44 px de alto para el pulgar.",
+      "html": "<button class=\"ds-btn-primary\">Guardar asistencias</button>",
+      "css": ".ds-btn-primary { background: var(--color-primary, #c0392b); color: #fff; min-height: 44px; padding: 0 20px; border: 0; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: filter 0.2s; } .ds-btn-primary:hover { filter: brightness(0.95); } .ds-btn-primary:focus-visible { outline: 2px solid #cbd5e1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción secundaria con borde gris y fondo blanco.",
+      "html": "<button class=\"ds-btn-secondary\">Marcar todos ausentes</button>",
+      "css": ".ds-btn-secondary { background: #fff; color: #334155; min-height: 44px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; } .ds-btn-secondary:hover { background: #f8fafc; } .ds-btn-secondary:focus-visible { outline: 2px solid #cbd5e1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Field",
+      "kind": "input",
+      "refersTo": "filter-field",
+      "description": "Filtro con contenedor tonal y etiqueta arriba; el foco se marca con el color del club.",
+      "html": "<div class=\"ds-field\"><label>Sede</label><select><option>Seleccionar</option></select></div>",
+      "css": ".ds-field { background: rgba(248,250,252,0.6); border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 12px; } .ds-field:focus-within { outline: 2px solid var(--color-primary, #c0392b); outline-offset: 1px; } .ds-field label { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 500; color: #334155; } .ds-field select { width: 100%; border: 0; background: transparent; padding: 4px 0; font-size: 16px; color: #1e293b; outline: none; }"
+    },
+    {
+      "name": "Attendance Row",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Fila tocable de asistencia para celular: inicial, nombre, interruptor y palabra de estado.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-avatar\">P</span><span class=\"ds-name\">Pérez, Juan</span><span class=\"ds-state\"><span class=\"ds-switch\"><span class=\"ds-thumb\"></span></span><span class=\"ds-state-text\">Presente</span></span></div>",
+      "css": ".ds-row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; } .ds-avatar { width: 40px; height: 40px; border-radius: 9999px; background: var(--color-primary, #c0392b); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; } .ds-name { flex: 1; font-size: 14px; font-weight: 500; color: #1e293b; } .ds-state { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; } .ds-switch { width: 48px; height: 28px; border-radius: 9999px; border: 2px solid transparent; background: var(--color-primary, #c0392b); position: relative; } .ds-thumb { position: absolute; top: 2px; left: 22px; width: 20px; height: 20px; border-radius: 9999px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); } .ds-state-text { font-size: 14px; font-weight: 600; color: #047857; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Métrica del dashboard con fondo tintado, título con ícono chico y número grande.",
+      "html": "<div class=\"ds-stat\"><p class=\"ds-stat-label\">Presentes hoy</p><p class=\"ds-stat-value\">18</p></div>",
+      "css": ".ds-stat { background: #ecfdf5; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); } .ds-stat-label { margin: 0; font-size: 14px; font-weight: 500; color: #334155; } .ds-stat-value { margin: 4px 0 0; font-size: 30px; font-weight: 900; line-height: 1.2; color: #0f172a; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-pending",
+      "description": "Píldora de estado con tinte suave: verde, ámbar o rojo.",
+      "html": "<span class=\"ds-badge ds-badge-ok\">Pagada</span> <span class=\"ds-badge ds-badge-warn\">Pendiente</span> <span class=\"ds-badge ds-badge-bad\">Cuota</span>",
+      "css": ".ds-badge { display: inline-flex; padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600; } .ds-badge-ok { background: #ecfdf5; color: #047857; } .ds-badge-warn { background: #fffbeb; color: #b45309; } .ds-badge-bad { background: #fee2e2; color: #b91c1c; }"
+    },
+    {
+      "name": "Sidebar Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Ítem del menú lateral sobre el color del club; el activo lleva fondo translúcido.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-link ds-link-active\">Asistencias</a><a class=\"ds-link\">Cuotas</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; width: 200px; padding: 12px; background: var(--color-sidebar, #2c3e50); border-radius: 12px; } .ds-link { padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); cursor: pointer; transition: background 0.2s; } .ds-link:hover { background: rgba(255,255,255,0.1); color: #fff; } .ds-link-active { background: rgba(255,255,255,0.15); color: #fff; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La planilla del entrenador",
+    "overview": "La interfaz se comporta como una planilla de cancha bien hecha: clara, rápida y sin adornos que estorben. El fondo es casi blanco con un gris azulado muy tenue, el texto es gris pizarra oscuro y todo lo que importa se resuelve con una tabla, una lista o un interruptor grande. La energía del deporte no viene de decoración sino del color del club: es la única voz fuerte de la pantalla.",
+    "keyCharacteristics": [
+      "Neutro y plano de base; el color del club es el único acento fuerte.",
+      "Legibilidad al aire libre: contraste alto, texto de 14 px como mínimo para lo importante, nada en gris claro.",
+      "Zonas de toque de 44 px o más para todo lo que se opera con el pulgar.",
+      "Estado siempre dicho con texto además de color.",
+      "Mobile-first: lista de filas en celular, tabla desde 768 px."
+    ],
+    "rules": [
+      { "name": "The Club Voice Rule", "body": "El color del club es la única voz fuerte de la pantalla. Se usa en acciones primarias y estados activos, siempre vía var(--color-primary), y ningún componente fija su propio rojo de marca.", "section": "colors" },
+      { "name": "The Words Beat Color Rule", "body": "Un estado nunca se comunica solo con color: lleva palabra o ícono con etiqueta.", "section": "colors" },
+      { "name": "The No Gray On Color Rule", "body": "Sobre fondos tintados el texto secundario se oscurece del mismo matiz o sube a tinta suave; nunca un gris claro.", "section": "colors" },
+      { "name": "The 14-Pixel Floor Rule", "body": "Lo que el usuario necesita leer para decidir no baja de 14 px; 12 px queda para chips y apoyo y nunca en gris claro.", "section": "typography" },
+      { "name": "The Sixteen On Mobile Rule", "body": "Los campos de texto editables miden 16 px en celular.", "section": "typography" },
+      { "name": "The Flat Until Touched Rule", "body": "Las superficies están planas en reposo; la sombra sube solo con hover, foco o cuando el elemento flota sobre el contenido.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar siempre var(--color-primary) y var(--color-sidebar) para la marca del club; nunca un rojo o azul fijo.",
+      "Do mantener las zonas de toque en 44 px o más (filas, interruptores, botones de ícono).",
+      "Do acompañar cada estado con una palabra, además del color.",
+      "Do oscurecer el texto secundario sobre fondos tintados (tinta suave o el 700 del mismo matiz).",
+      "Do mostrar listas de filas en celular y tablas desde 768 px.",
+      "Do poner el error cerca del botón que lo provocó, con role=\"alert\"."
+    ],
+    "donts": [
+      "Don't usar bordes gruesos de color en un solo lado de tarjetas, ítems o alertas.",
+      "Don't usar texto en gris claro (slate-400 o más claro) para nada que haya que leer; en 10 px menos todavía.",
+      "Don't anidar tarjetas ni agrupar todo en bloques idénticos de ícono, título y texto.",
+      "Don't usar sombras marcadas en reposo ni formas decorativas.",
+      "Don't hacer que toda una fila cambie un dato sensible, como marcar una cuota como pagada: ahí el control es explícito.",
+      "Don't hacer un campo de texto de menos de 16 px en celular."
+    ]
+  }
+}
