@@ -1,6 +1,12 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
+const MAX_NOMBRE_CLUB = 100;
+const MAX_EMAIL = 254;
+const MAX_PASSWORD = 72;
+const MAX_REGISTROS_POR_HORA = 10;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function getIniciales(nombre: string): string {
   const parts = nombre.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
@@ -38,7 +44,35 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      nombre_club.trim().length > MAX_NOMBRE_CLUB ||
+      (nombre_completo?.trim().length ?? 0) > MAX_NOMBRE_CLUB ||
+      email.trim().length > MAX_EMAIL ||
+      !EMAIL_REGEX.test(email.trim()) ||
+      password.length > MAX_PASSWORD
+    ) {
+      return NextResponse.json(
+        { error: "Revisá los datos ingresados: algún campo no es válido." },
+        { status: 400 }
+      );
+    }
+
     const supabase = createAdminClient();
+
+    // Freno global anti-abuso: este endpoint es publico y crea clubes con el
+    // service role. Los intentos fallidos se revierten (se borra el club),
+    // asi que solo cuentan los registros que prosperaron.
+    const desde = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count: recientes } = await supabase
+      .from("clubs")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", desde);
+    if ((recientes ?? 0) >= MAX_REGISTROS_POR_HORA) {
+      return NextResponse.json(
+        { error: "Hay muchos registros en este momento. Intentá de nuevo más tarde." },
+        { status: 429 }
+      );
+    }
 
     const { data: club, error: clubError } = await supabase
       .from("clubs")
