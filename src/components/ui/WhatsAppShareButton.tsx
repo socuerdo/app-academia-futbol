@@ -10,7 +10,7 @@ interface WhatsAppShareButtonProps {
 }
 
 const DEFAULT_CLASS =
-  "px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 inline-flex items-center gap-1.5";
+  "px-3 min-h-[44px] rounded-lg text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 inline-flex items-center gap-1.5";
 
 export function WhatsAppShareButton({ getFile, mensaje, className }: WhatsAppShareButtonProps) {
   const [enviando, setEnviando] = useState(false);

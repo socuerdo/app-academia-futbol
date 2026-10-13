@@ -78,13 +78,13 @@ export function ReportesAsistenciasView({
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xl">
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Sede</label>
             <select
               value={localSede}
               onChange={(e) => setLocalSede(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -97,7 +97,7 @@ export function ReportesAsistenciasView({
             <select
               value={localCategoria}
               onChange={(e) => setLocalCategoria(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -106,14 +106,14 @@ export function ReportesAsistenciasView({
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xl">
           <div className="w-full">
             <label className="block text-sm font-medium text-slate-700 mb-1">Desde</label>
             <input
               type="date"
               value={localDesde}
               onChange={(e) => setLocalDesde(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             />
           </div>
           <div className="w-full">
@@ -122,7 +122,7 @@ export function ReportesAsistenciasView({
               type="date"
               value={localHasta}
               onChange={(e) => setLocalHasta(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             />
           </div>
         </div>
@@ -130,7 +130,7 @@ export function ReportesAsistenciasView({
           <button
             type="button"
             onClick={aplicarFiltros}
-            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            className="px-4 min-h-[44px] rounded-lg text-white text-sm font-medium"
             style={{ backgroundColor: "var(--color-primary)" }}
           >
             Buscar
@@ -139,7 +139,7 @@ export function ReportesAsistenciasView({
             <button
               type="button"
               onClick={quitarFiltros}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+              className="px-4 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Quitar filtros
             </button>
@@ -150,41 +150,41 @@ export function ReportesAsistenciasView({
       {filas.length > 0 && (
         <>
           <div className="flex flex-wrap gap-2 text-sm items-center">
-            <span className="text-xs text-slate-500 font-medium mr-1">Filtrar por sexo:</span>
+            <span className="text-sm text-slate-600 font-medium mr-1">Filtrar por sexo:</span>
             <button
               type="button"
               onClick={() => setFiltroSexo("")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
             >
               Todos: {filas.length}
             </button>
             <button
               type="button"
               onClick={() => setFiltroSexo(filtroSexo === "M" ? "" : "M")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
             >
               Masculino: {filas.filter((f) => f.sexo === "M").length}
             </button>
             <button
               type="button"
               onClick={() => setFiltroSexo(filtroSexo === "F" ? "" : "F")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
             >
               Femenino: {filas.filter((f) => f.sexo === "F").length}
             </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => exportReporteExcel(filasVisibles)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+              className="px-3 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Exportar Excel
             </button>
             <button
               type="button"
               onClick={() => exportReportePDF(filasVisibles)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+              className="px-3 min-h-[44px] rounded-lg text-sm font-medium text-white"
               style={{ backgroundColor: "var(--color-primary)" }}
             >
               Exportar PDF
@@ -195,7 +195,32 @@ export function ReportesAsistenciasView({
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        {/* Celular: una fila por jugador con sus totales y el porcentaje */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {paged.map((f, i) => (
+            <li key={i} className="flex items-center gap-3 px-4 py-3 min-h-[64px]">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-slate-800">{f.jugador}</p>
+                <p className="text-xs text-slate-600">
+                  {f.categoria} · {f.sede}
+                </p>
+                <p className="text-xs text-slate-600">
+                  Presentes {f.presencias} · Ausentes {f.ausencias} · Total {f.total}
+                </p>
+              </div>
+              <span className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-sm font-semibold ${badgeColor(f.porcentaje)}`}>
+                {f.porcentaje}%
+              </span>
+            </li>
+          ))}
+          {filasVisibles.length > 0 && (
+            <li className="bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+              Total: {filasVisibles.length} jugadores · Presentes {filasVisibles.reduce((s, f) => s + f.presencias, 0)} · Ausentes {filasVisibles.reduce((s, f) => s + f.ausencias, 0)}
+            </li>
+          )}
+        </ul>
+
+        <table className="hidden md:table w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-slate-600">
               <th className="text-left py-2 px-4">Jugador</th>

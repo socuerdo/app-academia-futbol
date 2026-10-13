@@ -70,7 +70,7 @@ export function ReporteTodosView({
             <select
               value={localSede}
               onChange={(e) => setLocalSede(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             >
               <option value="">Todas</option>
               {sedes.map((s) => (
@@ -83,7 +83,7 @@ export function ReporteTodosView({
             <select
               value={localCategoria}
               onChange={(e) => setLocalCategoria(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             >
               <option value="">Todas</option>
               {categorias.map((c) => (
@@ -96,7 +96,7 @@ export function ReporteTodosView({
             <select
               value={localEstado}
               onChange={(e) => setLocalEstado(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-offset-1 focus:border-transparent outline-none"
             >
               <option value="">Todos</option>
               <option value="activo">Activo</option>
@@ -108,7 +108,7 @@ export function ReporteTodosView({
           <button
             type="button"
             onClick={aplicarFiltros}
-            className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+            className="px-4 min-h-[44px] rounded-lg text-white text-sm font-medium"
             style={{ backgroundColor: "var(--color-primary)" }}
           >
             Buscar
@@ -117,7 +117,7 @@ export function ReporteTodosView({
             <button
               type="button"
               onClick={quitarFiltros}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-600 hover:bg-slate-50"
+              className="px-4 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Quitar filtros
             </button>
@@ -128,41 +128,41 @@ export function ReporteTodosView({
       {filas.length > 0 && (
         <>
           <div className="flex flex-wrap gap-2 text-sm items-center">
-            <span className="text-xs text-slate-500 font-medium mr-1">Filtrar por sexo:</span>
+            <span className="text-sm text-slate-600 font-medium mr-1">Filtrar por sexo:</span>
             <button
               type="button"
               onClick={() => setFiltroSexo("")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "" ? "bg-slate-700 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
             >
               Todos: {filas.length}
             </button>
             <button
               type="button"
               onClick={() => setFiltroSexo(filtroSexo === "M" ? "" : "M")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "M" ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-900 hover:bg-blue-200"}`}
             >
               Masculino: {filas.filter((f) => f.sexo === "M").length}
             </button>
             <button
               type="button"
               onClick={() => setFiltroSexo(filtroSexo === "F" ? "" : "F")}
-              className={`px-3 py-1 rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
+              className={`px-4 min-h-[44px] rounded-full font-medium transition-colors ${filtroSexo === "F" ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`}
             >
               Femenino: {filas.filter((f) => f.sexo === "F").length}
             </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => exportReporteTodosExcel(filasVisibles)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+              className="px-3 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Exportar Excel
             </button>
             <button
               type="button"
               onClick={() => exportReporteTodosPDF(filasVisibles)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+              className="px-3 min-h-[44px] rounded-lg text-sm font-medium text-white"
               style={{ backgroundColor: "var(--color-primary)" }}
             >
               Exportar PDF
@@ -173,7 +173,39 @@ export function ReporteTodosView({
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        {/* Celular: una fila por jugador con su estado y el vencimiento del carnet */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {paged.map((f, i) => (
+            <li key={i} className="px-4 py-3 min-h-[64px]">
+              <p className="font-medium text-slate-800">{f.jugador}</p>
+              <p className="text-xs text-slate-600">
+                {f.categoria} · {f.sede} · {f.estado}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-600">
+                Carnet:{" "}
+                {f.vencimiento_carnet ? (
+                  <span className={isVencido(f.vencimiento_carnet) ? "font-semibold text-red-700" : "text-slate-700"}>
+                    {f.vencimiento_carnet}
+                    {isVencido(f.vencimiento_carnet) && (
+                      <span className="ml-1 inline-flex rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-800">
+                        Vencido
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  "sin datos"
+                )}
+              </p>
+            </li>
+          ))}
+          {filasVisibles.length > 0 && (
+            <li className="bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">
+              Total: {filasVisibles.length} jugadores
+            </li>
+          )}
+        </ul>
+
+        <table className="hidden md:table w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-slate-600">
               <th className="text-left py-2 px-4">Jugador</th>
