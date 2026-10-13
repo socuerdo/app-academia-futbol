@@ -130,7 +130,7 @@ export function HistorialCuotasModal({ jugadorId, jugadorNombre, onClose }: Hist
                   <p className="text-slate-500 text-sm">Sin cuotas registradas todavía.</p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <div className="rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-slate-50 text-slate-600">

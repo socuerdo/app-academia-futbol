@@ -1,5 +1,6 @@
 "use client";
 
+import { SwitchVisual } from "@/components/ui/SwitchVisual";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -275,8 +276,77 @@ export function UsuariosView({
         />
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden overflow-x-auto">
+        {/* Celular: una tarjeta por usuario, con todos sus datos y acciones a la vista */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {profiles.map((p) => {
+            const categoriasTxt = (p.categorias_asignadas ?? []).join(", ");
+            const permisosTxt = (p.permisos ?? [])
+              .map((perm) => permisoLabelByValue.get(perm) ?? perm)
+              .join(", ");
+            return (
+              <li key={p.id} className="space-y-3 px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-800">{p.nombre_completo || p.email}</p>
+                    <p className="truncate text-xs text-slate-600">{p.email || "—"}</p>
+                    <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold capitalize text-slate-700">
+                      {p.rol}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={p.activo}
+                    aria-label={`${p.nombre_completo || p.email}: ${p.activo ? "activo" : "inactivo"}`}
+                    disabled={updatingId === p.id}
+                    onClick={() => setConfirmToggle(p)}
+                    className="flex min-h-[48px] w-[4.5rem] shrink-0 flex-col items-center gap-1 rounded-lg py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
+                  >
+                    <SwitchVisual checked={p.activo} />
+                    <span className={`text-sm font-semibold ${p.activo ? "text-emerald-700" : "text-slate-600"}`}>
+                      {p.activo ? "Activo" : "Inactivo"}
+                    </span>
+                  </button>
+                </div>
+                {categoriasTxt && (
+                  <p className="text-xs text-slate-600">
+                    <span className="font-semibold text-slate-700">Categorías: </span>
+                    {categoriasTxt}
+                  </p>
+                )}
+                {permisosTxt && (
+                  <p className="text-xs text-slate-600">
+                    <span className="font-semibold text-slate-700">Permisos: </span>
+                    {permisosTxt}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {(p.rol === "profesor" || p.rol === "secretaria") && (
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(p)}
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      <Pencil className="h-4 w-4" aria-hidden />
+                      Editar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setChangingPasswordProfile(p); setChangePasswordValue(""); setChangePasswordError(null); }}
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <KeyRound className="h-4 w-4" aria-hidden />
+                    Contraseña
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <table className="hidden md:table w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-slate-600">
               <th className="text-left py-2 px-4">Usuario</th>
@@ -310,19 +380,12 @@ export function UsuariosView({
                     type="button"
                     role="switch"
                     aria-checked={p.activo}
+                    aria-label={`${p.nombre_completo || p.email}: ${p.activo ? "activo" : "inactivo"}`}
                     disabled={updatingId === p.id}
                     onClick={() => setConfirmToggle(p)}
-                    className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors disabled:opacity-50"
-                    style={{
-                      backgroundColor: p.activo ? "var(--color-primary)" : "#cbd5e1",
-                    }}
+                    className="inline-flex items-center rounded-lg p-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
                   >
-                    <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition translate-x-1 ${
-                        p.activo ? "translate-x-5" : "translate-x-1"
-                      }`}
-                      style={{ marginTop: 2 }}
-                    />
+                    <SwitchVisual checked={p.activo} />
                   </button>
                 </td>
                 <td className="py-2 px-2">
@@ -331,7 +394,7 @@ export function UsuariosView({
                       <button
                         type="button"
                         onClick={() => openEditModal(p)}
-                        className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="p-2.5 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                         aria-label={`Editar ${p.nombre_completo || p.email}`}
                       >
                         <Pencil className="h-4 w-4" />
@@ -340,7 +403,7 @@ export function UsuariosView({
                     <button
                       type="button"
                       onClick={() => { setChangingPasswordProfile(p); setChangePasswordValue(""); setChangePasswordError(null); }}
-                      className="p-1.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      className="p-2.5 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors"
                       aria-label={`Cambiar contraseña de ${p.nombre_completo || p.email}`}
                       title="Cambiar contraseña"
                     >

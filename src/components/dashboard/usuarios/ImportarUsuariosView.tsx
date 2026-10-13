@@ -194,7 +194,7 @@ export function ImportarUsuariosView({ onClose, onImportado }: ImportarUsuariosV
 
           {filas.length > 0 && (
             <>
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
+              <div className="rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-slate-600">
@@ -254,7 +254,7 @@ export function ImportarUsuariosView({ onClose, onImportado }: ImportarUsuariosV
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 overflow-hidden">
+          <div className="rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 text-slate-600">

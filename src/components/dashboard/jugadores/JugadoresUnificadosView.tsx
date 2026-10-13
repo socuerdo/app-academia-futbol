@@ -10,6 +10,7 @@ import { CargarJugadorForm } from "@/components/dashboard/jugadores/CargarJugado
 import { FotoJugadorField } from "@/components/dashboard/jugadores/FotoJugadorField";
 import { ImportarJugadoresView } from "@/components/dashboard/jugadores/ImportarJugadoresView";
 import { quitarFotoJugador, subirFotoJugador } from "@/lib/foto-jugador";
+import { SwitchVisual } from "@/components/ui/SwitchVisual";
 import { Pagination } from "@/components/ui/Pagination";
 import { useCategorias } from "@/hooks/useCategorias";
 import { usePagination } from "@/hooks/usePagination";
@@ -345,14 +346,14 @@ export function JugadoresUnificadosView({
             <button
               type="button"
               onClick={() => setShowImportar(true)}
-              className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50"
+              className="px-4 min-h-[44px] rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50"
             >
               Importar
             </button>
             <button
               type="button"
               onClick={() => setShowNuevo(true)}
-              className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+              className="px-4 min-h-[44px] rounded-lg text-white text-sm font-medium"
               style={{ backgroundColor: "var(--color-primary)" }}
             >
               + Nuevo jugador
@@ -363,7 +364,79 @@ export function JugadoresUnificadosView({
 
       {/* Tabla */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[700px]">
+        {/* Celular: una fila por jugador con todos sus datos y acciones */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {paged.length === 0 && (
+            <li className="py-10 text-center text-slate-500">
+              No hay jugadores con los filtros seleccionados.
+            </li>
+          )}
+          {paged.map((j) => (
+            <li key={j.id} className="flex items-center gap-3 px-4 py-3 min-h-[64px]">
+              {j.foto_url ? (
+                <img
+                  src={j.foto_url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                  style={{ backgroundColor: "var(--color-primary)" }}
+                >
+                  {(j.apellido[0] || "").toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-slate-800">
+                  {j.apellido}, {j.nombre}
+                  {deudaSet.has(j.id) && (
+                    <span className="ml-2 inline-flex rounded-full bg-red-100 px-1.5 py-0.5 align-middle text-xs font-semibold text-red-700">
+                      Cuota
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {j.categoria} · {j.sede?.nombre ?? "Sin sede"}
+                </p>
+                <p className="text-xs text-slate-600">DNI {j.dni}</p>
+              </div>
+              {esAdmin && (
+                <div className="flex shrink-0 flex-col items-center gap-1">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={j.activo}
+                    aria-label={`${j.apellido}, ${j.nombre}: ${j.activo ? "activo" : "inactivo"}`}
+                    disabled={updating === j.id}
+                    onClick={() => handleToggle(j)}
+                    className="flex min-h-[48px] w-[4.5rem] flex-col items-center gap-1 rounded-lg py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
+                  >
+                    <SwitchVisual checked={j.activo} />
+                    <span className={`text-sm font-semibold ${j.activo ? "text-emerald-700" : "text-slate-600"}`}>
+                      {j.activo ? "Activo" : "Inactivo"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEditing(j)}
+                    className="min-h-[44px] rounded-lg px-3 text-sm font-semibold hover:bg-slate-50"
+                    style={{ color: "var(--color-primary)" }}
+                  >
+                    Editar
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <table className="hidden md:table w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-slate-600">
               <th className="text-left py-2 px-4 w-14">Foto</th>
@@ -425,19 +498,12 @@ export function JugadoresUnificadosView({
                       type="button"
                       role="switch"
                       aria-checked={j.activo}
+                      aria-label={`${j.apellido}, ${j.nombre}: ${j.activo ? "activo" : "inactivo"}`}
                       disabled={updating === j.id}
                       onClick={() => handleToggle(j)}
-                      className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50"
-                      style={{
-                        backgroundColor: j.activo ? "var(--color-primary)" : "#cbd5e1",
-                      }}
+                      className="inline-flex items-center rounded-lg p-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50"
                     >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
-                          j.activo ? "translate-x-5" : "translate-x-1"
-                        }`}
-                        style={{ marginTop: 2 }}
-                      />
+                      <SwitchVisual checked={j.activo} />
                     </button>
                   </td>
                 )}
