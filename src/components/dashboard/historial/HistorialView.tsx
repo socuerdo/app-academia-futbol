@@ -61,6 +61,30 @@ interface Props {
   };
 }
 
+function CambiosDetalle({ cambios }: { cambios: Record<string, unknown> }) {
+  return (
+    <div className="text-xs text-slate-700 space-y-1">
+      {Object.entries(cambios).map(([campo, val]) => {
+        if (typeof val === "object" && val !== null && "anterior" in val && "nuevo" in val) {
+          const v = val as { anterior: unknown; nuevo: unknown };
+          return (
+            <div key={campo}>
+              <span className="font-medium">{campo}:</span>{" "}
+              <span className="line-through text-red-700">{String(v.anterior ?? "—")}</span> →{" "}
+              <span className="text-emerald-700">{String(v.nuevo ?? "—")}</span>
+            </div>
+          );
+        }
+        return (
+          <div key={campo}>
+            <span className="font-medium">{campo}:</span> {JSON.stringify(val)}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function HistorialView({
   registros,
   total,
@@ -112,11 +136,11 @@ export function HistorialView({
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Usuario</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
             <select
               value={usuario}
               onChange={(e) => setUsuario(e.target.value)}
-              className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm bg-white"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm bg-white"
             >
               <option value="">Todos</option>
               {usuarios.map((u) => (
@@ -127,11 +151,11 @@ export function HistorialView({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Acción</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Acción</label>
             <select
               value={accion}
               onChange={(e) => setAccion(e.target.value)}
-              className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm bg-white"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm bg-white"
             >
               <option value="">Todas</option>
               {Object.entries(ACCION_LABELS).map(([v, l]) => (
@@ -140,11 +164,11 @@ export function HistorialView({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Entidad</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Entidad</label>
             <select
               value={entidad}
               onChange={(e) => setEntidad(e.target.value)}
-              className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm bg-white"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm bg-white"
             >
               <option value="">Todas</option>
               {Object.entries(ENTIDAD_LABELS).map(([v, l]) => (
@@ -153,21 +177,21 @@ export function HistorialView({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Desde</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Desde</label>
             <input
               type="date"
               value={desde}
               onChange={(e) => setDesde(e.target.value)}
-              className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm bg-white"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm bg-white"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Hasta</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
             <input
               type="date"
               value={hasta}
               onChange={(e) => setHasta(e.target.value)}
-              className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm bg-white"
+              className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-base md:text-sm bg-white"
             />
           </div>
         </div>
@@ -175,7 +199,7 @@ export function HistorialView({
           <button
             type="button"
             onClick={() => applyFilters()}
-            className="px-4 py-1.5 rounded-lg text-white text-sm font-medium"
+            className="px-4 min-h-[44px] rounded-lg text-white text-sm font-medium"
             style={{ backgroundColor: "var(--color-primary)" }}
           >
             Aplicar filtros
@@ -190,7 +214,7 @@ export function HistorialView({
               setHasta("");
               router.push("/dashboard/historial");
             }}
-            className="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50"
+            className="px-4 min-h-[44px] rounded-lg border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
           >
             Limpiar
           </button>
@@ -210,8 +234,46 @@ export function HistorialView({
             No hay registros para los filtros seleccionados.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[640px]">
+          <>
+            {/* Celular: una tarjeta por registro, con el detalle desplegable */}
+            <ul className="md:hidden divide-y divide-slate-100">
+              {registros.map((r) => (
+                <li key={r.id} className="space-y-1.5 px-4 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-600">{formatFechaHora(r.created_at)}</span>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ACCION_COLORS[r.accion] ?? "bg-slate-100 text-slate-600"}`}
+                    >
+                      {ACCION_LABELS[r.accion] ?? r.accion}
+                    </span>
+                  </div>
+                  <p className="font-medium text-slate-800">{r.usuario_nombre ?? "—"}</p>
+                  <p className="text-sm text-slate-700">
+                    <span className="text-xs text-slate-600">{ENTIDAD_LABELS[r.entidad] ?? r.entidad}: </span>
+                    {r.entidad_descripcion ?? "—"}
+                  </p>
+                  {r.cambios && Object.keys(r.cambios).length > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                        className="min-h-[44px] rounded-lg px-1 text-sm font-medium text-slate-700 underline"
+                      >
+                        {expandedId === r.id ? "Ocultar detalle" : "Ver detalle"}
+                      </button>
+                      {expandedId === r.id && (
+                        <div className="rounded-lg bg-slate-50 p-3">
+                          <CambiosDetalle cambios={r.cambios} />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 text-slate-600 text-xs">
                   <th className="text-left py-2 px-4 w-44">Fecha y hora</th>
@@ -250,7 +312,7 @@ export function HistorialView({
                             onClick={() =>
                               setExpandedId(expandedId === r.id ? null : r.id)
                             }
-                            className="text-xs text-slate-400 hover:text-slate-600 underline"
+                            className="text-xs text-slate-600 hover:text-slate-800 underline"
                           >
                             {expandedId === r.id ? "Ocultar" : "Detalle"}
                           </button>
@@ -260,36 +322,7 @@ export function HistorialView({
                     {expandedId === r.id && r.cambios && (
                       <tr className="bg-slate-50 border-t border-slate-100">
                         <td colSpan={6} className="px-8 py-3">
-                          <div className="text-xs text-slate-600 space-y-1">
-                            {Object.entries(r.cambios).map(([campo, val]) => {
-                              if (
-                                typeof val === "object" &&
-                                val !== null &&
-                                "anterior" in val &&
-                                "nuevo" in val
-                              ) {
-                                const v = val as { anterior: unknown; nuevo: unknown };
-                                return (
-                                  <div key={campo}>
-                                    <span className="font-medium">{campo}:</span>{" "}
-                                    <span className="line-through text-red-500">
-                                      {String(v.anterior ?? "—")}
-                                    </span>{" "}
-                                    →{" "}
-                                    <span className="text-emerald-600">
-                                      {String(v.nuevo ?? "—")}
-                                    </span>
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div key={campo}>
-                                  <span className="font-medium">{campo}:</span>{" "}
-                                  {JSON.stringify(val)}
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <CambiosDetalle cambios={r.cambios} />
                         </td>
                       </tr>
                     )}
@@ -298,6 +331,7 @@ export function HistorialView({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Paginación */}
@@ -311,7 +345,7 @@ export function HistorialView({
                 type="button"
                 disabled={currentPage <= 1}
                 onClick={() => applyFilters({ page: currentPage - 1 })}
-                className="px-3 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                className="px-3 min-h-[44px] rounded-lg border border-slate-300 text-slate-700 disabled:opacity-40 hover:bg-slate-50"
               >
                 ← Anterior
               </button>
@@ -319,7 +353,7 @@ export function HistorialView({
                 type="button"
                 disabled={currentPage >= totalPages}
                 onClick={() => applyFilters({ page: currentPage + 1 })}
-                className="px-3 py-1 rounded border border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                className="px-3 min-h-[44px] rounded-lg border border-slate-300 text-slate-700 disabled:opacity-40 hover:bg-slate-50"
               >
                 Siguiente →
               </button>

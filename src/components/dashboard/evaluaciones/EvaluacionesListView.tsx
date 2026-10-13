@@ -169,7 +169,7 @@ export function EvaluacionesListView({
           <select
             name="categoria"
             defaultValue={defaults.categoria}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
+            className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
           >
             <option value="">Todas</option>
             {categorias.map((c) => (
@@ -184,7 +184,7 @@ export function EvaluacionesListView({
           <select
             name="tipo"
             defaultValue={defaults.tipo}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
+            className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
           >
             <option value="">Todos</option>
             {tipos.map((t) => (
@@ -199,7 +199,7 @@ export function EvaluacionesListView({
           <select
             name="jugador"
             defaultValue={defaults.jugador}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
+            className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
           >
             <option value="">Todos</option>
             {jugadores.map((j) => (
@@ -214,7 +214,7 @@ export function EvaluacionesListView({
           <select
             name="temporada"
             defaultValue={defaults.temporada}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
+            className="min-h-[44px] px-3 py-2 border border-slate-300 rounded-lg text-slate-800"
           >
             <option value="">Todas</option>
             {temporadas.map((t) => (
@@ -228,7 +228,7 @@ export function EvaluacionesListView({
           <button
             type="submit"
             disabled={pending}
-            className="w-full px-4 py-2 rounded-lg text-white font-medium text-sm disabled:opacity-60"
+            className="w-full px-4 min-h-[44px] rounded-lg text-white font-medium text-sm disabled:opacity-60"
             style={{ backgroundColor: "var(--color-primary)" }}
           >
             Filtrar
@@ -242,7 +242,7 @@ export function EvaluacionesListView({
             type="button"
             onClick={handleDescargarPDF}
             disabled={descargando}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="px-3 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
             {descargando ? "Generando..." : "Descargar reporte PDF"}
           </button>
@@ -250,7 +250,77 @@ export function EvaluacionesListView({
       )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="min-w-full text-sm">
+        {/* Celular: una tarjeta por evaluación con todos sus datos y acciones */}
+        <ul className="md:hidden divide-y divide-slate-100">
+          {filas.length === 0 && (
+            <li className="px-3 py-8 text-center text-slate-500">No hay evaluaciones con estos filtros.</li>
+          )}
+          {filas.map((row) => {
+            const prom = row.puntaje_promedio ?? 0;
+            return (
+              <li key={row.id} className="space-y-2 px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-xs text-slate-600">
+                    {row.jugador?.foto_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={row.jugador.foto_url} alt="" width={40} height={40} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    ) : (
+                      "?"
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-800">
+                      {row.jugador ? `${row.jugador.apellido}, ${row.jugador.nombre}` : "—"}
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      {row.jugador?.categoria ?? "—"} · {row.tipo_nombre ?? "—"} · {row.fecha}
+                    </p>
+                    <p className="text-xs text-slate-600">Evaluador: {row.evaluador_nombre ?? "—"}</p>
+                  </div>
+                  <span
+                    className={`inline-flex shrink-0 rounded-full border px-2.5 py-1 text-sm font-semibold ${badgePromedioClass(prom)}`}
+                  >
+                    {prom.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/dashboard/evaluaciones/${row.id}`}
+                    className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold text-[var(--color-primary)] hover:bg-slate-50"
+                  >
+                    Ver
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href={`/dashboard/evaluaciones/${row.id}/editar`}
+                      className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Editar
+                    </Link>
+                  )}
+                  <Link
+                    href={`/dashboard/evaluaciones/historial/${row.jugador_id}`}
+                    className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Historial
+                  </Link>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => handleEliminar(row.id)}
+                      disabled={pending}
+                      className="inline-flex min-h-[44px] items-center rounded-lg border border-red-200 px-3 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <table className="hidden md:table min-w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-600">
               <th className="px-3 py-3 font-medium">Jugador</th>
@@ -336,7 +406,7 @@ export function EvaluacionesListView({
                       {isAdmin && (
                         <Link
                           href={`/dashboard/evaluaciones/${row.id}/editar`}
-                          className="text-slate-600 text-xs font-medium mr-2"
+                          className="text-slate-700 text-xs font-medium mr-2"
                         >
                           Editar
                         </Link>
@@ -345,14 +415,14 @@ export function EvaluacionesListView({
                         <button
                           onClick={() => handleEliminar(row.id)}
                           disabled={pending}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium mr-2 disabled:opacity-50"
+                          className="text-red-700 hover:text-red-800 text-xs font-medium mr-2 disabled:opacity-50"
                         >
                           Eliminar
                         </button>
                       )}
                       <Link
                         href={`/dashboard/evaluaciones/historial/${row.jugador_id}`}
-                        className="text-slate-600 text-xs"
+                        className="text-slate-700 text-xs"
                       >
                         Historial
                       </Link>
