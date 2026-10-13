@@ -152,7 +152,7 @@ export default async function EvaluacionDetallePage({ params }: PageProps) {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Resumen de evaluación</h1>
+          <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Resumen de evaluación</h1>
           <p className="text-sm text-slate-500">Detalle completo de la evaluación seleccionada.</p>
         </div>
         <div className="flex items-center gap-3">

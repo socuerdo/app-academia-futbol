@@ -64,7 +64,7 @@ export default async function ClubDetallePage({
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-slate-800">{club.nombre}</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">{club.nombre}</h1>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">

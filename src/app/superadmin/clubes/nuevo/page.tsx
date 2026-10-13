@@ -28,7 +28,7 @@ export default async function NuevoClubPage() {
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-slate-800">Crear club manualmente</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Crear club manualmente</h1>
       <p className="text-slate-600 text-sm">
         Se creará el club, el usuario administrador y se enviará un email de bienvenida al admin.
       </p>

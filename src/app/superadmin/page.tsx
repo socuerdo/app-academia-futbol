@@ -37,7 +37,7 @@ export default async function SuperadminPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Dashboard Superadmin</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Dashboard Superadmin</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c) => (

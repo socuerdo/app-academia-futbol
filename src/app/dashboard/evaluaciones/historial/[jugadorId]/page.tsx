@@ -84,7 +84,7 @@ export default async function HistorialEvaluacionesPage({ params }: PageProps) {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">
             Historial de evaluaciones
           </h1>
           <p className="text-sm text-slate-500">

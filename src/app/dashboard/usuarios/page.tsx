@@ -52,7 +52,7 @@ export default async function UsuariosPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Gestión de usuarios</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Gestión de usuarios</h1>
       <UsuariosView
         profiles={(profiles ?? []).map((p) => ({
           ...p,

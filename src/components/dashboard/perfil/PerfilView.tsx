@@ -173,7 +173,7 @@ export function PerfilView({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Mi perfil</h1>
+        <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Mi perfil</h1>
         <p className="text-sm text-slate-500">
           Personalizá tu información y la foto que se muestra en la app.
         </p>

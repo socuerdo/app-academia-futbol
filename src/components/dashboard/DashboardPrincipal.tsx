@@ -134,10 +134,10 @@ function labelDias(dias: number): string {
   return `En ${dias} días`;
 }
 
+// "club" es blanco con el ícono en el color del club; el tinte de fondo queda reservado a los estados (verde, rojo, ámbar).
 const TONOS = {
-  blue: { bg: "bg-blue-50", icon: "text-blue-700" },
+  club: { bg: "bg-white", icon: "" },
   emerald: { bg: "bg-emerald-50", icon: "text-emerald-700" },
-  violet: { bg: "bg-violet-50", icon: "text-violet-700" },
   rose: { bg: "bg-rose-50", icon: "text-rose-700" },
   amber: { bg: "bg-amber-50", icon: "text-amber-700" },
 } as const;
@@ -158,13 +158,18 @@ function StatCard({
   href?: string;
 }) {
   const t = TONOS[tone];
+  const esClub = tone === "club";
   const contenido = (
     <>
       <p className="flex items-center gap-2 text-sm font-medium text-slate-700">
-        <Icon className={`h-4 w-4 shrink-0 ${t.icon}`} aria-hidden />
+        <Icon
+          className={`h-4 w-4 shrink-0 ${t.icon}`}
+          style={esClub ? { color: "var(--color-primary)" } : undefined}
+          aria-hidden
+        />
         <span>{label}</span>
       </p>
-      <p className="mt-1 text-3xl font-black text-slate-900">{value}</p>
+      <p className="mt-2 font-display text-5xl font-extrabold italic leading-none text-slate-900">{value}</p>
       <p className="mt-1 hidden text-xs text-slate-600 sm:block">{hint}</p>
     </>
   );
@@ -192,10 +197,10 @@ export function DashboardPrincipal({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Dashboard</h1>
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-800 mb-3">Accesos rápidos</h2>
+        <h2 className="mb-3 font-display text-xl font-extrabold uppercase italic tracking-wide text-slate-800">Accesos rápidos</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {accesos.map((a) => (
             <Link
@@ -218,7 +223,7 @@ export function DashboardPrincipal({
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard
-          tone="blue"
+          tone="club"
           Icon={Users}
           label="Jugadores activos"
           value={stats.jugadoresActivos}
@@ -232,7 +237,7 @@ export function DashboardPrincipal({
           hint="Asistencia diaria registrada"
         />
         <StatCard
-          tone="violet"
+          tone="club"
           Icon={BarChart2}
           label="% asistencia del mes"
           value={`${stats.pctAsistenciaMes}%`}

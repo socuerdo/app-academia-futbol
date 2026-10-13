@@ -47,7 +47,7 @@ export default async function JugadoresPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Jugadores</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Jugadores</h1>
       <JugadoresUnificadosView
         clubId={profile.club_id}
         initialJugadores={jugadores}

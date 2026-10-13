@@ -31,7 +31,7 @@ export default async function ConfiguracionPage() {
   if (!club && esAdminOAuditor(profile.rol)) {
     return (
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuración</h1>
+        <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Configuración</h1>
         <p className="text-slate-600">No hay club asignado.</p>
       </div>
     );
@@ -39,7 +39,7 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="max-w-2xl mx-auto pb-12">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuración del club</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Configuración del club</h1>
       <ConfiguracionView club={club} />
     </div>
   );

@@ -62,7 +62,7 @@ export default async function SuperadminUsuariosPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-slate-800">Usuarios</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Usuarios</h1>
       <SuperadminUsuariosView
         users={users}
         clubs={clubOptions}

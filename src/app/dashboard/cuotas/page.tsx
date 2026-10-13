@@ -237,7 +237,7 @@ export default async function CuotasPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Cuotas</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Cuotas</h1>
 
       {/* Tab bar: solo si el usuario puede cobrar (secretaria/admin) */}
       {canCobrar && (

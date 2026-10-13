@@ -24,7 +24,7 @@ export default async function CategoriasPage() {
   if (!clubId) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-6">Categorías</h1>
+        <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Categorías</h1>
         <p className="text-slate-600">No hay club asignado.</p>
       </div>
     );
@@ -32,7 +32,7 @@ export default async function CategoriasPage() {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto pb-12">
-      <h1 className="text-2xl font-bold text-slate-800 mb-2">Categorías</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-2">Categorías</h1>
       <p className="text-slate-600 text-sm mb-4">
         Gestioná las categorías del club, su orden y su estado activo/inactivo.
       </p>

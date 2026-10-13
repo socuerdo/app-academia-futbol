@@ -347,7 +347,7 @@ export default async function AsistenciasPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Asistencias</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Asistencias</h1>
 
       {/* Tab bar */}
       <div className="flex gap-0 border-b border-slate-200 overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">

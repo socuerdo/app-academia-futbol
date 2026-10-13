@@ -184,7 +184,7 @@ export function NuevaEvaluacionView({
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">
           {mode === "edit" ? "Editar evaluación" : "Nueva evaluación"}
         </h1>
         <Link

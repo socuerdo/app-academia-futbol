@@ -34,7 +34,7 @@ export default async function SedesPage() {
 
   return (
     <div className="max-w-3xl mx-auto pb-12">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Sedes</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900 mb-6">Sedes</h1>
       <SedesView
         sedes={sedes ?? []}
         jugadoresPorSede={jugadoresPorSede}

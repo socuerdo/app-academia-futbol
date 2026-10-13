@@ -68,7 +68,7 @@ export default async function HistorialPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Historial de actividad</h1>
+      <h1 className="font-display text-4xl font-extrabold uppercase italic leading-none tracking-tight text-slate-900">Historial de actividad</h1>
       <HistorialView
         registros={(registros ?? []) as any[]}
         total={count ?? 0}
