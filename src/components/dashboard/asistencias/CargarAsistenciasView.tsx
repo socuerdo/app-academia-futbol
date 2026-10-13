@@ -5,7 +5,7 @@ import type { Sede } from "@/types/database";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Toast } from "@/components/ui/Toast";
-import { Loader2, Save, Upload } from "lucide-react";
+import { CheckCheck, Loader2, Save } from "lucide-react";
 
 type JugadorRow = {
   id: string;
@@ -31,6 +31,66 @@ interface CargarAsistenciasViewProps {
   jugadoresConDeuda?: string[];
 }
 
+function Avatar({ jugador }: { jugador: JugadorRow }) {
+  return jugador.foto_url ? (
+    <img
+      src={jugador.foto_url}
+      alt=""
+      width={40}
+      height={40}
+      loading="lazy"
+      decoding="async"
+      className="w-10 h-10 shrink-0 rounded-full object-cover"
+    />
+  ) : (
+    <div
+      aria-hidden
+      className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-xs font-bold text-white"
+      style={{ backgroundColor: "var(--color-primary)" }}
+    >
+      {(jugador.apellido[0] || "").toUpperCase()}
+    </div>
+  );
+}
+
+function BadgeCuota() {
+  return (
+    <span
+      title="Cuota del mes pendiente"
+      className="ml-2 inline-flex px-1.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 align-middle"
+    >
+      Cuota
+    </span>
+  );
+}
+
+/** Interruptor solo visual: el control accesible es el botón que lo contiene. */
+function EstadoSwitch({ presente }: { presente: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`relative inline-flex h-7 w-12 shrink-0 rounded-full border-2 transition-colors duration-200 ${
+        presente ? "border-transparent" : "border-slate-500 bg-slate-200"
+      }`}
+      style={presente ? { backgroundColor: "var(--color-primary)" } : undefined}
+    >
+      <span
+        className={`pointer-events-none mt-0.5 inline-block h-5 w-5 rounded-full shadow transition duration-200 ${
+          presente ? "translate-x-[22px] bg-white" : "translate-x-[2px] bg-slate-500"
+        }`}
+      />
+    </span>
+  );
+}
+
+function EstadoTexto({ presente }: { presente: boolean }) {
+  return (
+    <span className={`text-sm font-semibold ${presente ? "text-emerald-700" : "text-slate-600"}`}>
+      {presente ? "Presente" : "Ausente"}
+    </span>
+  );
+}
+
 export function CargarAsistenciasView({
   sedes,
   categorias,
@@ -54,6 +114,7 @@ export function CargarAsistenciasView({
 
   useEffect(() => {
     setJugadores(initialJugadores);
+    setError(null);
     const next: Record<string, AsistenciaState> = {};
     initialJugadores.forEach((j) => {
       const ex = asistenciasExistentes[j.id];
@@ -127,10 +188,11 @@ export function CargarAsistenciasView({
   };
 
   const filtrosCompletos = sedeId && categoria;
+  const presentes = jugadores.filter((j) => asistencias[j.id]?.presente).length;
 
   return (
     <>
-      <div className="space-y-4 pb-24">
+      <div className="space-y-4 pb-32 md:pb-4">
         <section className="rounded-xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
           <div className="mb-4 pb-3 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-700">Filtros de carga</h2>
@@ -180,36 +242,70 @@ export function CargarAsistenciasView({
           </div>
         )}
 
-        {error && (
-          <div className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>
-        )}
-
         {jugadores.length > 0 && (
           <>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => marcarTodos(true)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium text-white hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                 style={{ backgroundColor: "var(--color-primary)" }}
-                aria-label="Marcar todos presentes"
               >
-                <Upload className="h-4 w-4" aria-hidden />
+                <CheckCheck className="h-4 w-4" aria-hidden />
                 Marcar todos presentes
               </button>
               <button
                 type="button"
                 onClick={() => marcarTodos(false)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Marcar todos ausentes"
+                className="px-3 min-h-[44px] rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
               >
                 Marcar todos ausentes
               </button>
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[580px]">
+              {/* Celular: una fila tocable por jugador, sin scroll horizontal */}
+              <ul className="md:hidden divide-y divide-slate-100">
+                {jugadores.map((j) => {
+                  const presente = asistencias[j.id]?.presente ?? false;
+                  return (
+                    <li key={j.id}>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={presente}
+                        aria-label={`${j.apellido}, ${j.nombre}: ${presente ? "presente" : "ausente"}`}
+                        onClick={() => setPresente(j.id, !presente)}
+                        className="w-full flex items-center gap-3 px-4 py-3 min-h-[64px] text-left active:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-primary)]"
+                      >
+                        <Avatar jugador={j} />
+                        <span className="min-w-0 flex-1 font-medium text-slate-800">
+                          {j.apellido}, {j.nombre}
+                          {deudaSet.has(j.id) && <BadgeCuota />}
+                        </span>
+                        <span className="flex w-[4.5rem] shrink-0 flex-col items-center gap-1">
+                          <EstadoSwitch presente={presente} />
+                          <EstadoTexto presente={presente} />
+                        </span>
+                      </button>
+                      <div className="px-4 pb-3">
+                        <input
+                          type="text"
+                          value={asistencias[j.id]?.observacion ?? ""}
+                          onChange={(e) => setObservacion(j.id, e.target.value)}
+                          placeholder="Observación (opcional)"
+                          aria-label={`Observación de ${j.apellido}, ${j.nombre}`}
+                          className="w-full min-h-[44px] px-3 py-2 border border-slate-200 rounded-lg text-base text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {/* Escritorio: tabla */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-slate-600">
                       <th className="text-left py-2 px-4 w-12">Foto</th>
@@ -224,54 +320,24 @@ export function CargarAsistenciasView({
                       return (
                         <tr key={j.id} className="border-t border-slate-100 hover:bg-slate-50">
                           <td className="py-2 px-4">
-                            {j.foto_url ? (
-                              <img src={j.foto_url} alt="" className="w-10 h-10 rounded-full object-cover" />
-                            ) : (
-                              <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                style={{ backgroundColor: "var(--color-primary)" }}
-                              >
-                                {(j.apellido[0] || "").toUpperCase()}
-                              </div>
-                            )}
+                            <Avatar jugador={j} />
                           </td>
                           <td className="py-2 px-4">
                             <span className="font-medium">{j.apellido}, {j.nombre}</span>
-                            {deudaSet.has(j.id) && (
-                              <span
-                                title="Cuota del mes pendiente"
-                                className="ml-2 inline-flex px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 align-middle"
-                              >
-                                Cuota
-                              </span>
-                            )}
+                            {deudaSet.has(j.id) && <BadgeCuota />}
                           </td>
                           <td className="py-2 px-4 text-center">
-                            {/* Touch target mínimo 44px con wrapper invisible */}
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="flex items-center justify-center min-h-[44px]">
-                                <button
-                                  type="button"
-                                  role="switch"
-                                  aria-checked={presente}
-                                  aria-label={`${j.apellido}, ${j.nombre}: ${presente ? "presente" : "ausente"}`}
-                                  onClick={() => setPresente(j.id, !presente)}
-                                  className="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
-                                  style={{
-                                    backgroundColor: presente ? "var(--color-primary)" : "#cbd5e1",
-                                  }}
-                                >
-                                  <span
-                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
-                                      presente ? "translate-x-5" : "translate-x-0"
-                                    }`}
-                                  />
-                                </button>
-                              </div>
-                              <span className={`text-[10px] font-semibold leading-none ${presente ? "text-emerald-600" : "text-slate-400"}`}>
-                                {presente ? "Presente" : "Ausente"}
-                              </span>
-                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={presente}
+                              aria-label={`${j.apellido}, ${j.nombre}: ${presente ? "presente" : "ausente"}`}
+                              onClick={() => setPresente(j.id, !presente)}
+                              className="inline-flex flex-col items-center gap-1 rounded-lg px-3 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                            >
+                              <EstadoSwitch presente={presente} />
+                              <EstadoTexto presente={presente} />
+                            </button>
                           </td>
                           <td className="py-2 px-4">
                             <input
@@ -279,7 +345,8 @@ export function CargarAsistenciasView({
                               value={asistencias[j.id]?.observacion ?? ""}
                               onChange={(e) => setObservacion(j.id, e.target.value)}
                               placeholder="Opcional"
-                              className="w-full max-w-xs px-2 py-1.5 border border-slate-200 rounded text-slate-700 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label={`Observación de ${j.apellido}, ${j.nombre}`}
+                              className="w-full max-w-xs px-2 py-1.5 border border-slate-200 rounded text-slate-700 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
                             />
                           </td>
                         </tr>
@@ -297,30 +364,39 @@ export function CargarAsistenciasView({
         )}
       </div>
 
-      {/* Botón sticky al pie — visible solo cuando hay jugadores */}
+      {/* Barra de guardado: fija al pie en celular, en línea en escritorio */}
       {jugadores.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 flex items-center gap-3 md:static md:bg-transparent md:border-0 md:p-0 md:backdrop-blur-none">
-          <button
-            type="button"
-            onClick={handleGuardar}
-            disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium disabled:opacity-50 hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-            style={{ backgroundColor: "var(--color-primary)" }}
-            aria-label={saving ? "Guardando asistencias" : "Guardar asistencias"}
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" aria-hidden />
-                Guardar asistencias
-              </>
-            )}
-          </button>
-          <span className="text-sm text-slate-500">{jugadores.length} jugadores</span>
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 backdrop-blur border-t border-slate-200 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:bg-transparent md:border-0 md:p-0 md:backdrop-blur-none">
+          {error && (
+            <p role="alert" className="mb-2 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">
+              {error}
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleGuardar}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 min-h-[44px] rounded-lg text-white font-medium disabled:opacity-50 hover:brightness-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+              style={{ backgroundColor: "var(--color-primary)" }}
+              aria-label={saving ? "Guardando asistencias" : "Guardar asistencias"}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" aria-hidden />
+                  Guardar asistencias
+                </>
+              )}
+            </button>
+            <span aria-live="polite" className="text-sm text-slate-600">
+              <strong className="font-semibold text-slate-800">{presentes}</strong> presentes de {jugadores.length}
+            </span>
+          </div>
         </div>
       )}
 
