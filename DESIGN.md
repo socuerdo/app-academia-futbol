@@ -22,17 +22,17 @@ colors:
   alert-tint: "#fee2e2"
 typography:
   display:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 900
-    lineHeight: 1.2
+    fontFamily: "Barlow Condensed, system-ui, sans-serif"
+    fontSize: "3rem"
+    fontWeight: 800
+    lineHeight: 1
     letterSpacing: "normal"
   headline:
-    fontFamily: "Inter, system-ui, sans-serif"
-    fontSize: "1.5rem"
-    fontWeight: 700
-    lineHeight: 1.33
-    letterSpacing: "normal"
+    fontFamily: "Barlow Condensed, system-ui, sans-serif"
+    fontSize: "2.25rem"
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "-0.025em"
   title:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "1.125rem"
@@ -134,12 +134,15 @@ components:
 
 La interfaz se comporta como una planilla de cancha bien hecha: clara, rápida y sin adornos que estorben. El fondo es casi blanco con un gris azulado muy tenue, el texto es gris pizarra oscuro y todo lo que importa se resuelve con una tabla, una lista o un interruptor grande. La energía del deporte no viene de decoración sino del color del club: es la única voz fuerte de la pantalla y marca botones, interruptores activos, avatares y el menú lateral.
 
-La app es multi-club, así que su identidad propia es deliberadamente neutra. Cada club define su color primario, el color de su menú lateral y su logo, y esa marca manda dentro de su panel. Los números grandes en negrita del dashboard y los interruptores de presente y pagada dan el ritmo enérgico; el resto se mantiene plano, legible y denso donde el administrador lo necesita.
+La app es multi-club, así que dentro del panel su identidad propia es contenida: cada club define su color primario, el color de su menú lateral y su logo, y esa marca manda. La energía de equipo deportivo viene de la tipografía condensada en cursiva de los títulos y de los números grandes del dashboard, y de los interruptores de presente y pagada; el resto se mantiene plano, legible y denso donde el administrador lo necesita.
+
+La entrada (portada, login y registro) es la única parte con identidad propia de la app, "App Club Deportivo", porque todavía no hay un club que la vista: campo rojo de camiseta con rayas verticales tenues, líneas de cancha dibujadas, títulos enormes en la tipografía condensada y una franja azul medianoche. Es la camiseta del equipo antes de ponerle el escudo de cada club.
 
 Se usa en dos escenas distintas: el profesor en la cancha, con el celular, bajo el sol y con el pulgar; y la administración en una computadora, con tablas, filtros y reportes. Por eso hay un solo lenguaje visual con dos composiciones: lista de filas tocables en pantallas chicas, tabla en pantallas medianas y grandes.
 
 **Key Characteristics:**
-- Neutro y plano de base; el color del club es el único acento fuerte.
+- Neutro y plano de base; el color del club es el único acento fuerte dentro del panel.
+- Tipografía condensada en cursiva para títulos y números: ahí vive la energía deportiva.
 - Legibilidad al aire libre: contraste alto, texto de 14 px como mínimo para lo importante, nada en gris claro.
 - Zonas de toque de 44 px o más para todo lo que se opera con el pulgar.
 - Estado siempre dicho con texto además de color ("Presente", "Pagada", "Pendiente").
@@ -172,15 +175,15 @@ Paleta de grises pizarra con un único acento variable: el color primario del cl
 
 ## Typography
 
-**Display Font:** Inter (con system-ui, sans-serif de respaldo)
+**Display Font:** Barlow Condensed (pesos 700 y 800, normal e itálica, con system-ui, sans-serif de respaldo), cargada con `next/font` y expuesta como `--font-display` / clase `font-display`.
 **Body Font:** Inter
-**Label/Mono Font:** Inter; no hay fuente monoespaciada ni de display aparte.
+**Label/Mono Font:** Inter; no hay fuente monoespaciada.
 
-**Character:** Una sola familia sans-serif, neutra y de lectura rápida. La jerarquía sale del peso y el tamaño, no de combinar fuentes.
+**Character:** Dos voces claras. La condensada en cursiva y mayúsculas tiene el aire de una camiseta o un marcador y se reserva para títulos, números grandes y botones de la entrada; Inter, neutra y de lectura rápida, hace todo lo demás.
 
 ### Hierarchy
-- **Display** (900, 30 px, 1.2): números de las tarjetas de métricas del dashboard.
-- **Headline** (700, 24 px, 1.33): título de cada página.
+- **Display** (Barlow Condensed 800 cursiva, 48 px, 1): números de las tarjetas de métricas del dashboard; en la portada llega a 176 px.
+- **Headline** (Barlow Condensed 800 cursiva, mayúsculas, 36 px, 1): título de cada página y de los formularios de entrada.
 - **Title** (600, 18 px): títulos de secciones y diálogos.
 - **Body** (500, 14 px, 1.43): texto de tablas, listas, filtros y botones; es el tamaño dominante de la app.
 - **Body input mobile** (400, 16 px): campos de texto en celular, para que iOS no haga zoom al enfocar.
@@ -190,6 +193,8 @@ Paleta de grises pizarra con un único acento variable: el color primario del cl
 **The 14-Pixel Floor Rule.** Lo que el usuario necesita leer para decidir ("Presente", "Pendiente", nombres) no baja de 14 px; 12 px queda para chips y apoyo y nunca en gris claro.
 
 **The Sixteen On Mobile Rule.** Los campos de texto editables miden 16 px en celular.
+
+**The Display Is For Headlines Rule.** La tipografía condensada es solo para títulos, números grandes y botones de la entrada; nunca para texto corrido, tablas ni etiquetas.
 
 ## Layout
 
@@ -251,7 +256,10 @@ Píldoras de 12 px en peso 600 con tinte suave (fondo claro, texto oscuro del mi
 Menú lateral sobre el color del club, texto blanco al 85 %. Cada ítem tiene 16 px de ícono, 14 px de texto en peso medio y radio de 12 px. Hover: fondo blanco al 10 %. Activo: fondo blanco al 15 %, sin borde lateral. Los grupos se pliegan con una línea fina a la izquierda de los subítems. En celular es un cajón.
 
 ### Stat Card (tarjeta de métrica)
-Tarjeta con fondo tintado suave (azul, verde, violeta, rosa o ámbar), un ícono chico junto al título, el número en Display y una línea de apoyo oculta en celular. Si lleva a otra pantalla es un enlace con hover de sombra.
+Tarjeta con un ícono chico junto al título, el número en Display y una línea de apoyo oculta en celular. Las métricas del club (jugadores activos, % de asistencia) son blancas con el ícono en el color del club; solo las de estado llevan tinte de fondo: verde para presentes, rosa para alertas y ámbar para cuotas impagas. Así el tinte conserva su significado y el color de marca no se confunde con una alerta. Si lleva a otra pantalla es un enlace con hover de sombra.
+
+### Entrada (portada, login y registro)
+Campo `#c0392b` con rayas verticales de negro al 7 % cada 56 px, líneas de cancha en trazo blanco al 20 % y franja inferior azul `#2c3e50`. Los títulos y las consignas van en Display cursiva en mayúsculas. El login y el registro son pantalla dividida: panel rojo con la marca y una consigna, y formulario blanco con controles de 48 px o más; en celular el panel se reduce a una franja con el nombre. Una sola animación de entrada en la portada, que se omite si el usuario pidió menos movimiento.
 
 ### Attendance Row (fila de asistencia)
 Pieza distintiva para celular: una fila tocable de al menos 64 px con foto o inicial, "Apellido, Nombre", etiqueta de cuota si hay deuda y el interruptor con su palabra a la derecha; debajo, un campo de observación de 44 px. Toda la fila cambia el estado.
